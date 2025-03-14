@@ -1,0 +1,21 @@
+package com.sistemas_mangager_be.edu_virtual_ufps.entities;
+import lombok.*;
+import jakarta.persistence.*;
+
+@Entity
+@Data
+@Builder
+@AllArgsConstructor 
+@NoArgsConstructor
+public class Pensum {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    private String nombre;
+
+    @ManyToOne
+    @JoinColumn(name = "programa_id")
+    private Programa programa_id;
+}
