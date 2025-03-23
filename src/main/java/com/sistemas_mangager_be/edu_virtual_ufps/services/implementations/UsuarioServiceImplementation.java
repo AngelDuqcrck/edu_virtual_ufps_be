@@ -1,15 +1,10 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.services.implementations;
 
-
-import org.springframework.beans.BeanUtils;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.sistemas_mangager_be.edu_virtual_ufps.entities.Rol;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Usuario;
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.RolRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.UsuarioRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IUsuarioService;
@@ -32,38 +27,25 @@ public class UsuarioServiceImplementation implements IUsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Override
-    public UsuarioDTO registrarUsuario(UsuarioDTO usuarioDTO) throws RoleNotFoundException, UserNotFoundException {
-        Usuario usuario = new Usuario();
-        if(usuarioRepository.existsByEmail(usuarioDTO.getEmail())) {
-            throw new UserNotFoundException(String.format(IS_ALREADY_USE, usuarioDTO.getEmail()));
-        }
-        Rol rol = rolRepository.findById(usuarioDTO.getRolId()).orElse(null);
 
 
-        if (rol == null) {
-            throw new RoleNotFoundException(String.format(IS_NOT_FOUND, "EL ROL"). toLowerCase());
-        }
+    public void guardarOActualizarUsuario(OAuth2User oAuth2User) {
+        String email = oAuth2User.getAttribute("email");
+        String googleId = oAuth2User.getAttribute("sub"); // ID único de Google
+        String nombre = oAuth2User.getAttribute("name");
+        String fotoUrl = oAuth2User.getAttribute("picture");
 
-        BeanUtils.copyProperties(usuarioDTO, usuario);
-        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
-        usuario.setRolId(rol);
+        // Buscar si el usuario ya existe en la base de datos
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElse(new Usuario()); // Si no existe, crear uno nuevo
+
+        // Actualizar o establecer los atributos del usuario
+        usuario.setEmail(email);
+        usuario.setGoogleId(googleId);
+        usuario.setNombre(nombre);
+        usuario.setFotoUrl(fotoUrl);
+
+        // Guardar o actualizar el usuario en la base de datos
         usuarioRepository.save(usuario);
-        UsuarioDTO usuarioResponse = UsuarioDTO.builder()
-                .primerNombre(usuario.getPrimerNombre())
-                .segundoNombre(usuario.getSegundoNombre())
-                .primerApellido(usuario.getPrimerApellido())
-                .segundoApellido(usuario.getSegundoApellido())
-                .email(usuario.getEmail())
-                .password(usuario.getPassword())
-                .rolId(usuario.getRolId().getId())
-                .build();
-
-        return usuarioResponse;
-        
     }
-
 }

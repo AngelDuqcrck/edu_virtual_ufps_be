@@ -1,6 +1,7 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
@@ -16,24 +17,22 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-
     @NotEmpty
     @Column(nullable = false)
-    private String primerNombre;
-
-    private String segundoNombre;
-
-    @NotEmpty
-    @Column(nullable = false)
-    private String primerApellido;
-
-    private String segundoApellido;
+    private String nombre;
     
+    @Email
+    @Column(nullable = false, unique = true)
     private String email;
     
-    private String password;
 
     @ManyToOne
     @JoinColumn(name = "rol_id")
     private Rol rolId;
+
+    @Column(name = "google_id", unique = true)
+    private String googleId; // ID único de Google
+
+    @Column(name = "foto_url")
+    private String fotoUrl; // URL de la foto de perfil de Google
 }

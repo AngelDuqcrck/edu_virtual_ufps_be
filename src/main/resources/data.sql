@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS roles (
 
 --Insertamos los roles en el sistema si estos no existen
 INSERT IGNORE INTO roles (id, nombre) VALUES 
-(1, 'Administrador'),
-(2, 'Estudiante'),
-(3, 'SuperAdministrador');
+(1, 'Estudiante'),
+(2, 'Docente'),
+(3, 'Director'),
+(4, 'Jurado');
