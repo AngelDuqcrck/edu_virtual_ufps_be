@@ -7,18 +7,13 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class UsuarioDTO {
-    private String primerNombre;
-
-    private String segundoNombre;
-
-
-    private String primerApellido;
-
-    private String segundoApellido;
+    private String nombre;
     
     private String email;
     
-    private String password;
+    private String googleId;
+
+    private String fotoUrl;
 
     private Integer rolId;
 }

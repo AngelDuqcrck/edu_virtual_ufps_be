@@ -16,11 +16,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Admin;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.security.JwtTokenGenerator;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.implementations.UsuarioServiceImplementation;
+import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IAdminService;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IUsuarioService;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.AdminDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.UsuarioDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.LoginRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.AuthResponse;
@@ -38,6 +41,9 @@ public class AuthController {
 
     @Autowired
     private IUsuarioService usuarioService;
+
+    @Autowired
+    private IAdminService adminService;
 
     /*
      * Autentica a un usuario y genera un token de acceso y un token de refresco
@@ -72,14 +78,14 @@ public class AuthController {
 
     }
 
+    
     //@PreAuthorize("hasAuthority('SuperAdministrador')")
     @PostMapping("/register")
-    public ResponseEntity<HttpResponse> registrarUsuario(@RequestBody UsuarioDTO usuarioDTO)
-            throws UserNotFoundException, RoleNotFoundException {
-        usuarioService.registrarUsuario(usuarioDTO);
+    public ResponseEntity<HttpResponse> registrarUsuario(@RequestBody AdminDTO adminDTO) {
+        adminService.registrarAdmin(adminDTO);
         return new ResponseEntity<>(
                                 new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                                                " Usuario registrado con exito"),
+                                                " Administrador registrado con exito"),
                                 HttpStatus.OK);
     }
 
