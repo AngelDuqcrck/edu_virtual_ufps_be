@@ -8,20 +8,13 @@ import jakarta.persistence.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "materias_pensums")
-public class MateriaPensum {
+@Table(name = "estados_matriculas")
+public class EstadoMatricula {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    private String nombre;
     
-    @ManyToOne
-    @JoinColumn(name = "materia_id")
-    private Materia materia_id;
-
-    @ManyToOne
-    @JoinColumn(name = "pensum_id")
-    private Pensum pensum_id;
-
-    private String semestre;
 }

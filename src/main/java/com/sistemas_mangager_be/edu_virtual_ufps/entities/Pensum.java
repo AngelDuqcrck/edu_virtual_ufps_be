@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 @Builder
 @AllArgsConstructor 
 @NoArgsConstructor
+@Table(name = "pensums")
 public class Pensum {
 
     @Id

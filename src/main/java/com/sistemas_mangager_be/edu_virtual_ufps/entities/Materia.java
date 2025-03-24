@@ -8,16 +8,14 @@ import jakarta.persistence.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "materia", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"codigo"})
-})
+@Table(name = "materias")
 public class Materia {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String codigo;
 
     private String nombre;

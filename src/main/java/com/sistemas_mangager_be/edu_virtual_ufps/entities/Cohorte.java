@@ -1,5 +1,7 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.entities;
 
+import java.util.Date;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,15 +10,14 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "programas")
-public class Programa {
+@Table(name = "cohortes")
+public class Cohorte {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false)
     private String nombre;
 
-    private String codigo;
+    private Date fechaCreación;
 }

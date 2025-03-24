@@ -26,6 +26,9 @@ public class Usuario {
     private String email;
     
 
+    @Column(unique = true)
+    private String codigo;
+    
     @ManyToOne
     @JoinColumn(name = "rol_id")
     private Rol rolId;
