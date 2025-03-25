@@ -18,5 +18,5 @@ public class Pensum {
 
     @ManyToOne
     @JoinColumn(name = "programa_id")
-    private Programa programa_id;
+    private Programa programaId;
 }

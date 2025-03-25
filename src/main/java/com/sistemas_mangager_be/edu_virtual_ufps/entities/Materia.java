@@ -15,10 +15,16 @@ public class Materia {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, unique = true)
+    //@Column(nullable = false, unique = true)
     private String codigo;
 
     private String nombre;
 
     private String creditos;
+
+    @ManyToOne
+    @JoinColumn(name = "pensum_id")
+    private Pensum pensumId;
+
+    private String semestre;
 }

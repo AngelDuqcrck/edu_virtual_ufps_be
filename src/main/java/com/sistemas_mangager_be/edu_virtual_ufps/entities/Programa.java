@@ -18,5 +18,6 @@ public class Programa {
     @Column(nullable = false)
     private String nombre;
 
+    @Column(nullable = false, unique = true)
     private String codigo;
 }
