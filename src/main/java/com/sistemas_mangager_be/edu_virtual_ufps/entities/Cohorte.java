@@ -19,5 +19,5 @@ public class Cohorte {
 
     private String nombre;
 
-    private Date fechaCreación;
+    private Date fechaCreacion;
 }
