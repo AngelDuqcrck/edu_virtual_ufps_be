@@ -1,5 +1,4 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.entities;
-
 import lombok.*;
 import jakarta.persistence.*;
 
@@ -8,23 +7,26 @@ import jakarta.persistence.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "materias")
-public class Materia {
+@Table(name = "grupos")
+public class Grupo {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    //@Column(nullable = false, unique = true)
-    private String codigo;
-
     private String nombre;
 
-    private String creditos;
+    private Boolean activo;
 
     @ManyToOne
-    @JoinColumn(name = "pensum_id")
-    private Pensum pensumId;
+    @JoinColumn(name = "docente_id")
+    private Usuario docenteId;
 
-    private String semestre;
+    @ManyToOne
+    @JoinColumn(name = "cohorte_id")
+    private Cohorte cohorteId;
+
+    @ManyToOne
+    @JoinColumn(name = "materia_id")
+    private Materia materiaId;
 }

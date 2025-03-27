@@ -1,26 +1,23 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.entities;
 
-import lombok.*;
+import java.util.Date;
+
 import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MateriaPensum {
+@Table(name = "cohortes")
+public class Cohorte {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    
-    @ManyToOne
-    @JoinColumn(name = "materia_id")
-    private Materia materia_id;
 
-    @ManyToOne
-    @JoinColumn(name = "pensum_id")
-    private Pensum pensum_id;
+    private String nombre;
 
-    private String semestre;
+    private Date fechaCreacion;
 }

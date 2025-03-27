@@ -63,6 +63,19 @@ public class ExceptionHandling {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
+    @ExceptionHandler(CohorteNotFoundException.class)
+    public ResponseEntity<HttpResponse> cohorteNotFoundException(CohorteNotFoundException exception) {
+        return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+    @ExceptionHandler(ProgramaNotFoundException.class)
+    public ResponseEntity<HttpResponse> programaNotFoundException(ProgramaNotFoundException exception) {
+        return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(MateriaNotFoundException.class)
+    public ResponseEntity<HttpResponse> materiaNotFoundException(MateriaNotFoundException exception) {
+        return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
     
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<HttpResponse> methodNotAllowedException(HttpRequestMethodNotSupportedException exception) {
