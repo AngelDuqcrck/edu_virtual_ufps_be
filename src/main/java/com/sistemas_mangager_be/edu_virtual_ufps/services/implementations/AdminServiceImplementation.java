@@ -1,5 +1,7 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.services.implementations;
 
+import java.util.List;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,7 +12,6 @@ import com.sistemas_mangager_be.edu_virtual_ufps.repositories.AdminRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IAdminService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.AdminDTO;
 
-import net.minidev.json.writer.BeansMapper.Bean;
 
 @Service
 public class AdminServiceImplementation implements IAdminService {
@@ -31,5 +32,14 @@ public class AdminServiceImplementation implements IAdminService {
         AdminDTO adminCreado = new AdminDTO();
         BeanUtils.copyProperties(admin, adminCreado);
         return adminCreado;
+    }
+
+    public List<AdminDTO> listarAdmins() {
+        List<Admin> admins = adminRepository.findAll();
+        return admins.stream().map(admin -> {
+            AdminDTO adminDTO = new AdminDTO();
+            BeanUtils.copyProperties(admin, adminDTO);
+            return adminDTO;
+        }).toList();
     }
 }

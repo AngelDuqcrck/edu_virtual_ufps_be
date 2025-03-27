@@ -20,11 +20,10 @@ import com.sistemas_mangager_be.edu_virtual_ufps.entities.Admin;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.security.JwtTokenGenerator;
-import com.sistemas_mangager_be.edu_virtual_ufps.services.implementations.UsuarioServiceImplementation;
+
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IAdminService;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IUsuarioService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.AdminDTO;
-import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.UsuarioDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.LoginRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.AuthResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.HttpResponse;
@@ -39,9 +38,7 @@ public class AuthController {
     @Autowired
     private JwtTokenGenerator jwtTokenGenerator;
 
-    @Autowired
-    private IUsuarioService usuarioService;
-
+   
     @Autowired
     private IAdminService adminService;
 
@@ -79,7 +76,7 @@ public class AuthController {
     }
 
     
-    //@PreAuthorize("hasAuthority('SuperAdministrador')")
+    //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PostMapping("/register")
     public ResponseEntity<HttpResponse> registrarUsuario(@RequestBody AdminDTO adminDTO) {
         adminService.registrarAdmin(adminDTO);
