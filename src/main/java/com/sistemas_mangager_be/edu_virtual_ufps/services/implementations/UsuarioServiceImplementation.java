@@ -5,9 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Usuario;
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
 // import com.sistemas_mangager_be.edu_virtual_ufps.repositories.RolRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.UsuarioRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IUsuarioService;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.UsuarioDTO;
 
 @Service
 public class UsuarioServiceImplementation implements IUsuarioService {
@@ -27,6 +29,9 @@ public class UsuarioServiceImplementation implements IUsuarioService {
     private UsuarioRepository usuarioRepository;
 
 
+    public UsuarioDTO crearProfesor(UsuarioDTO usuarioDTO) throws RoleNotFoundException {
+        return null;
+    }
 
     public void guardarOActualizarUsuario(OAuth2User oAuth2User) {
         String email = oAuth2User.getAttribute("email");

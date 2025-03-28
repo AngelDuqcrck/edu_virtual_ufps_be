@@ -3,6 +3,8 @@ package com.sistemas_mangager_be.edu_virtual_ufps.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Entity
@@ -25,6 +27,9 @@ public class Usuario {
     @Column(nullable = false, unique = true)
     private String email;
     
+    @Size(min = 10, message = "El número de teléfono debe tener 10 digitos")
+    @Pattern(regexp = "^[3-6]\\d{9}$", message = "El número de teléfono debe tener 10 digitos y comenzar con 3 o 6")
+    private String telefono;
 
     @Column(unique = true)
     private String codigo;
