@@ -67,6 +67,7 @@ INSERT IGNORE INTO admins (
     true
 );
 
+
  -- Insertamos los programas académicos 
 INSERT IGNORE INTO programas (id,nombre, codigo) VALUES 
 (1,'Maestria en Tecnologias de Informacion y Comunicacion (TIC) Aplicadas a la Educacion', '001'),
