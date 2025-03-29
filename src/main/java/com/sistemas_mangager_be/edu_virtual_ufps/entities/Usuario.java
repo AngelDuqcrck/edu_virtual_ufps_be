@@ -23,6 +23,11 @@ public class Usuario {
     @Column(nullable = false)
     private String nombre;
     
+    // @NotEmpty(message = "La cédula no puede estar vacía")
+    @Size(min = 6, max = 20, message = "El numero de documento debe tener entre 6 y 20 dígitos")
+    @Column(unique = true)
+    private String cedula;
+
     @Email
     @Column(nullable = false, unique = true)
     private String email;

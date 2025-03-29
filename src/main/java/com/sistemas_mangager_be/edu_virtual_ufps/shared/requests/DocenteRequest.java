@@ -1,4 +1,4 @@
-package com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs;
+package com.sistemas_mangager_be.edu_virtual_ufps.shared.requests;
 
 import lombok.*;
 
@@ -6,18 +6,14 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UsuarioDTO {
+public class DocenteRequest {
     private String nombre;
     
     private String email;
-    
-    private String googleId;
-
-    private String fotoUrl;
-
-    private Integer rolId;
 
     private String telefono;
+
+    private Integer rolId;
 
     private String cedula;
 

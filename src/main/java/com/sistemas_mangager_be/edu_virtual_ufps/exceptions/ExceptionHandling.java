@@ -53,6 +53,10 @@ public class ExceptionHandling {
         return createHttpResponse(HttpStatus.UNAUTHORIZED, ACCOUNT_LOCKED);
     }
 
+    @ExceptionHandler(UserExistException.class)
+    public ResponseEntity<HttpResponse> userExistException(UserExistException exception) {
+        return createHttpResponse(HttpStatus.CONFLICT, exception.getMessage());
+    }
     @ExceptionHandler(RoleNotFoundException.class)
     public ResponseEntity<HttpResponse> roleNotFoundException(RoleNotFoundException exception) {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
