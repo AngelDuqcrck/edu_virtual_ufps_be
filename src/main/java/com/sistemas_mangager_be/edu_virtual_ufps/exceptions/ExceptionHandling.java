@@ -58,6 +58,11 @@ public class ExceptionHandling {
         return createHttpResponse(HttpStatus.CONFLICT, exception.getMessage());
     }
 
+    @ExceptionHandler(EmailExistException.class)
+    public ResponseEntity<HttpResponse> emailExistException(EmailExistException exception) {
+        return createHttpResponse(HttpStatus.CONFLICT, exception.getMessage());
+    }
+
     @ExceptionHandler(EstadoEstudianteNotFoundException.class)
     public ResponseEntity<HttpResponse> estadoEstudianteNotFoundException(EstadoEstudianteNotFoundException exception) {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
@@ -87,6 +92,10 @@ public class ExceptionHandling {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
     }
     
+    @ExceptionHandler(EstudianteNotFoundException.class)
+    public ResponseEntity<HttpResponse> estudianteNotFoundException(EstudianteNotFoundException exception){
+        return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<HttpResponse> methodNotAllowedException(HttpRequestMethodNotSupportedException exception) {
         HttpMethod supportedMethod = Objects.requireNonNull(exception.getSupportedHttpMethods()).iterator().next();

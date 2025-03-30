@@ -1,6 +1,6 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.shared.responses;
 
-import java.sql.Date;
+import java.util.Date;
 
 import lombok.*;
 @Data
