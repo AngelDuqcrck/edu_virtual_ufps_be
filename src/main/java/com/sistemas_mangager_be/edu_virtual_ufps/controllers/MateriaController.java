@@ -27,7 +27,7 @@ public class MateriaController {
     @Autowired
     private IMateriaService materiaService;
 
-    
+    //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PostMapping("/crear")
     public ResponseEntity<HttpResponse> crearMateria(@RequestBody MateriaDTO materiaDTO) throws PensumNotFoundException {
         materiaService.crearMateria(materiaDTO);
@@ -37,6 +37,7 @@ public class MateriaController {
                                 HttpStatus.OK);
     }
 
+    //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<HttpResponse> actualizarMateria(@PathVariable Integer id, @RequestBody MateriaDTO materiaDTO) throws PensumNotFoundException, MateriaNotFoundException {
         materiaService.actualizarMateria(id, materiaDTO);

@@ -57,6 +57,12 @@ public class ExceptionHandling {
     public ResponseEntity<HttpResponse> userExistException(UserExistException exception) {
         return createHttpResponse(HttpStatus.CONFLICT, exception.getMessage());
     }
+
+    @ExceptionHandler(EstadoEstudianteNotFoundException.class)
+    public ResponseEntity<HttpResponse> estadoEstudianteNotFoundException(EstadoEstudianteNotFoundException exception) {
+        return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
     @ExceptionHandler(RoleNotFoundException.class)
     public ResponseEntity<HttpResponse> roleNotFoundException(RoleNotFoundException exception) {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());

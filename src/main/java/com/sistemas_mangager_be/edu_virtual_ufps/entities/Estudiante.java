@@ -40,6 +40,8 @@ public class Estudiante {
     @Pattern(regexp = "^[3-6]\\d{9}$", message = "El número de teléfono debe tener 10 digitos y comenzar con 3 o 6")
     private String telefono;
 
+    private String cedula;
+
     private Date fechaNacimiento;
 
     private Date fechaIngreso;
@@ -56,7 +58,7 @@ public class Estudiante {
 
     @ManyToOne
     @JoinColumn(name = "cohorte_id")
-    private Cohorte cohorteId;
+    private CohorteGrupo cohorteId;
 
     @ManyToOne
     @JoinColumn(name = "estado_estudiante_id")
