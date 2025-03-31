@@ -18,6 +18,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EmailExistException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EstadoEstudianteNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EstudianteNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.PensumNotFoundException;
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IEstudianteService;
@@ -28,23 +29,25 @@ import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.HttpResponse;
 @RestController
 @RequestMapping("/estudiantes")
 public class EstudianteController {
-    
+
     @Autowired
     private IEstudianteService estudianteService;
 
     @PostMapping("/crear")
     public ResponseEntity<HttpResponse> crearEstudiante(@RequestBody EstudianteDTO estudianteDTO)
-     throws PensumNotFoundException, CohorteNotFoundException, EstadoEstudianteNotFoundException, RoleNotFoundException{
-    
+            throws PensumNotFoundException, CohorteNotFoundException, EstadoEstudianteNotFoundException,
+            RoleNotFoundException {
+
         estudianteService.crearEstudiante(estudianteDTO);
-                return new ResponseEntity<>(
-                                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                                                " Estudiante registrado con exito"),
-                                HttpStatus.OK);
+        return new ResponseEntity<>(
+                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                        " Estudiante registrado con exito"),
+                HttpStatus.OK);
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<HttpResponse> actualizarEstudiante(@RequestBody EstudianteDTO estudianteDTO, @PathVariable Integer id)
+    public ResponseEntity<HttpResponse> actualizarEstudiante(@RequestBody EstudianteDTO estudianteDTO,
+            @PathVariable Integer id)
             throws UserNotFoundException, PensumNotFoundException, CohorteNotFoundException,
             EstadoEstudianteNotFoundException, EstudianteNotFoundException, EmailExistException {
         estudianteService.actualizarEstudiante(id, estudianteDTO);
@@ -55,7 +58,8 @@ public class EstudianteController {
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<EstudianteResponse> listarEstudiante(@PathVariable Integer id) throws EstudianteNotFoundException {
+    public ResponseEntity<EstudianteResponse> listarEstudiante(@PathVariable Integer id)
+            throws EstudianteNotFoundException {
         EstudianteResponse estudianteResponse = estudianteService.listarEstudiante(id);
         return new ResponseEntity<>(estudianteResponse, HttpStatus.OK);
     }
@@ -63,6 +67,34 @@ public class EstudianteController {
     @GetMapping
     public ResponseEntity<List<EstudianteResponse>> listarEstudiantes() {
         List<EstudianteResponse> estudianteResponse = estudianteService.listarEstudiantes();
+        return new ResponseEntity<>(estudianteResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("listar/pensum/{pensumId}")
+    public ResponseEntity<List<EstudianteResponse>> listarEstudiantesPorPensum(@PathVariable Integer pensumId)
+            throws PensumNotFoundException {
+        List<EstudianteResponse> estudianteResponse = estudianteService.listarEstudiantesPorPensum(pensumId);
+        return new ResponseEntity<>(estudianteResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("listar/cohorte/{cohorteId}")
+    public ResponseEntity<List<EstudianteResponse>> listarEstudiantesPorCohorte(@PathVariable Integer cohorteId)
+            throws CohorteNotFoundException {
+        List<EstudianteResponse> estudianteResponse = estudianteService.listarEstudiantesPorCohorte(cohorteId);
+        return new ResponseEntity<>(estudianteResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("listar/programa/{programaId}")
+    public ResponseEntity<List<EstudianteResponse>> listarEstudiantesPorPrograma(@PathVariable Integer programaId)
+            throws ProgramaNotFoundException {
+        List<EstudianteResponse> estudianteResponse = estudianteService.listarEstudiantesPorPrograma(programaId);
+        return new ResponseEntity<>(estudianteResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("listar/estado/{estadoEstudianteId}")
+    public ResponseEntity<List<EstudianteResponse>> listarEstudiantesPorEstado(@PathVariable Integer estadoEstudianteId)
+            throws EstadoEstudianteNotFoundException {
+        List<EstudianteResponse> estudianteResponse = estudianteService.listarEstudiantesPorEstado(estadoEstudianteId);
         return new ResponseEntity<>(estudianteResponse, HttpStatus.OK);
     }
 }

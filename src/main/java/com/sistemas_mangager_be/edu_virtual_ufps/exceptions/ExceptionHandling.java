@@ -58,6 +58,11 @@ public class ExceptionHandling {
         return createHttpResponse(HttpStatus.CONFLICT, exception.getMessage());
     }
 
+    @ExceptionHandler(GrupoNotFoundException.class)
+    public ResponseEntity<HttpResponse> grupoNotFoundException(GrupoNotFoundException exception) {
+        return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
     @ExceptionHandler(EmailExistException.class)
     public ResponseEntity<HttpResponse> emailExistException(EmailExistException exception) {
         return createHttpResponse(HttpStatus.CONFLICT, exception.getMessage());

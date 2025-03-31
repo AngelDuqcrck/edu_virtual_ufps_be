@@ -27,6 +27,10 @@ public class Grupo {
     private Cohorte cohorteId;
 
     @ManyToOne
+    @JoinColumn(name = "cohorte_grupo_id")
+    private CohorteGrupo cohorteGrupoId;
+    
+    @ManyToOne
     @JoinColumn(name = "materia_id")
     private Materia materiaId;
 }

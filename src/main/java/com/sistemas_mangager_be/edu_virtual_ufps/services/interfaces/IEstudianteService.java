@@ -20,4 +20,14 @@ public interface IEstudianteService {
     public EstudianteResponse listarEstudiante(Integer id) throws EstudianteNotFoundException;
 
      public List<EstudianteResponse> listarEstudiantes();
+
+    public List<EstudianteResponse> listarEstudiantesPorPensum(Integer pensumId) throws PensumNotFoundException;
+
+    public List<EstudianteResponse> listarEstudiantesPorCohorte(Integer cohorteId) throws CohorteNotFoundException;
+
+    public List<EstudianteResponse> listarEstudiantesPorPrograma(Integer programaId) throws ProgramaNotFoundException;
+
+    public List<EstudianteResponse> listarEstudiantesPorEstado(Integer estadoEstudianteId) throws EstadoEstudianteNotFoundException;
+
+
 }
