@@ -63,6 +63,11 @@ public class ExceptionHandling {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
+    @ExceptionHandler(MatriculaNotFoundException.class)
+    public ResponseEntity<HttpResponse> matriculaNotFoundException(MatriculaNotFoundException exception) {
+        return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
     @ExceptionHandler(EmailExistException.class)
     public ResponseEntity<HttpResponse> emailExistException(EmailExistException exception) {
         return createHttpResponse(HttpStatus.CONFLICT, exception.getMessage());
