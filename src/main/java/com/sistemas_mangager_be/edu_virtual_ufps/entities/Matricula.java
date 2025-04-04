@@ -28,6 +28,11 @@ public class Matricula {
 
     private Date fechaMatriculacion;
 
+
+    private Double nota;
+
+    private Date fechaNota;
+    
     @ManyToOne
     @JoinColumn(name = "grupo_id")
     private Grupo grupoId;

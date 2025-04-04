@@ -207,3 +207,11 @@ INSERT IGNORE INTO estados_estudiantes (id, nombre) VALUES
 (1, 'En curso'),
 (2, 'Inactivo'),
 (3, 'Egresado');
+
+
+--Insertamos los estados de la matricula de estudiantes en el sistema si estos no existen
+INSERT IGNORE INTO estados_matriculas (id, nombre) VALUES 
+(1, 'Aprobado'),
+(2, 'En curso'),
+(3, 'Cancelado'),
+(4, 'Reprobado');
