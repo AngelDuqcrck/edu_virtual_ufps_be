@@ -9,7 +9,6 @@ import lombok.*;
 public class MatriculaDTO {
     
     private Integer id;
-    private Integer estadoMatriculaId;
     private Integer estudianteId;
     private Integer grupoId;
 }

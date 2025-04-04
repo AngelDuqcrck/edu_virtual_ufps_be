@@ -19,13 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.sistemas_mangager_be.edu_virtual_ufps.entities.Admin;
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundException;
+
 import com.sistemas_mangager_be.edu_virtual_ufps.security.JwtTokenGenerator;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IAdminService;
-import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IUsuarioService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.AdminDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.LoginRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.AuthResponse;
