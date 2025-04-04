@@ -9,6 +9,7 @@ import lombok.*;
 @Builder
 public class AdminDTO {
     
+    private Integer id;
     private String primerNombre;
 
     private String segundoNombre;

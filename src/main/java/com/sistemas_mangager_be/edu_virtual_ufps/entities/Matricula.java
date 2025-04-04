@@ -16,7 +16,7 @@ public class Matricula {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "estado_matricula_id")
@@ -28,6 +28,11 @@ public class Matricula {
 
     private Date fechaMatriculacion;
 
+
+    private Double nota;
+
+    private Date fechaNota;
+    
     @ManyToOne
     @JoinColumn(name = "grupo_id")
     private Grupo grupoId;

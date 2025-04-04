@@ -25,6 +25,7 @@ public class CohorteController {
     @Autowired
     private ICohorteService cohorteService;
 
+    //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PostMapping("/crear")
     public ResponseEntity<HttpResponse> crearCohorte(@RequestBody CohorteDTO cohorteDTO) {
         cohorteService.crearCohorte(cohorteDTO);
@@ -34,6 +35,7 @@ public class CohorteController {
                                                 " Cohorte creada con exito"),
                                 HttpStatus.OK);
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<CohorteDTO> listarCohorte(@PathVariable Integer id) throws CohorteNotFoundException {
@@ -48,6 +50,7 @@ public class CohorteController {
         return new ResponseEntity<>(cohortes, HttpStatus.OK);
     }
 
+    //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<HttpResponse> actualizarCohorte(@PathVariable Integer id, @RequestBody CohorteDTO cohorteDTO) throws CohorteNotFoundException {
         cohorteService.actualizarCohorte(cohorteDTO, id);

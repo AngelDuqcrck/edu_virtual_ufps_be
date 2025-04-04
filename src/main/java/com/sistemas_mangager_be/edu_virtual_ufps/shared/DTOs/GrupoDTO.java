@@ -1,20 +1,16 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs;
-
 import lombok.*;
 
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProgramaDTO {
+@Builder
+public class GrupoDTO {
     
     private Integer id;
-    
     private String nombre;
-
-    private String codigo;
-
-    private Boolean esPregrado;
-
-
+    private Boolean activo;
+    private Integer docenteId;
+    private Integer cohorteId;
+    private Integer materiaId;
 }
