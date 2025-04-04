@@ -34,7 +34,8 @@ INSERT IGNORE INTO admins (
     segundo_apellido, 
     email, 
     password, 
-    es_super_admin
+    es_super_admin,
+    activo
 ) VALUES (
     1,
     'Angel', 
@@ -43,7 +44,8 @@ INSERT IGNORE INTO admins (
     'Cruz', 
     'angelduque1@example.com', 
     '$2a$10$u1L5aDVRx0tQtfTyqylYVu3mXH6TXvzxX0vEj/yuNwTHK.aj6R3oG',  -- Contraseña: 123456 encriptada
-    false
+    false,
+    true
 );
 
 INSERT IGNORE INTO admins (
@@ -54,7 +56,8 @@ INSERT IGNORE INTO admins (
     segundo_apellido, 
     email, 
     password, 
-    es_super_admin
+    es_super_admin,
+    activo
 ) VALUES (
     2,
     'Angel', 
@@ -63,6 +66,7 @@ INSERT IGNORE INTO admins (
     'Cruz', 
     'angelduque@example.com', 
     '$2a$10$u1L5aDVRx0tQtfTyqylYVu3mXH6TXvzxX0vEj/yuNwTHK.aj6R3oG',  -- Contraseña: 123456 encriptada
+    true,
     true
 );
 
