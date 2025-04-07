@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS admins (
     email VARCHAR(50) NOT NULL,
     password VARCHAR(255) NOT NULL,
     es_super_admin BOOLEAN NOT NULL,
+    activo BOOLEAN NOT NULL,
     PRIMARY KEY (id)
 );
 --Insertamos los usuarios en el sistema si estos no existen
@@ -34,7 +35,8 @@ INSERT IGNORE INTO admins (
     segundo_apellido, 
     email, 
     password, 
-    es_super_admin
+    es_super_admin,
+    activo
 ) VALUES (
     1,
     'Angel', 
@@ -43,7 +45,8 @@ INSERT IGNORE INTO admins (
     'Cruz', 
     'angelduque1@example.com', 
     '$2a$10$u1L5aDVRx0tQtfTyqylYVu3mXH6TXvzxX0vEj/yuNwTHK.aj6R3oG',  -- Contraseña: 123456 encriptada
-    false
+    false,
+    true
 );
 
 INSERT IGNORE INTO admins (
@@ -54,7 +57,8 @@ INSERT IGNORE INTO admins (
     segundo_apellido, 
     email, 
     password, 
-    es_super_admin
+    es_super_admin,
+    activo
 ) VALUES (
     2,
     'Angel', 
@@ -63,6 +67,7 @@ INSERT IGNORE INTO admins (
     'Cruz', 
     'angelduque@example.com', 
     '$2a$10$u1L5aDVRx0tQtfTyqylYVu3mXH6TXvzxX0vEj/yuNwTHK.aj6R3oG',  -- Contraseña: 123456 encriptada
+    true,
     true
 );
 

@@ -36,5 +36,7 @@ public class Matricula {
     @ManyToOne
     @JoinColumn(name = "grupo_id")
     private Grupo grupoId;
+
+    private String semestre;
     
 }

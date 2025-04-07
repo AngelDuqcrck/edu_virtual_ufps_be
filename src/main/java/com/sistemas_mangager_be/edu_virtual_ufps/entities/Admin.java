@@ -40,4 +40,6 @@ public class Admin {
 
     @Column(nullable = false)
     private Boolean esSuperAdmin;
+
+    private Boolean activo;
 }

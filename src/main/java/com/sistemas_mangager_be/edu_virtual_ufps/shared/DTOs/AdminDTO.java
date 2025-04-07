@@ -23,4 +23,6 @@ public class AdminDTO {
     private String password;
 
     private Boolean esSuperAdmin;
+
+    private Boolean activo;
 }

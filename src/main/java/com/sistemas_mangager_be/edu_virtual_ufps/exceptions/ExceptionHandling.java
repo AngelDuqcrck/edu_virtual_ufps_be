@@ -43,6 +43,10 @@ public class ExceptionHandling {
         return createHttpResponse(HttpStatus.BAD_REQUEST, INCORRECT_CREDENTIALS);
     }
 
+    @ExceptionHandler(AccountDisabledException.class)
+    public ResponseEntity<HttpResponse> accountDisabledException(AccountDisabledException exception) {
+        return createHttpResponse(HttpStatus.BAD_REQUEST, ACCOUNT_DISABLED);
+    }
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<HttpResponse> accessDeniedException() {
         return createHttpResponse(HttpStatus.BAD_REQUEST, NOT_ENOUGH_PERMISSION);
@@ -78,6 +82,10 @@ public class ExceptionHandling {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
+    @ExceptionHandler(VinculacionNotFoundException.class)
+    public ResponseEntity<HttpResponse> vinculacionNotFoundException(VinculacionNotFoundException exception) {
+        return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
     @ExceptionHandler(RoleNotFoundException.class)
     public ResponseEntity<HttpResponse> roleNotFoundException(RoleNotFoundException exception) {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
@@ -102,6 +110,10 @@ public class ExceptionHandling {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
     }
     
+    @ExceptionHandler(ChangeNotAllowedException.class)
+    public ResponseEntity<HttpResponse> changeNotAllowedException(ChangeNotAllowedException exception) {
+        return createHttpResponse(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
     @ExceptionHandler(EstudianteNotFoundException.class)
     public ResponseEntity<HttpResponse> estudianteNotFoundException(EstudianteNotFoundException exception){
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());

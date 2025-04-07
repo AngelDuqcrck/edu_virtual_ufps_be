@@ -19,18 +19,6 @@ public class Grupo {
     private Boolean activo;
 
     @ManyToOne
-    @JoinColumn(name = "docente_id")
-    private Usuario docenteId;
-
-    @ManyToOne
-    @JoinColumn(name = "cohorte_id")
-    private Cohorte cohorteId;
-
-    @ManyToOne
-    @JoinColumn(name = "cohorte_grupo_id")
-    private CohorteGrupo cohorteGrupoId;
-    
-    @ManyToOne
     @JoinColumn(name = "materia_id")
     private Materia materiaId;
 }
