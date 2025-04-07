@@ -18,8 +18,11 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.GrupoNotFoundExcepti
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MateriaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundException;
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.VinculacionNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IGrupoService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.GrupoDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.GrupoRequest;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.GrupoCohorteDocenteResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.GrupoResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.HttpResponse;
 
@@ -62,17 +65,7 @@ public class GrupoController {
         return new ResponseEntity<>(grupoResponse, HttpStatus.OK);
     }
 
-    @GetMapping("/docente/{docenteId}")
-    public ResponseEntity<List<GrupoResponse>> listarGruposPorDocente(@PathVariable Integer docenteId) throws UserNotFoundException, RoleNotFoundException {
-        List<GrupoResponse> grupoResponse = iGrupoService.listarGruposPorDocente(docenteId);
-        return new ResponseEntity<>(grupoResponse, HttpStatus.OK);
-    }
-
-    @GetMapping("/cohorte/{cohorteId}")
-    public ResponseEntity<List<GrupoResponse>> listarGruposPorCohorte(@PathVariable Integer cohorteId) throws CohorteNotFoundException {
-        List<GrupoResponse> grupoResponse = iGrupoService.listarGruposPorCohorte(cohorteId);
-        return new ResponseEntity<>(grupoResponse, HttpStatus.OK);
-    }
+    
 
     @GetMapping("/materia/{materiaId}")
     public ResponseEntity<List<GrupoResponse>> listarGruposPorMateria(@PathVariable Integer materiaId) throws MateriaNotFoundException {
@@ -98,4 +91,54 @@ public class GrupoController {
                 HttpStatus.OK);
     }
 
+    @PostMapping("/vincular")
+    public ResponseEntity<HttpResponse> vincularCohorteDocente(@RequestBody GrupoRequest grupoRequest)
+            throws CohorteNotFoundException, GrupoNotFoundException, UserNotFoundException {
+        iGrupoService.vincularCohorteDocente(grupoRequest);
+        return new ResponseEntity<>(
+                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                        " Grupo vinculado con exito"),
+                HttpStatus.OK);
+    }
+
+    @PutMapping("/vincular/{id}")
+    public ResponseEntity<HttpResponse> actualizarVinculacionCohorteDocente(@PathVariable Long id,
+            @RequestBody GrupoRequest grupoRequest) throws CohorteNotFoundException, GrupoNotFoundException,
+            UserNotFoundException, VinculacionNotFoundException {
+        iGrupoService.actualizarVinculacionCohorteDocente(id, grupoRequest);
+        return new ResponseEntity<>(
+                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                        " Grupo vinculado con exito"),
+                HttpStatus.OK);
+    }
+
+    @GetMapping("/vinculado/{id}")
+    public ResponseEntity<GrupoCohorteDocenteResponse> listarGrupoCohorteDocente(@PathVariable Long id) throws VinculacionNotFoundException {
+        GrupoCohorteDocenteResponse grupoCohorteDocenteResponse = iGrupoService.listarGrupoCohorteDocente(id);
+        return new ResponseEntity<>(grupoCohorteDocenteResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/vinculados")
+    public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGrupoCohorteDocentes() {
+        List<GrupoCohorteDocenteResponse> grupoCohorteDocenteResponse = iGrupoService.listarGrupoCohorteDocentes();
+        return new ResponseEntity<>(grupoCohorteDocenteResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/cohorte/{cohorteId}")
+    public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGruposPorCohorte(@PathVariable Integer cohorteId) throws CohorteNotFoundException {
+        List<GrupoCohorteDocenteResponse> grupoCohorteDocenteResponse = iGrupoService.listarGruposPorCohorte(cohorteId);
+        return new ResponseEntity<>(grupoCohorteDocenteResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/grupo/{grupoId}")
+    public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGruposPorGrupo(@PathVariable Integer grupoId) throws GrupoNotFoundException {
+        List<GrupoCohorteDocenteResponse> grupoCohorteDocenteResponse = iGrupoService.listarGruposPorGrupo(grupoId);
+        return new ResponseEntity<>(grupoCohorteDocenteResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/docente/{docenteId}")
+    public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGruposPorDocente(@PathVariable Integer docenteId) throws UserNotFoundException {
+        List<GrupoCohorteDocenteResponse> grupoCohorteDocenteResponse = iGrupoService.listarGruposPorDocente(docenteId);
+        return new ResponseEntity<>(grupoCohorteDocenteResponse, HttpStatus.OK);
+    }
 }

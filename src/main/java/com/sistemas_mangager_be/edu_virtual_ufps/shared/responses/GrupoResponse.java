@@ -11,10 +11,6 @@ public class GrupoResponse {
     private Integer id;
     private String nombre;
     private Boolean activo;
-    private Integer docenteId;
-    private String docenteNombre;
-    private Integer cohorteId;
-    private String cohorteNombre;
     private Integer materiaId;
     private String materiaNombre;
 }

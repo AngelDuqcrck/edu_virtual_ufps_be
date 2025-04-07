@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS admins (
     email VARCHAR(50) NOT NULL,
     password VARCHAR(255) NOT NULL,
     es_super_admin BOOLEAN NOT NULL,
+    activo BOOLEAN NOT NULL,
     PRIMARY KEY (id)
 );
 --Insertamos los usuarios en el sistema si estos no existen
