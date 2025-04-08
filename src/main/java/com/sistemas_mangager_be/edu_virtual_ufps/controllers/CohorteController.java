@@ -60,4 +60,6 @@ public class CohorteController {
                                                 " Cohorte actualizada con exito"),
                                 HttpStatus.OK);
     }
+
+    
 }

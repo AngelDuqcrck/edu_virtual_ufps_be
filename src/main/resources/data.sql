@@ -222,8 +222,8 @@ CREATE TABLE  IF NOT EXISTS estados_matriculas (
 
 --Insertamos los estados de la matricula de estudiantes en el sistema si estos no existen
 INSERT IGNORE INTO estados_matriculas (id, nombre) VALUES 
-(1, 'Aprobado'),
+(1, 'Aprobada'),
 (2, 'En curso'),
-(3, 'Cancelado'),
-(4, 'Reprobado'),
+(3, 'Cancelada'),
+(4, 'Reprobada'),
 (5, 'Anulada');
