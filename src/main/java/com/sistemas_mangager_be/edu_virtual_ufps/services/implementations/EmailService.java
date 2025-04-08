@@ -39,7 +39,7 @@ public class EmailService {
             helper.setFrom(email);
             helper.setTo(emailTo);
             helper.setSubject(subject);
-            helper.setText(buildHtmlContent(mensaje, mensaje2 ), true);
+            helper.setText(correoMaterias(mensaje, mensaje2 ), true);
 
             javaMailSender.send(message);
         } catch (Exception e) {
@@ -48,7 +48,7 @@ public class EmailService {
     }
 
     //Plantilla de Correo Electronico
-    private String buildHtmlContent(String mensaje, String mensaje2 ) {
+    private String correoMaterias(String mensaje, String mensaje2 ) {
         return "";
     }
 }
