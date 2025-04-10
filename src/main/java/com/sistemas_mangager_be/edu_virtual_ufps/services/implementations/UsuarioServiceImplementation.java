@@ -21,6 +21,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.repositories.UsuarioRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IUsuarioService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.UsuarioDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.DocenteRequest;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.LoginGoogleRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.UsuarioResponse;
 
 import jakarta.transaction.Transactional;
@@ -74,6 +75,38 @@ public class UsuarioServiceImplementation implements IUsuarioService {
         return convertirAUsuarioDTO(docente);
     }
 
+    public void registraroActualizarUsuarioGoogle(LoginGoogleRequest loginGoogleRequest) {
+        usuarioRepository.findByEmail(loginGoogleRequest.getEmail()).ifPresentOrElse(
+                usuario -> {
+                    // Actualización de usuario existente
+                    usuario.setGoogleId(loginGoogleRequest.getGoogleId());
+                    usuario.setNombre(loginGoogleRequest.getNombre().isEmpty() ? usuario.getNombre() : loginGoogleRequest.getNombre());
+                    usuario.setFotoUrl(loginGoogleRequest.getFotoUrl() == null ? usuario.getFotoUrl() : loginGoogleRequest.getFotoUrl());
+
+                    // Si es un estudiante (rol por defecto) pero ya estaba registrado como docente,
+                    // mantener rol
+                    if (usuario.getRolId() == null || usuario.getRolId().getId() == 1) {
+                        Rol rolEstudiante = rolRepository.findById(1).orElseThrow();
+                        usuario.setRolId(rolEstudiante);
+                    }
+
+                    usuarioRepository.save(usuario);
+                },
+                () -> {
+                    // Creación de nuevo usuario (estudiante por defecto)
+                    Usuario nuevoUsuario = new Usuario();
+                    nuevoUsuario.setEmail(loginGoogleRequest.getEmail());
+                    nuevoUsuario.setGoogleId(loginGoogleRequest.getGoogleId());
+                    nuevoUsuario.setNombre(loginGoogleRequest.getNombre()); // si no se le pasa, se usa el nombre del usuario
+                    nuevoUsuario.setFotoUrl(loginGoogleRequest.getFotoUrl());
+
+                    Rol rolEstudiante = rolRepository.findById(1).orElseThrow();
+                    nuevoUsuario.setRolId(rolEstudiante);
+
+                    usuarioRepository.save(nuevoUsuario);
+                });
+            }
+
     @Override
     @Transactional
     public void guardarOActualizarUsuario(OAuth2User oAuth2User) {
@@ -113,40 +146,33 @@ public class UsuarioServiceImplementation implements IUsuarioService {
                 });
     }
 
-
     public UsuarioDTO actualizarProfesor(DocenteRequest docenteRequest, Integer id)
             throws RoleNotFoundException, UserExistException, UserNotFoundException {
 
-        
         Usuario profesor = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(
                         String.format(IS_NOT_FOUND, "EL PROFESOR CON ID " + id).toLowerCase()));
 
-        
         if (profesor.getRolId().getId() != 2) {
             throw new UserNotFoundException("El usuario no tiene rol de profesor");
         }
 
-        
         if (!profesor.getEmail().equals(docenteRequest.getEmail()) &&
                 usuarioRepository.existsByEmail(docenteRequest.getEmail())) {
             throw new UserExistException(String.format(IS_ALREADY_USE, "ESTE CORREO").toLowerCase());
         }
 
-        
         profesor.setNombre(docenteRequest.getNombre());
         profesor.setEmail(docenteRequest.getEmail());
         profesor.setTelefono(docenteRequest.getTelefono());
         profesor.setCedula(docenteRequest.getCedula());
         profesor.setCodigo(docenteRequest.getCodigo());
 
-        
         Rol rolDocente = rolRepository.findById(2)
                 .orElseThrow(
                         () -> new RoleNotFoundException(String.format(IS_NOT_FOUND, "EL ROL DOCENTE").toLowerCase()));
         profesor.setRolId(rolDocente);
 
-        
         usuarioRepository.save(profesor);
 
         return convertirAUsuarioDTO(profesor);
@@ -203,9 +229,6 @@ public class UsuarioServiceImplementation implements IUsuarioService {
         usuarioRepository.save(usuario);
         return convertirAUsuarioDTO(usuario);
     }
-
-
-    
 
     private UsuarioDTO convertirAUsuarioDTO(Usuario usuario) {
         UsuarioDTO dto = new UsuarioDTO();

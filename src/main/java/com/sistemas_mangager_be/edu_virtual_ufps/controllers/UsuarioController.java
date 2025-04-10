@@ -19,6 +19,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserExistException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IUsuarioService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.DocenteRequest;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.LoginGoogleRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.HttpResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.UsuarioResponse;
 
@@ -29,6 +30,17 @@ public class UsuarioController {
     @Autowired
     private IUsuarioService iUsuarioService;
 
+
+    @PostMapping("/google/login")
+    public ResponseEntity<HttpResponse> loginGoogle(@RequestBody LoginGoogleRequest loginGoogleRequest) {
+        iUsuarioService.registraroActualizarUsuarioGoogle(loginGoogleRequest);
+
+        return new ResponseEntity<>(
+                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                        " Usuario registrado con exito"),
+                HttpStatus.OK);
+    }
+    
     @PostMapping("/profesores/crear")
     public ResponseEntity<HttpResponse> crearProfesor(@RequestBody DocenteRequest docenteRequest) throws UserExistException, RoleNotFoundException{
         iUsuarioService.crearProfesor(docenteRequest);

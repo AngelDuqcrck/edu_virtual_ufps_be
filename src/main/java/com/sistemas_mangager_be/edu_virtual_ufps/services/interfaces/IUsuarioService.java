@@ -3,6 +3,7 @@ package com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces;
 
 import java.util.List;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.LoginGoogleRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
@@ -21,6 +22,8 @@ import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.UsuarioRespons
 public interface IUsuarioService {
 
     //public UsuarioDTO registrarUsuario(UsuarioDTO usuarioDTO) throws RoleNotFoundException, UserNotFoundException;
+
+    public void registraroActualizarUsuarioGoogle(LoginGoogleRequest loginGoogleRequest);
 
     public void guardarOActualizarUsuario(OAuth2User oAuth2User);
 
