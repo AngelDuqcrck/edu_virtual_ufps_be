@@ -43,7 +43,7 @@ public class CohorteServiceImplementation implements ICohorteService {
         cohorte.setFechaCreacion(new Date());
 
         cohorteRepository.save(cohorte);
-
+        
         CohorteGrupo cohorteGrupoA = new CohorteGrupo();
         cohorteGrupoA.setCohorteId(cohorte);
         cohorteGrupoA.setNombre(cohorte.getNombre() + " Grupo A");
@@ -55,7 +55,6 @@ public class CohorteServiceImplementation implements ICohorteService {
         cohorteGrupoB.setNombre(cohorte.getNombre() + " Grupo B");
 
         cohorteGrupoRepository.save(cohorteGrupoB);
-
         CohorteDTO cohorteCreado = new CohorteDTO();
         BeanUtils.copyProperties(cohorte, cohorteCreado);
         return cohorteCreado;

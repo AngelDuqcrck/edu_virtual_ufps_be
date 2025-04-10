@@ -28,15 +28,17 @@ public class Matricula {
 
     private Date fechaMatriculacion;
 
+    private boolean nuevaMatricula; //Lo usamos para controlar si la matricula es nueva o no en el formulario de registro de matriculas  si es una matricula antigua se pedira la fecha aproximada de la matriculo
 
     private Double nota;
 
     private Date fechaNota;
     
     @ManyToOne
-    @JoinColumn(name = "grupo_id")
-    private Grupo grupoId;
+    @JoinColumn(name = "grupo_cohorte_id")
+    private GrupoCohorte grupoCohorteId;
 
-    private String semestre;
+
+    private String semestre; //Con la fecha de matriculacion se calcula el semestre de la matricula primer o segundo semestre de X año
     
 }
