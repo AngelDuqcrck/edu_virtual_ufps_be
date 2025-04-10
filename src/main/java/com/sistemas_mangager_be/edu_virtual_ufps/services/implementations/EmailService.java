@@ -7,6 +7,8 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.CorreoResponse;
+
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 
@@ -31,7 +33,7 @@ public class EmailService {
      * @throws RuntimeException si ocurre un error durante el envío del correo.
      */
     @Async
-    public void sendEmail(String emailTo, String subject, String mensaje, String mensaje2) {
+    public void sendEmail(String emailTo, String subject, CorreoResponse correoResponse) {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -39,7 +41,7 @@ public class EmailService {
             helper.setFrom(email);
             helper.setTo(emailTo);
             helper.setSubject(subject);
-            helper.setText(correoMaterias(mensaje, mensaje2 ), true);
+            helper.setText(correoMaterias(correoResponse ), true);
 
             javaMailSender.send(message);
         } catch (Exception e) {
@@ -48,7 +50,7 @@ public class EmailService {
     }
 
     //Plantilla de Correo Electronico
-    private String correoMaterias(String mensaje, String mensaje2 ) {
+    private String correoMaterias(CorreoResponse correoResponse ) {
         return "";
     }
 }
