@@ -10,6 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 @Entity
+
 @Table(name = "CONSULTA_ESTUDIANTE")
 public class EstudianteOracle {
 

@@ -16,4 +16,10 @@ public class UsuarioDTO {
     private String fotoUrl;
 
     private Integer rolId;
+
+    private String telefono;
+
+    private String cedula;
+
+    private String codigo;
 }

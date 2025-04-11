@@ -20,4 +20,6 @@ public class Programa {
 
     @Column(nullable = false, unique = true)
     private String codigo;
+
+    private Boolean esPosgrado;
 }

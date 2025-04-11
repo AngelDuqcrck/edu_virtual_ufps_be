@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS admins (
     email VARCHAR(50) NOT NULL,
     password VARCHAR(255) NOT NULL,
     es_super_admin BOOLEAN NOT NULL,
+    activo BOOLEAN NOT NULL,
     PRIMARY KEY (id)
 );
 --Insertamos los usuarios en el sistema si estos no existen
@@ -34,7 +35,8 @@ INSERT IGNORE INTO admins (
     segundo_apellido, 
     email, 
     password, 
-    es_super_admin
+    es_super_admin,
+    activo
 ) VALUES (
     1,
     'Angel', 
@@ -43,7 +45,8 @@ INSERT IGNORE INTO admins (
     'Cruz', 
     'angelduque1@example.com', 
     '$2a$10$u1L5aDVRx0tQtfTyqylYVu3mXH6TXvzxX0vEj/yuNwTHK.aj6R3oG',  -- Contraseña: 123456 encriptada
-    false
+    false,
+    true
 );
 
 INSERT IGNORE INTO admins (
@@ -54,7 +57,8 @@ INSERT IGNORE INTO admins (
     segundo_apellido, 
     email, 
     password, 
-    es_super_admin
+    es_super_admin,
+    activo
 ) VALUES (
     2,
     'Angel', 
@@ -63,6 +67,7 @@ INSERT IGNORE INTO admins (
     'Cruz', 
     'angelduque@example.com', 
     '$2a$10$u1L5aDVRx0tQtfTyqylYVu3mXH6TXvzxX0vEj/yuNwTHK.aj6R3oG',  -- Contraseña: 123456 encriptada
+    true,
     true
 );
 
@@ -71,6 +76,7 @@ CREATE TABLE IF NOT EXISTS programas (
     id INT NOT NULL AUTO_INCREMENT,
     nombre VARCHAR(255) NOT NULL,
     codigo VARCHAR(255) NOT NULL,
+    es_posgrado BOOLEAN NOT NULL,   
     PRIMARY KEY (id)
 );
 
@@ -94,9 +100,10 @@ CREATE TABLE IF NOT EXISTS materias (
 );
 
  -- Insertamos los programas académicos 
-INSERT IGNORE INTO programas (id,nombre, codigo) VALUES 
-(1,'Maestria en Tecnologias de Informacion y Comunicacion (TIC) Aplicadas a la Educacion', '001'),
-(2,'Tecnologia en Analitica de Datos', '002');
+INSERT IGNORE INTO programas (id,nombre, codigo , es_posgrado) VALUES 
+(1,'Maestria en Tecnologias de Informacion y Comunicacion (TIC) Aplicadas a la Educacion', '001', true),
+(2,'Tecnologia en Analitica de Datos', '002', false);
+
 
 -- Pensum para Maestría en TIC Aplicadas a la Educación
 INSERT IGNORE INTO pensums (id, nombre, programa_id) VALUES (
@@ -191,3 +198,32 @@ INSERT IGNORE INTO materias (id, codigo, nombre, creditos, pensum_id, semestre) 
 (49, 'TAD602', 'Proyecto de grado', '4', 2, 'VI'),
 (50, 'TAD603', 'Innovacion y emprendimiento', '2', 2, 'VI'),
 (51, 'TAD604', 'Practicas en Analitica de Datos', '6', 2, 'VI');
+
+
+--Creamos la tabla de estados de estudiantes si no existe
+CREATE TABLE IF NOT EXISTS estados_estudiantes (
+    id INT NOT NULL AUTO_INCREMENT,
+    nombre VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id)
+);
+
+--Insertamos los estados de estudiantes en el sistema si estos no existen
+INSERT IGNORE INTO estados_estudiantes (id, nombre) VALUES 
+(1, 'En curso'),
+(2, 'Inactivo'),
+(3, 'Egresado');
+
+--Creamos la tabla de estados de la matricula de estudiantes en el sistema
+CREATE TABLE  IF NOT EXISTS estados_matriculas (
+    id INTEGER NOT NULL AUTO_INCREMENT,
+    nombre VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id)
+);
+
+--Insertamos los estados de la matricula de estudiantes en el sistema si estos no existen
+INSERT IGNORE INTO estados_matriculas (id, nombre) VALUES 
+(1, 'Aprobada'),
+(2, 'En curso'),
+(3, 'Cancelada'),
+(4, 'Reprobada'),
+(5, 'Anulada');

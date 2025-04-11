@@ -9,6 +9,7 @@ import lombok.*;
 @Builder
 public class AdminDTO {
     
+    private Integer id;
     private String primerNombre;
 
     private String segundoNombre;
@@ -22,4 +23,6 @@ public class AdminDTO {
     private String password;
 
     private Boolean esSuperAdmin;
+
+    private Boolean activo;
 }

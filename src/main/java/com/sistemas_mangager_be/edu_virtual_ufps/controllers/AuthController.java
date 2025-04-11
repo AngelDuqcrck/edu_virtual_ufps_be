@@ -1,5 +1,6 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.controllers;
 
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,19 +11,20 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.sistemas_mangager_be.edu_virtual_ufps.entities.Admin;
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ChangeNotAllowedException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.security.JwtTokenGenerator;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IAdminService;
-import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IUsuarioService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.AdminDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.LoginRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.AuthResponse;
@@ -38,7 +40,6 @@ public class AuthController {
     @Autowired
     private JwtTokenGenerator jwtTokenGenerator;
 
-   
     @Autowired
     private IAdminService adminService;
 
@@ -75,15 +76,47 @@ public class AuthController {
 
     }
 
-    
-    //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
+    // @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PostMapping("/register")
     public ResponseEntity<HttpResponse> registrarUsuario(@RequestBody AdminDTO adminDTO) {
         adminService.registrarAdmin(adminDTO);
         return new ResponseEntity<>(
-                                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                                                " Administrador registrado con exito"),
-                                HttpStatus.OK);
+                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                        " Administrador registrado con exito"),
+                HttpStatus.OK);
     }
 
+    @GetMapping("/admins")
+    public ResponseEntity<List<AdminDTO>> listarAdmins() {
+        List<AdminDTO> adminDTO = adminService.listarAdmins();
+        return new ResponseEntity<>(adminDTO, HttpStatus.OK);
+    }
+
+    @PutMapping("/admins/{id}")
+    public ResponseEntity<HttpResponse> actualizarAdmin(@PathVariable Integer id, @RequestBody AdminDTO adminDTO)
+            throws UserNotFoundException {
+        adminService.actualizarAdmin(id, adminDTO);
+        return new ResponseEntity<>(
+                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                        " Administrador actualizado con exito"),
+                HttpStatus.OK);
+    }
+
+    @PostMapping("/admins/{id}/desactivar")
+    public ResponseEntity<HttpResponse> desactivarAdmin(@PathVariable Integer id) throws UserNotFoundException, ChangeNotAllowedException {
+        adminService.desactivarAdmin(id);
+        return new ResponseEntity<>(
+                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                        " Administrador desactivado con exito"),
+                HttpStatus.OK);
+    }
+
+    @PostMapping("/admins/{id}/activar")
+    public ResponseEntity<HttpResponse> activarAdmin(@PathVariable Integer id) throws UserNotFoundException, ChangeNotAllowedException{
+        adminService.activarAdmin(id);
+        return new ResponseEntity<>(
+                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                        " Administrador activado con exito"),
+                HttpStatus.OK);
+    }
 }
