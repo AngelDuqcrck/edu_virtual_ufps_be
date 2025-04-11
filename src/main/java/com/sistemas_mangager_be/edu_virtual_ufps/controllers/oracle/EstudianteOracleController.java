@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.oracle.entities.EstudianteOracle;
-import com.sistemas_mangager_be.edu_virtual_ufps.oracle.entities.VistaTestOracle;
+
 import com.sistemas_mangager_be.edu_virtual_ufps.oracle.repositories.EstudianteOracleRepository;
-import com.sistemas_mangager_be.edu_virtual_ufps.oracle.repositories.VistaTestOracleRepository;
+
 
 @RestController
 @RequestMapping("/api/oracle/estudiantes")
@@ -22,16 +22,20 @@ public class EstudianteOracleController {
         this.estudianteOracleRepository = estudianteOracleRepository;
     }
 
-    @Autowired
-    private VistaTestOracleRepository vistaTestOracleRepository;
-
     @GetMapping
     public List<EstudianteOracle> obtenerTodos() {
         return estudianteOracleRepository.findAll();
     }
 
-    @GetMapping("/vista")
-    public List<VistaTestOracle> obtenerTodosVistas() {
-        return vistaTestOracleRepository.findAll();
+    @GetMapping("/sistemas")
+    public List<EstudianteOracle> obtenerEstudiantesSistemas() {
+        return estudianteOracleRepository.findByNOMCARRERA("INGENIERIA DE SISTEMAS");
+    }
+
+    @GetMapping("/posgrado")
+    public List<EstudianteOracle> obtenerEstudiantesMaestria() {
+        return estudianteOracleRepository.findByNOMCARRERA(
+                "MAESTRIA EN TECNOLOGIAS DE LA INFORMACION Y LA COMUNICACION (TIC) APLICADAS A LA EDUCACION");
+
     }
 }
