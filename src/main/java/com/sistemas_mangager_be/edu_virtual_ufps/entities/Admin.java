@@ -16,19 +16,21 @@ public class Admin {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotEmpty
-    @Column(nullable = false)
+    
+    @Column(name = "primer_nombre", nullable = false)
     private String primerNombre;
 
-    @Column(nullable = true) // Puede ser nulo
+    @Column(name = "segundo_nombre", nullable = true)
     private String segundoNombre;
 
-    @NotEmpty
-    @Column(nullable = false)
+    @Column(name = "primer_apellido", nullable = false)
     private String primerApellido;
 
-    @Column(nullable = true) // Puede ser nulo
+    @Column(name = "segundo_apellido", nullable = true)
     private String segundoApellido;
+
+    @Column(name = "es_super_admin", nullable = false)
+    private Boolean esSuperAdmin;
 
     @Email
     @Column(nullable = false, unique = true) // No nulo y único
@@ -37,9 +39,6 @@ public class Admin {
     @NotEmpty
     @Column(nullable = false)
     private String password;
-
-    @Column(nullable = false)
-    private Boolean esSuperAdmin;
 
     private Boolean activo;
 }

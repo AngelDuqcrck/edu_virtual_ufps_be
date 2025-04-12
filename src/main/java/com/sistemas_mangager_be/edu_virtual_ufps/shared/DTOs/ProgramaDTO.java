@@ -14,7 +14,7 @@ public class ProgramaDTO {
 
     private String codigo;
 
-    private Boolean esPregrado;
+    private Boolean esPosgrado;
 
 
 }

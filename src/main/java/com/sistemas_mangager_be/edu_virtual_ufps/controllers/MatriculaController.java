@@ -17,9 +17,11 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EstudianteNotFoundEx
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.GrupoNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MatriculaException;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IMatriculaService;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MateriaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MatriculaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.HttpResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.MatriculaResponse;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.PensumResponse;
 
 @RestController
 @RequestMapping("/matriculas")
@@ -50,5 +52,17 @@ public class MatriculaController {
     public ResponseEntity<List<MatriculaResponse>> listarMatriculasEnCursoPorEstudiante(@PathVariable Integer estudianteId) throws EstudianteNotFoundException {
         List<MatriculaResponse> matriculas = matriculaService.listarMatriculasEnCursoPorEstudiante(estudianteId);
         return new ResponseEntity<>(matriculas, HttpStatus.OK);
+    }
+
+    @GetMapping("/materias/nomatriculadas/{estudianteId}")
+    public ResponseEntity<List<MateriaDTO>> listarMateriasNoMatriculadasPorEstudiante(@PathVariable Integer estudianteId) throws EstudianteNotFoundException {
+        List<MateriaDTO> materias = matriculaService.listarMateriasNoMatriculadasPorEstudiante(estudianteId);
+        return new ResponseEntity<>(materias, HttpStatus.OK);
+    }
+
+    @GetMapping("/pensum/estudiante/{estudianteId}")
+    public ResponseEntity<List<PensumResponse>> listarPensumPorEstudiante(@PathVariable Integer estudianteId) throws EstudianteNotFoundException {
+        List<PensumResponse> pensums = matriculaService.listarPensumPorEstudiante(estudianteId);
+        return new ResponseEntity<>(pensums, HttpStatus.OK);
     }
 }
