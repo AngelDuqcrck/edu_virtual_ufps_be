@@ -43,7 +43,7 @@ public class OracleDataSourceConfig {
             EntityManagerFactoryBuilder builder) {
         return builder
                 .dataSource(oracleDataSource())
-                .packages("com.sistemas_mangager_be.edu_virtual_ufps.oracle.entities", "com.sistemas_mangager_be.edu_virtual_ufps.oracle.repositories")
+                .packages("com.sistemas_mangager_be.edu_virtual_ufps.oracle.entities")
                 .persistenceUnit("oracle")
                 .build();
     }
