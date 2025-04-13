@@ -65,4 +65,13 @@ public class MatriculaController {
         List<PensumResponse> pensums = matriculaService.listarPensumPorEstudiante(estudianteId);
         return new ResponseEntity<>(pensums, HttpStatus.OK);
     }
+
+    @PostMapping("/correo/estudiante/{estudianteId}")
+    public ResponseEntity<HttpResponse> enviarCorreo(@PathVariable Integer estudianteId) throws EstudianteNotFoundException {
+        matriculaService.enviarCorreo(estudianteId);
+        return new ResponseEntity<>(
+                                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                                                " Correo enviado con exito"),
+                                HttpStatus.OK);
+    }
 }
