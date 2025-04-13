@@ -22,4 +22,6 @@ public class MatriculaResponse {
     private String grupoNombre;
     private String nombreMateria;
     private String codigoMateria;
+    private String semestreMateria;
+    private String creditos;
 }

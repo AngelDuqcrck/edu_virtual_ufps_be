@@ -1,5 +1,6 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.services.implementations;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.repositories.MatriculaRepositor
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IMatriculaService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MateriaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MatriculaDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.CorreoResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.MateriaPensumResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.MatriculaResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.PensumResponse;
@@ -61,6 +63,9 @@ public class MatriculaServiceImplementation implements IMatriculaService {
 
         @Autowired
         private MateriaRepository materiaRepository;
+
+        @Autowired
+        private EmailService emailService;
 
         public MatriculaDTO crearMatricula(MatriculaDTO matriculaDTO)
                         throws EstudianteNotFoundException, GrupoNotFoundException, MatriculaException {
@@ -194,7 +199,10 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                         matriculaResponse.setEstudianteId(matricula.getEstudianteId().getId());
                         matriculaResponse.setEstudianteNombre(matricula.getEstudianteId().getNombre());
                         matriculaResponse.setFechaMatriculacion(matricula.getFechaMatriculacion());
-
+                        matriculaResponse.setSemestreMateria(
+                                        matricula.getGrupoCohorteId().getGrupoId().getMateriaId().getSemestre());
+                        matriculaResponse.setCreditos(
+                                        matricula.getGrupoCohorteId().getGrupoId().getMateriaId().getCreditos());
                         return matriculaResponse;
                 }).toList();
         }
@@ -261,7 +269,60 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                                 .collect(Collectors.toList());
         }
 
-// <-----------------------------------------------METODOS AUXILIARES------------------------------------------------>
+        @Override
+        public CorreoResponse enviarCorreo(Integer estudianteId) throws EstudianteNotFoundException {
+                // 1. Obtener el estudiante
+                Estudiante estudiante = estudianteRepository.findById(estudianteId)
+                                .orElseThrow(() -> new EstudianteNotFoundException("Estudiante no encontrado"));
+
+                // 2. Obtener las matrículas en curso del estudiante
+                List<Matricula> matriculas = matriculaRepository.findByEstudianteIdAndEstadoMatriculaId_Id(
+                                estudiante, 2); // 2 = En curso
+
+                // 3. Mapear a MatriculaResponse
+                List<MatriculaResponse> matriculasResponse = matriculas.stream()
+                                .map(this::convertirAMatriculaResponse)
+                                .collect(Collectors.toList());
+
+                // 4. Construir el CorreoResponse
+                CorreoResponse correoResponse = CorreoResponse.builder()
+                                .nombreEstudiante(estudiante.getNombre())
+                                .correo(estudiante.getEmail())
+                                .semestre(calcularSemestre(new Date())) // Método para obtener el semestre actual
+                                .fecha(new Date())
+                                .matriculas(matriculasResponse)
+                                .build();
+
+                // 5. Enviar el correo
+                emailService.sendEmail(
+                                estudiante.getEmail(),
+                                "Matricula Académica - " + correoResponse.getSemestre(),
+                                correoResponse);
+
+                return correoResponse;
+        }
+
+        // <-----------------------------------------------METODOS
+        // AUXILIARES------------------------------------------------>
+
+        private MatriculaResponse convertirAMatriculaResponse(Matricula matricula) {
+                return MatriculaResponse.builder()
+                                .id(matricula.getId())
+                                .estadoMatriculaId(matricula.getEstadoMatriculaId().getId())
+                                .estadoMatriculaNombre(matricula.getEstadoMatriculaId().getNombre())
+                                .estudianteId(matricula.getEstudianteId().getId())
+                                .estudianteNombre(matricula.getEstudianteId().getNombre())
+                                .fechaMatriculacion(matricula.getFechaMatriculacion())
+                                .nota(matricula.getNota())
+                                .grupoId(matricula.getGrupoCohorteId().getGrupoId().getId())
+                                .grupoNombre(matricula.getGrupoCohorteId().getGrupoId().getNombre())
+                                .nombreMateria(matricula.getGrupoCohorteId().getGrupoId().getMateriaId().getNombre())
+                                .codigoMateria(matricula.getGrupoCohorteId().getGrupoId().getMateriaId().getCodigo())
+                                .semestreMateria(
+                                                matricula.getGrupoCohorteId().getGrupoId().getMateriaId().getSemestre())
+                                .creditos(matricula.getGrupoCohorteId().getGrupoId().getMateriaId().getCreditos())
+                                .build();
+        }
 
         private PensumResponse construirPensumResponse(
                         String pensumNombre,
@@ -298,7 +359,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                         if (matricula.getEstadoMatriculaId() != null) {
                                 estadoId = matricula.getEstadoMatriculaId().getId();
                                 estadoNombre = matricula.getEstadoMatriculaId().getNombre();
-                                semestreAprobado = estadoId == 1  ? matricula.getSemestre() : null;
+                                semestreAprobado = estadoId == 1 ? matricula.getSemestre() : null;
                         }
                 }
 
