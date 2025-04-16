@@ -11,11 +11,7 @@ public class ContraprestacionDTO {
     private Integer id;
     private Integer estudianteId;
     private String actividades;
-    private boolean activa;
-    private Date fechaCreacion;
     private Date fechaInicio;
     private Date fechaFin;
-    private Integer tipoContraprestacionId;
-    private Integer soporteId;
-    
+    private Integer tipoContraprestacionId; 
 }

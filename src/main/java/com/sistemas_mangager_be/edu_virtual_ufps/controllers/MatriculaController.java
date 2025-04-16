@@ -15,10 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EstudianteNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.GrupoNotFoundException;
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MateriaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MatriculaException;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IMatriculaService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MateriaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MatriculaDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.GrupoCohorteDocenteResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.HttpResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.MatriculaResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.PensumResponse;
@@ -73,5 +75,11 @@ public class MatriculaController {
                                 new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
                                                 " Correo enviado con exito"),
                                 HttpStatus.OK);
+    }
+
+    @GetMapping("/grupos/materia/{materiaId}")
+    public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGruposPorMateria(@PathVariable Integer materiaId) throws MateriaNotFoundException {
+        List<GrupoCohorteDocenteResponse> grupoCohorteDocenteResponses = matriculaService.listarGrupoCohorteDocentePorMateria(materiaId);
+        return new ResponseEntity<>(grupoCohorteDocenteResponses, HttpStatus.OK);
     }
 }
