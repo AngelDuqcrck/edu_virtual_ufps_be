@@ -302,8 +302,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                 return correoResponse;
         }
 
-        // <-----------------------------------------------METODOS
-        // AUXILIARES------------------------------------------------>
+        // <-----------------------------------------------METODOS AUXILIARES------------------------------------------------>
 
         private MatriculaResponse convertirAMatriculaResponse(Matricula matricula) {
                 return MatriculaResponse.builder()
