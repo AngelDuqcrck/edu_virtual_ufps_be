@@ -24,6 +24,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.entities.Matricula;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Pensum;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EstudianteNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.GrupoNotFoundException;
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MateriaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MatriculaException;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.EstadoMatriculaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.EstudianteRepository;
@@ -34,6 +35,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IMatriculaS
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MateriaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MatriculaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.CorreoResponse;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.GrupoCohorteDocenteResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.MateriaPensumResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.MatriculaResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.PensumResponse;
@@ -175,6 +177,21 @@ public class MatriculaServiceImplementation implements IMatriculaService {
 
         }
 
+        public List<GrupoCohorteDocenteResponse> listarGrupoCohorteDocentePorMateria(Integer materiaId)
+                        throws MateriaNotFoundException {
+
+                materiaRepository.findById(materiaId)
+                                .orElseThrow(() -> new MateriaNotFoundException(
+                                                String.format(IS_NOT_FOUND_F, "La Materia con ID: " + materiaId)
+                                                                .toLowerCase()));
+
+                List<GrupoCohorte> grupos = grupoCohorteRepository.findByMateriaIdWithRelations(materiaId);
+
+                return grupos.stream()
+                                .map(this::convertirAResponse)
+                                .collect(Collectors.toList());
+        }
+
         public List<MatriculaResponse> listarMatriculasEnCursoPorEstudiante(Integer estudianteId)
                         throws EstudianteNotFoundException {
                 Estudiante estudiante = estudianteRepository.findById(estudianteId).orElse(null);
@@ -302,7 +319,8 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                 return correoResponse;
         }
 
-        // <-----------------------------------------------METODOS AUXILIARES------------------------------------------------>
+        // <-----------------------------------------------METODOS
+        // AUXILIARES------------------------------------------------>
 
         private MatriculaResponse convertirAMatriculaResponse(Matricula matricula) {
                 return MatriculaResponse.builder()
@@ -403,5 +421,30 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                                 .fechaMatriculacion(matricula.getFechaMatriculacion())
                                 .build();
         }
+
+        private GrupoCohorteDocenteResponse convertirAResponse(GrupoCohorte grupoCohorte) {
+                return GrupoCohorteDocenteResponse.builder()
+                        .id(grupoCohorte.getId())
+                        .grupoCohorteId(grupoCohorte.getId())
+                        .grupoId(grupoCohorte.getGrupoId() != null ? grupoCohorte.getGrupoId().getId() : null)
+                        .cohorteGrupoId(grupoCohorte.getCohorteGrupoId() != null ? grupoCohorte.getCohorteGrupoId().getId() : null)
+                        .docenteId(grupoCohorte.getDocenteId() != null ? grupoCohorte.getDocenteId().getId() : null)
+                        .docenteNombre(grupoCohorte.getDocenteId() != null ? 
+                                grupoCohorte.getDocenteId().getNombre() : "Sin asignar")
+                        .cohorteGrupoNombre(grupoCohorte.getCohorteGrupoId() != null ? 
+                                grupoCohorte.getCohorteGrupoId().getNombre() : null)
+                        .cohorteId(grupoCohorte.getCohorteId() != null ? grupoCohorte.getCohorteId().getId() : null)
+                        .cohorteNombre(grupoCohorte.getCohorteId() != null ? 
+                                grupoCohorte.getCohorteId().getNombre() : null)
+                        .fechaCreacion(grupoCohorte.getFechaCreacion() != null ? 
+                                grupoCohorte.getFechaCreacion().toString() : null)
+                        .grupoNombre(grupoCohorte.getGrupoId() != null ? 
+                                grupoCohorte.getGrupoId().getNombre() : null)
+                        .materia(grupoCohorte.getGrupoId() != null && grupoCohorte.getGrupoId().getMateriaId() != null ? 
+                                grupoCohorte.getGrupoId().getMateriaId().getNombre() : null)
+                        .codigoMateria(grupoCohorte.getGrupoId() != null && grupoCohorte.getGrupoId().getMateriaId() != null ? 
+                                grupoCohorte.getGrupoId().getMateriaId().getCodigo() : null)
+                        .build();
+            }
 
 }
