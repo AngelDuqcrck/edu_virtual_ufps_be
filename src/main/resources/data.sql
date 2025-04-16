@@ -227,3 +227,15 @@ INSERT IGNORE INTO estados_matriculas (id, nombre) VALUES
 (3, 'Cancelada'),
 (4, 'Reprobada'),
 (5, 'Anulada');
+
+CREATE TABLE IF NOT EXISTS tipos_solicitudes (
+    id INTEGER NOT NULL AUTO_INCREMENT,
+    nombre VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id)
+);
+
+INSERT IGNORE INTO tipos_solicitudes (id, nombre) VALUES 
+(1, 'Cancelacion de materias'),
+(2, 'Aplazamiento de semestre'),
+(3, 'Reintegro');
+

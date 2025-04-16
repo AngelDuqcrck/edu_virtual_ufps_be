@@ -26,6 +26,8 @@ public class Contraprestacion {
 
     private Boolean activa;
 
+    private Date fechaCreacion;
+
     private Date fechaInicio;
 
     private Date fechaFin;
