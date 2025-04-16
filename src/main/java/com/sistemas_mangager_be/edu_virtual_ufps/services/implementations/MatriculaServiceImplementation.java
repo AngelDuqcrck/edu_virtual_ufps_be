@@ -425,6 +425,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
         private GrupoCohorteDocenteResponse convertirAResponse(GrupoCohorte grupoCohorte) {
                 return GrupoCohorteDocenteResponse.builder()
                         .id(grupoCohorte.getId())
+                        .grupoCohorteId(grupoCohorte.getId())
                         .grupoId(grupoCohorte.getGrupoId() != null ? grupoCohorte.getGrupoId().getId() : null)
                         .cohorteGrupoId(grupoCohorte.getCohorteGrupoId() != null ? grupoCohorte.getCohorteGrupoId().getId() : null)
                         .docenteId(grupoCohorte.getDocenteId() != null ? grupoCohorte.getDocenteId().getId() : null)
