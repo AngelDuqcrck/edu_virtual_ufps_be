@@ -26,7 +26,7 @@ public class EntityManagerFactoryBuilderConfig {
         return new EntityManagerFactoryBuilder(
                 jpaVendorAdapter,
                 new HashMap<>(),
-                persistenceUnitManager.getIfAvailable()
-        );
+                persistenceUnitManager.getIfAvailable());
     }
+
 }

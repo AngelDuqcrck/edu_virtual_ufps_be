@@ -33,7 +33,7 @@ public class ProgramaController {
      * 
      * @return la respuesta del programa creado
      */
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
+    //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
      @PostMapping("/crear")
     public ResponseEntity<HttpResponse> crearPrograma(@RequestBody ProgramaDTO programaDTO) {
         programaService.crearPrograma(programaDTO);
@@ -50,7 +50,7 @@ public class ProgramaController {
      * 
      * @return la respuesta con la lista de programas
      */
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
+    //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @GetMapping("/listar")
     public ResponseEntity<List<ProgramaDTO>> listarProgramas() {
         return new ResponseEntity<>(programaService.listarProgramas(), HttpStatus.OK);
@@ -63,7 +63,7 @@ public class ProgramaController {
      * 
      * @return la respuesta con el programa
      */
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
+    //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<ProgramaDTO> listarPrograma(@PathVariable Integer id) throws ProgramaNotFoundException{
         ProgramaDTO programaDTO = programaService.listarPrograma(id);
@@ -78,7 +78,7 @@ public class ProgramaController {
      * 
      * @return la respuesta del programa actualizado
      */
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
+    //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<HttpResponse> actualizarPrograma(@PathVariable Integer id, @RequestBody ProgramaDTO programaDTO) throws ProgramaNotFoundException{
         programaService.actualizarPrograma(programaDTO, id);

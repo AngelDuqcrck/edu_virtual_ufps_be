@@ -15,15 +15,13 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import jakarta.persistence.EntityManagerFactory;
 
+import java.util.Map;
+
 import javax.sql.DataSource;
 
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(
-    basePackages = "com.sistemas_mangager_be.edu_virtual_ufps.oracle.repositories",
-    entityManagerFactoryRef = "oracleEntityManagerFactory",
-    transactionManagerRef = "oracleTransactionManager"
-)
+@EnableJpaRepositories(basePackages = "com.sistemas_mangager_be.edu_virtual_ufps.oracle.repositories", entityManagerFactoryRef = "oracleEntityManagerFactory", transactionManagerRef = "oracleTransactionManager")
 @EntityScan(basePackages = "com.sistemas_mangager_be.edu_virtual_ufps.oracle.entities")
 public class OracleDataSourceConfig {
 
@@ -43,8 +41,9 @@ public class OracleDataSourceConfig {
             EntityManagerFactoryBuilder builder) {
         return builder
                 .dataSource(oracleDataSource())
-                .packages("com.sistemas_mangager_be.edu_virtual_ufps.oracle.entities", "com.sistemas_mangager_be.edu_virtual_ufps.oracle.repositories")
+                .packages("com.sistemas_mangager_be.edu_virtual_ufps.oracle.entities")
                 .persistenceUnit("oracle")
+                .properties(Map.of("hibernate.dialect", "org.hibernate.dialect.Oracle12cDialect"))
                 .build();
     }
 

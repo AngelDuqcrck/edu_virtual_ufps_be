@@ -1,4 +1,5 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.shared.responses;
+import java.util.Date;
 import java.util.List;
 
 import lombok.*;
@@ -15,7 +16,7 @@ public class CorreoResponse {
 
     private String semestre;
 
-    private String fecha;
+    private Date fecha;
 
     public List<MatriculaResponse> matriculas;
     

@@ -21,5 +21,6 @@ public class Programa {
     @Column(nullable = false, unique = true)
     private String codigo;
 
+    @Column(name="es_posgrado", nullable = false)
     private Boolean esPosgrado;
 }
