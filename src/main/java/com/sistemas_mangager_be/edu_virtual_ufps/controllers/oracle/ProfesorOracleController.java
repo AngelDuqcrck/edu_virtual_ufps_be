@@ -8,8 +8,10 @@ import com.sistemas_mangager_be.edu_virtual_ufps.oracle.repositories.ProfesorOra
 
 import java.util.List;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 
+@Profile("oracle")
 @RestController
 @RequestMapping("/api/oracle/profesores")
 public class ProfesorOracleController {
