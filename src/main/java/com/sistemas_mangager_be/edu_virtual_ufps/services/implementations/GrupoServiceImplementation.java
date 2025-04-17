@@ -65,17 +65,30 @@ public class GrupoServiceImplementation implements IGrupoService {
     @Override
     public GrupoDTO crearGrupo(GrupoDTO grupoDTO)
             throws MateriaNotFoundException, CohorteNotFoundException, UserNotFoundException, RoleNotFoundException {
-        Grupo grupo = new Grupo();
-        BeanUtils.copyProperties(grupoDTO, grupo);
 
-        Materia materia = materiaRepository.findById(grupoDTO.getMateriaId()).orElse(null);
-        if (materia == null) {
-            throw new MateriaNotFoundException(
-                    String.format(IS_NOT_FOUND_F, "LA MATERIA CON EL ID " + grupoDTO.getMateriaId()).toLowerCase());
-        }
+        // 1. Obtener la materia
+        Materia materia = materiaRepository.findById(grupoDTO.getMateriaId())
+                .orElseThrow(() -> new MateriaNotFoundException(
+                        String.format(IS_NOT_FOUND_F, "LA MATERIA CON EL ID " + grupoDTO.getMateriaId())
+                                .toLowerCase()));
 
-        grupo.setMateriaId(materia);
-        grupo.setActivo(true);
+        // 2. Contar grupos existentes para esta materia
+        long cantidadGrupos = grupoRepository.countByMateriaId(materia);
+
+        // 3. Generar letra consecutiva (A, B, C,...)
+        char letraGrupo = (char) ('A' + cantidadGrupos);
+
+        // 4. Crear el nombre y código del grupo
+        String nombreGrupo = materia.getNombre() + " - Grupo " + letraGrupo;
+        String codigoGrupo = materia.getCodigo() + "-" + letraGrupo;
+
+        // 5. Crear y guardar el grupo
+        Grupo grupo = Grupo.builder()
+                .nombre(nombreGrupo)
+                .codigo(codigoGrupo)
+                .activo(true)
+                .materiaId(materia)
+                .build();
 
         grupoRepository.save(grupo);
 
@@ -91,24 +104,34 @@ public class GrupoServiceImplementation implements IGrupoService {
             throws MateriaNotFoundException, CohorteNotFoundException,
             UserNotFoundException, RoleNotFoundException, GrupoNotFoundException {
 
+        // 1. Buscar el grupo existente
         Grupo grupo = grupoRepository.findById(id)
                 .orElseThrow(() -> new GrupoNotFoundException(
                         String.format(IS_NOT_FOUND, "EL GRUPO CON ID " + id).toLowerCase()));
 
-        BeanUtils.copyProperties(grupoDTO, grupo, "id", "activo"); // Excluimos id y activo de la copia
+        // 2. Verificar si se cambió la materia
+        if (!grupo.getMateriaId().getId().equals(grupoDTO.getMateriaId())) {
+            Materia nuevaMateria = materiaRepository.findById(grupoDTO.getMateriaId())
+                    .orElseThrow(() -> new MateriaNotFoundException(
+                            String.format(IS_NOT_FOUND_F, "LA MATERIA CON EL ID " + grupoDTO.getMateriaId())
+                                    .toLowerCase()));
 
-        Materia materia = materiaRepository.findById(grupoDTO.getMateriaId())
-                .orElseThrow(() -> new MateriaNotFoundException(
-                        String.format(IS_NOT_FOUND_F, "LA MATERIA CON ID " + grupoDTO.getMateriaId()).toLowerCase()));
+            // 3. Si cambió la materia, regenerar nombre y código
+            long cantidadGrupos = grupoRepository.countByMateriaId(nuevaMateria);
+            char letraGrupo = (char) ('A' + cantidadGrupos);
 
-        grupo.setMateriaId(materia);
+            grupo.setNombre(nuevaMateria.getNombre() + " - Grupo " + letraGrupo);
+            grupo.setCodigo(nuevaMateria.getCodigo() + "-" + letraGrupo);
+            grupo.setMateriaId(nuevaMateria);
+        }
 
+        // 5. Guardar los cambios
         grupoRepository.save(grupo);
 
+        // 6. Retornar el DTO actualizado
         GrupoDTO grupoActualizado = new GrupoDTO();
         BeanUtils.copyProperties(grupo, grupoActualizado);
         grupoActualizado.setMateriaId(grupo.getMateriaId().getId());
-
         return grupoActualizado;
     }
 
@@ -277,6 +300,7 @@ public class GrupoServiceImplementation implements IGrupoService {
 
         GrupoCohorteDocenteResponse grupoCohorteDocenteResponse = new GrupoCohorteDocenteResponse().builder()
                 .id(grupoCohorteDocente.getId())
+                .grupoCohorteId(grupoCohorteDocente.getId())
                 .grupoId(grupoCohorteDocente.getGrupoId().getId())
                 .cohorteGrupoId(grupoCohorteDocente.getCohorteGrupoId().getId())
                 .docenteId(grupoCohorteDocente.getDocenteId().getId())
@@ -286,8 +310,10 @@ public class GrupoServiceImplementation implements IGrupoService {
                 .cohorteNombre(grupoCohorteDocente.getCohorteId().getNombre())
                 .fechaCreacion(grupoCohorteDocente.getFechaCreacion().toString())
                 .grupoNombre(grupoCohorteDocente.getGrupoId().getNombre())
+                .codigoGrupo(grupoCohorteDocente.getGrupoId().getCodigo())
                 .materia(grupoCohorteDocente.getGrupoId().getMateriaId().getNombre())
                 .codigoMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getCodigo())
+                .semestreMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getSemestre())
                 .build();
 
         return grupoCohorteDocenteResponse;
@@ -298,6 +324,7 @@ public class GrupoServiceImplementation implements IGrupoService {
         return grupoCohorteDocentes.stream().map(grupoCohorteDocente -> {
             GrupoCohorteDocenteResponse grupoCohorteDocenteResponse = new GrupoCohorteDocenteResponse().builder()
                     .id(grupoCohorteDocente.getId())
+                    .grupoCohorteId(grupoCohorteDocente.getId())
                     .grupoId(grupoCohorteDocente.getGrupoId().getId())
                     .cohorteGrupoId(grupoCohorteDocente.getCohorteGrupoId().getId())
                     .docenteId(grupoCohorteDocente.getDocenteId().getId())
@@ -307,14 +334,16 @@ public class GrupoServiceImplementation implements IGrupoService {
                     .cohorteNombre(grupoCohorteDocente.getCohorteId().getNombre())
                     .fechaCreacion(grupoCohorteDocente.getFechaCreacion().toString())
                     .grupoNombre(grupoCohorteDocente.getGrupoId().getNombre())
+                    .codigoGrupo(grupoCohorteDocente.getGrupoId().getCodigo())
                     .materia(grupoCohorteDocente.getGrupoId().getMateriaId().getNombre())
                     .codigoMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getCodigo())
+                    .semestreMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getSemestre())
                     .build();
             return grupoCohorteDocenteResponse;
         }).toList();
     }
 
-    public List<GrupoCohorteDocenteResponse> listarGruposPorGrupo (Integer grupoId) throws GrupoNotFoundException {
+    public List<GrupoCohorteDocenteResponse> listarGruposPorGrupo(Integer grupoId) throws GrupoNotFoundException {
         Grupo grupo = grupoRepository.findById(grupoId)
                 .orElseThrow(() -> new GrupoNotFoundException(
                         String.format(IS_NOT_FOUND, "EL GRUPO CON ID " + grupoId).toLowerCase()));
@@ -323,31 +352,7 @@ public class GrupoServiceImplementation implements IGrupoService {
         return grupoCohorte.stream().map(grupoCohorteDocente -> {
             GrupoCohorteDocenteResponse grupoCohorteDocenteResponse = new GrupoCohorteDocenteResponse().builder()
                     .id(grupoCohorteDocente.getId())
-                    .grupoId(grupoCohorteDocente.getGrupoId().getId())
-                    .cohorteGrupoId(grupoCohorteDocente.getCohorteGrupoId().getId())                    
-                    .docenteId(grupoCohorteDocente.getDocenteId().getId())
-                    .docenteNombre(grupoCohorteDocente.getDocenteId().getNombre())
-                    .cohorteGrupoNombre(grupoCohorteDocente.getCohorteGrupoId().getNombre())
-                    .cohorteId(grupoCohorteDocente.getCohorteId().getId())
-                    .cohorteNombre(grupoCohorteDocente.getCohorteId().getNombre())
-                    .fechaCreacion(grupoCohorteDocente.getFechaCreacion().toString())
-                    .grupoNombre(grupoCohorteDocente.getGrupoId().getNombre())
-                    .materia(grupoCohorteDocente.getGrupoId().getMateriaId().getNombre())
-                    .codigoMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getCodigo())
-                    .build();
-            return grupoCohorteDocenteResponse;
-        }).toList();
-    }
-
-    public List<GrupoCohorteDocenteResponse> listarGruposPorDocente (Integer docenteId) throws UserNotFoundException {
-        Usuario usuario = usuarioRepository.findById(docenteId)
-                .orElseThrow(() -> new UserNotFoundException(
-                        String.format(IS_NOT_FOUND, "EL USUARIO CON ID " + docenteId).toLowerCase()));
-
-        List<GrupoCohorte> grupoCohorteDocentes = grupoCohorteRepository.findByDocenteId(usuario);
-        return grupoCohorteDocentes.stream().map(grupoCohorteDocente -> {
-            GrupoCohorteDocenteResponse grupoCohorteDocenteResponse = new GrupoCohorteDocenteResponse().builder()
-                    .id(grupoCohorteDocente.getId())
+                    .grupoCohorteId(grupoCohorteDocente.getId())
                     .grupoId(grupoCohorteDocente.getGrupoId().getId())
                     .cohorteGrupoId(grupoCohorteDocente.getCohorteGrupoId().getId())
                     .docenteId(grupoCohorteDocente.getDocenteId().getId())
@@ -359,13 +364,42 @@ public class GrupoServiceImplementation implements IGrupoService {
                     .grupoNombre(grupoCohorteDocente.getGrupoId().getNombre())
                     .materia(grupoCohorteDocente.getGrupoId().getMateriaId().getNombre())
                     .codigoMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getCodigo())
+                    .semestreMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getSemestre())
+                    .build();
+            return grupoCohorteDocenteResponse;
+        }).toList();
+    }
+
+    public List<GrupoCohorteDocenteResponse> listarGruposPorDocente(Integer docenteId) throws UserNotFoundException {
+        Usuario usuario = usuarioRepository.findById(docenteId)
+                .orElseThrow(() -> new UserNotFoundException(
+                        String.format(IS_NOT_FOUND, "EL USUARIO CON ID " + docenteId).toLowerCase()));
+
+        List<GrupoCohorte> grupoCohorteDocentes = grupoCohorteRepository.findByDocenteId(usuario);
+        return grupoCohorteDocentes.stream().map(grupoCohorteDocente -> {
+            GrupoCohorteDocenteResponse grupoCohorteDocenteResponse = new GrupoCohorteDocenteResponse().builder()
+                    .id(grupoCohorteDocente.getId())
+                    .grupoCohorteId(grupoCohorteDocente.getId())
+                    .grupoId(grupoCohorteDocente.getGrupoId().getId())
+                    .cohorteGrupoId(grupoCohorteDocente.getCohorteGrupoId().getId())
+                    .docenteId(grupoCohorteDocente.getDocenteId().getId())
+                    .docenteNombre(grupoCohorteDocente.getDocenteId().getNombre())
+                    .cohorteGrupoNombre(grupoCohorteDocente.getCohorteGrupoId().getNombre())
+                    .cohorteId(grupoCohorteDocente.getCohorteId().getId())
+                    .cohorteNombre(grupoCohorteDocente.getCohorteId().getNombre())
+                    .fechaCreacion(grupoCohorteDocente.getFechaCreacion().toString())
+                    .grupoNombre(grupoCohorteDocente.getGrupoId().getNombre())
+                    .codigoGrupo(grupoCohorteDocente.getGrupoId().getCodigo())
+                    .materia(grupoCohorteDocente.getGrupoId().getMateriaId().getNombre())
+                    .codigoMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getCodigo())
+                    .semestreMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getSemestre())
                     .build();
             return grupoCohorteDocenteResponse;
         }).toList();
 
     }
 
-    public List<GrupoCohorteDocenteResponse> listarGruposPorCohorte (Integer cohorteId) throws CohorteNotFoundException {
+    public List<GrupoCohorteDocenteResponse> listarGruposPorCohorte(Integer cohorteId) throws CohorteNotFoundException {
         Cohorte cohorte = cohorteRepository.findById(cohorteId)
                 .orElseThrow(() -> new CohorteNotFoundException(
                         String.format(IS_NOT_FOUND_F, "LA COHORTE CON ID " + cohorteId).toLowerCase()));
@@ -383,6 +417,7 @@ public class GrupoServiceImplementation implements IGrupoService {
                     .cohorteNombre(grupoCohorteDocente.getCohorteId().getNombre())
                     .fechaCreacion(grupoCohorteDocente.getFechaCreacion().toString())
                     .grupoNombre(grupoCohorteDocente.getGrupoId().getNombre())
+                    .codigoGrupo(grupoCohorteDocente.getGrupoId().getCodigo())
                     .materia(grupoCohorteDocente.getGrupoId().getMateriaId().getNombre())
                     .codigoMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getCodigo())
                     .build();

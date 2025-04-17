@@ -440,10 +440,13 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                                 grupoCohorte.getFechaCreacion().toString() : null)
                         .grupoNombre(grupoCohorte.getGrupoId() != null ? 
                                 grupoCohorte.getGrupoId().getNombre() : null)
+                        .codigoGrupo(grupoCohorte.getGrupoId().getCodigo())
                         .materia(grupoCohorte.getGrupoId() != null && grupoCohorte.getGrupoId().getMateriaId() != null ? 
                                 grupoCohorte.getGrupoId().getMateriaId().getNombre() : null)
                         .codigoMateria(grupoCohorte.getGrupoId() != null && grupoCohorte.getGrupoId().getMateriaId() != null ? 
                                 grupoCohorte.getGrupoId().getMateriaId().getCodigo() : null)
+                        .semestreMateria(grupoCohorte.getGrupoId() != null && grupoCohorte.getGrupoId().getMateriaId().getSemestre() != null ?
+                                grupoCohorte.getGrupoId().getMateriaId().getSemestre() : null)
                         .build();
             }
 
