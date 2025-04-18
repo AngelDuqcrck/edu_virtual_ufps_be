@@ -239,3 +239,15 @@ INSERT IGNORE INTO tipos_solicitudes (id, nombre) VALUES
 (2, 'Aplazamiento de semestre'),
 (3, 'Reintegro');
 
+
+CREATE TABLE IF NOT EXISTS tipos_contraprestaciones (
+    id INTEGER NOT NULL AUTO_INCREMENT,
+    nombre VARCHAR(255) NOT NULL,
+    porcentaje VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id)
+);
+
+INSERT IGNORE INTO tipos_contraprestaciones (id, nombre, porcentaje) VALUES 
+(1, 'Laureada', '30%'),
+(2, 'Meritoria', '20%');
+

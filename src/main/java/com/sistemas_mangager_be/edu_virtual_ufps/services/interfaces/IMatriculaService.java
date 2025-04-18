@@ -28,6 +28,6 @@ public interface IMatriculaService {
 
     public List<PensumResponse> listarPensumPorEstudiante(Integer estudianteId) throws EstudianteNotFoundException;
 
-    public List<GrupoCohorteDocenteResponse> listarGrupoCohorteDocentePorMateria(Integer materiaId)
+    public List<GrupoCohorteDocenteResponse> listarGrupoCohorteDocentePorMateria(String codigoMateria)
                         throws MateriaNotFoundException;
 }

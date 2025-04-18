@@ -12,4 +12,5 @@ import java.util.List;
 public interface GrupoRepository extends JpaRepository<Grupo, Integer> {
     
     List<Grupo> findByMateriaId(Materia materiaId);
+    long countByMateriaId(Materia materiaId);
 }

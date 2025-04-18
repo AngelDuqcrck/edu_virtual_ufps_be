@@ -9,8 +9,5 @@ public class GrupoDTO {
     
     private Integer id;
     private String nombre;
-    private Boolean activo;
-    private Integer docenteId;
-    private Integer cohorteId;
     private Integer materiaId;
 }

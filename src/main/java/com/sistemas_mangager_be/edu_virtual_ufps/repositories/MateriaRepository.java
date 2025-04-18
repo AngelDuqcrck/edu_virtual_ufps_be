@@ -14,6 +14,7 @@ public interface MateriaRepository extends JpaRepository<Materia, Integer> {
 
     List<Materia> findByPensumId(Pensum pensumId);
 
+    Optional<Materia> findByCodigo(String codigo);
     List<Materia> findByPensumIdOrderBySemestreAscCodigoAsc(Pensum pensum);
 
     @Query("SELECT m FROM Materia m " +
