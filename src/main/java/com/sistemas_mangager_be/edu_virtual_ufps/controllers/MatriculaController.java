@@ -78,7 +78,7 @@ public class MatriculaController {
     }
 
     @GetMapping("/grupos/materia/{materiaId}")
-    public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGruposPorMateria(@PathVariable Integer materiaId) throws MateriaNotFoundException {
+    public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGruposPorMateria(@PathVariable String materiaId) throws MateriaNotFoundException {
         List<GrupoCohorteDocenteResponse> grupoCohorteDocenteResponses = matriculaService.listarGrupoCohorteDocentePorMateria(materiaId);
         return new ResponseEntity<>(grupoCohorteDocenteResponses, HttpStatus.OK);
     }
