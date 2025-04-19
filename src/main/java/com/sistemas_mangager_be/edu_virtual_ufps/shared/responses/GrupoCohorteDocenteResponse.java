@@ -19,6 +19,8 @@ public class GrupoCohorteDocenteResponse {
     private String cohorteNombre;
     private String fechaCreacion;
     private String grupoNombre;
+    private String codigoGrupo;
     private String materia;
     private String codigoMateria;
+    private String semestreMateria;
 }

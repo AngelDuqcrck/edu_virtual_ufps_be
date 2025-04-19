@@ -16,4 +16,6 @@ public class TipoContraprestacion {
     private Integer id;    
 
     private String nombre;
+
+    private String porcentaje;
 }

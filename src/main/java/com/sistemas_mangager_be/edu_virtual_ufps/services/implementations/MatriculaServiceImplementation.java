@@ -177,15 +177,15 @@ public class MatriculaServiceImplementation implements IMatriculaService {
 
         }
 
-        public List<GrupoCohorteDocenteResponse> listarGrupoCohorteDocentePorMateria(Integer materiaId)
+        public List<GrupoCohorteDocenteResponse> listarGrupoCohorteDocentePorMateria(String codigoMateria)
                         throws MateriaNotFoundException {
 
-                materiaRepository.findById(materiaId)
+                Materia materia =materiaRepository.findByCodigo(codigoMateria)
                                 .orElseThrow(() -> new MateriaNotFoundException(
-                                                String.format(IS_NOT_FOUND_F, "La Materia con ID: " + materiaId)
+                                                String.format(IS_NOT_FOUND_F, "La Materia con ID: " + codigoMateria)
                                                                 .toLowerCase()));
 
-                List<GrupoCohorte> grupos = grupoCohorteRepository.findByMateriaIdWithRelations(materiaId);
+                List<GrupoCohorte> grupos = grupoCohorteRepository.findByMateriaIdWithRelations(materia.getId());
 
                 return grupos.stream()
                                 .map(this::convertirAResponse)
@@ -440,10 +440,13 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                                 grupoCohorte.getFechaCreacion().toString() : null)
                         .grupoNombre(grupoCohorte.getGrupoId() != null ? 
                                 grupoCohorte.getGrupoId().getNombre() : null)
+                        .codigoGrupo(grupoCohorte.getGrupoId().getCodigo())
                         .materia(grupoCohorte.getGrupoId() != null && grupoCohorte.getGrupoId().getMateriaId() != null ? 
                                 grupoCohorte.getGrupoId().getMateriaId().getNombre() : null)
                         .codigoMateria(grupoCohorte.getGrupoId() != null && grupoCohorte.getGrupoId().getMateriaId() != null ? 
                                 grupoCohorte.getGrupoId().getMateriaId().getCodigo() : null)
+                        .semestreMateria(grupoCohorte.getGrupoId() != null && grupoCohorte.getGrupoId().getMateriaId().getSemestre() != null ?
+                                grupoCohorte.getGrupoId().getMateriaId().getSemestre() : null)
                         .build();
             }
 

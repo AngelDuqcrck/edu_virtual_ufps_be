@@ -16,6 +16,8 @@ public class Grupo {
 
     private String nombre;
 
+    private String codigo;
+
     private Boolean activo;
 
     @ManyToOne
