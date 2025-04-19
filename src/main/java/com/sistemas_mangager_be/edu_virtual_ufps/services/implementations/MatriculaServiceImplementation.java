@@ -409,7 +409,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                 int mes = cal.get(Calendar.MONTH) + 1; // Enero = 0
                 int anio = cal.get(Calendar.YEAR);
 
-                return (mes <= 6 ? "Primer" : "Segundo") + " semestre de " + anio;
+                return  anio + "-"+ (mes <= 6 ? "I" : "II") ;
         }
 
         private MatriculaDTO convertirAmatriculaDTO(Matricula matricula) {

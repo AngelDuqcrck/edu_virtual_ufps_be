@@ -77,7 +77,7 @@ public class EmailService {
                 "            margin-bottom: 20px;\n" +
                 "        }\n" +
                 "        .header img {\n" +
-                "            width: 350px;\n" +
+                "            width: 250px;\n" +
                 "            margin-bottom: -40px;\n" +
                 "        }\n" +
                 "        .content {\n" +
