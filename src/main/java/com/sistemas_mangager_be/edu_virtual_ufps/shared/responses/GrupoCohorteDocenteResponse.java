@@ -9,6 +9,7 @@ import lombok.*;
 public class GrupoCohorteDocenteResponse {
     
     private Long id;
+    private Long grupoCohorteId;
     private Integer grupoId;
     private Integer cohorteGrupoId;
     private Integer docenteId;
