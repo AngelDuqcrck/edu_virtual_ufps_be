@@ -1,14 +1,18 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.services.implementations;
 
+import java.io.IOException;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Contraprestacion;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Estudiante;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Soporte;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.TipoContraprestacion;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ContraprestacionException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EstudianteNotFoundException;
@@ -29,6 +33,10 @@ public class ContraprestacionServiceImplementation implements IContraprestacionS
     public static final String IS_NOT_VALID = "%s no es valido";
     public static final String ARE_NOT_EQUALS = "%s no son iguales";
     public static final String IS_NOT_CORRECT = "%s no es correcta";
+    private static final String CONTRAPRESTACION_EXISTENTE = "El estudiante ya tiene una contraprestación activa para el semestre %s";
+
+    @Autowired
+    private S3Service s3Service;
 
     @Autowired
     private EstudianteRepository estudianteRepository;
@@ -52,10 +60,18 @@ public class ContraprestacionServiceImplementation implements IContraprestacionS
                                 "Tipo de contraprestacion con ID: " + contraprestacionDTO.getTipoContraprestacionId())
                                 .toLowerCase()));
 
-        Contraprestacion contraprestacion = new Contraprestacion().builder()
+        // Validar si ya existe una contraprestación para este estudiante en el semestre
+        String semestre = calcularSemestre(new Date());
+        if (contraprestacionRepository.existsByEstudianteIdAndSemestre(estudiante, semestre)) {
+            throw new ContraprestacionException(
+                    String.format(CONTRAPRESTACION_EXISTENTE, semestre));
+        }
+
+        Contraprestacion contraprestacion = Contraprestacion.builder()
                 .activa(true)
                 .actividades(contraprestacionDTO.getActividades())
                 .fechaCreacion(new Date())
+                .semestre(semestre)
                 .fechaFin(contraprestacionDTO.getFechaFin())
                 .fechaInicio(contraprestacionDTO.getFechaInicio())
                 .estudianteId(estudiante)
@@ -72,16 +88,35 @@ public class ContraprestacionServiceImplementation implements IContraprestacionS
                 .orElseThrow(() -> new ContraprestacionException(
                         String.format(IS_NOT_FOUND_F, "Contraprestación con ID: " + id).toLowerCase()));
 
-        
-        if (!contraprestacion.getEstudianteId().getId().equals(contraprestacionDTO.getEstudianteId())) {
-            Estudiante estudiante = estudianteRepository.findById(contraprestacionDTO.getEstudianteId())
+        // Validar si se está cambiando el estudiante o el semestre
+        boolean estudianteCambiado = !contraprestacion.getEstudianteId().getId().equals(contraprestacionDTO.getEstudianteId());
+        boolean semestreCambiado = !contraprestacion.getSemestre().equals(calcularSemestre(new Date()));
+
+        if (estudianteCambiado || semestreCambiado) {
+            Estudiante nuevoEstudiante = estudianteCambiado ? 
+                estudianteRepository.findById(contraprestacionDTO.getEstudianteId())
                     .orElseThrow(() -> new EstudianteNotFoundException(
                             String.format(IS_NOT_FOUND,
-                                    "Estudiante con ID: " + contraprestacionDTO.getEstudianteId())));
-            contraprestacion.setEstudianteId(estudiante);
+                                    "Estudiante con ID: " + contraprestacionDTO.getEstudianteId()))) :
+                contraprestacion.getEstudianteId();
+
+            String nuevoSemestre = semestreCambiado ? calcularSemestre(new Date()) : contraprestacion.getSemestre();
+
+            // Validar si ya existe una contraprestación para el nuevo estudiante y semestre
+            if (contraprestacionRepository.existsByEstudianteIdAndSemestre(nuevoEstudiante, nuevoSemestre)) {
+                throw new ContraprestacionException(
+                        String.format(CONTRAPRESTACION_EXISTENTE, nuevoSemestre));
+            }
+
+            if (estudianteCambiado) {
+                contraprestacion.setEstudianteId(nuevoEstudiante);
+            }
+            if (semestreCambiado) {
+                contraprestacion.setSemestre(nuevoSemestre);
+            }
         }
 
-       
+        // Actualizar tipo de contraprestación si cambió
         if (!contraprestacion.getTipoContraprestacionId().getId()
                 .equals(contraprestacionDTO.getTipoContraprestacionId())) {
             TipoContraprestacion tipoContraprestacion = tipoContraprestacionRepository
@@ -183,4 +218,40 @@ public class ContraprestacionServiceImplementation implements IContraprestacionS
                         .build())
                 .collect(Collectors.toList());
     }
+
+
+    public void aprobarContraprestacion(Integer id, MultipartFile informeFinal) 
+            throws ContraprestacionException, IOException {
+        
+       
+        Contraprestacion contraprestacion = contraprestacionRepository.findById(id)
+                .orElseThrow(() -> new ContraprestacionException(
+                        String.format(IS_NOT_FOUND_F, "Contraprestación con ID: " + id).toLowerCase()));
+
+        
+        if (informeFinal == null || informeFinal.isEmpty()) {
+            throw new ContraprestacionException("El informe final es requerido para aprobar la contraprestación");
+        }
+
+       
+        Soporte soporte = s3Service.uploadFile(informeFinal, "contraprestaciones");
+
+        // 4. Actualizar la contraprestación
+        contraprestacion.setFechaFin(new Date());
+        contraprestacion.setActiva(false);
+        contraprestacion.setSoporteId(soporte); // Asociar el soporte subido
+
+        contraprestacionRepository.save(contraprestacion);
+    }
+
+
+    private String calcularSemestre(Date fechaMatriculacion) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(fechaMatriculacion);
+
+                int mes = cal.get(Calendar.MONTH) + 1; // Enero = 0
+                int anio = cal.get(Calendar.YEAR);
+
+                return  anio + "-"+ (mes <= 6 ? "I" : "II") ;
+        }
 }

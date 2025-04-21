@@ -28,6 +28,8 @@ public class Contraprestacion {
 
     private Date fechaCreacion;
 
+    private String semestre;
+
     private Date fechaInicio;
 
     private Date fechaFin;
