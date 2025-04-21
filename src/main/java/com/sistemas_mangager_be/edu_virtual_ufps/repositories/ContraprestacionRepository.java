@@ -14,4 +14,6 @@ public interface ContraprestacionRepository extends JpaRepository<Contraprestaci
     List<Contraprestacion> findByEstudianteId(Estudiante estudianteId);
 
     List<Contraprestacion> findByTipoContraprestacionId(TipoContraprestacion tipoContraprestacionId);
+
+    boolean existsByEstudianteIdAndSemestre(Estudiante estudiante, String semestre);
 }

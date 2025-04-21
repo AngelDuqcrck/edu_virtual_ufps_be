@@ -1,5 +1,6 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.controllers;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ContraprestacionException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EstudianteNotFoundException;
@@ -67,5 +70,14 @@ public class ContraprestacionController {
     public ResponseEntity<List<ContraprestacionResponse>> listarContraprestacionesPorEstudiante(@PathVariable Integer estudianteId) throws EstudianteNotFoundException {
         List<ContraprestacionResponse> contraprestaciones = contraprestacionService.listarContraprestacionesPorEstudiante(estudianteId);
         return new ResponseEntity<>(contraprestaciones, HttpStatus.OK);
+    }
+
+    @PostMapping("/aprobar/{idContraprestacion}")
+    public ResponseEntity<HttpResponse> aprobarContraprestacion(@PathVariable Integer idContraprestacion, @RequestParam("informe") MultipartFile file) throws ContraprestacionException, IOException {
+        contraprestacionService.aprobarContraprestacion(idContraprestacion, file);
+        return new ResponseEntity<>(
+                                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                                                " Contraprestacion aprobada con exito"),
+                                HttpStatus.OK);
     }
 }

@@ -34,7 +34,7 @@ public class S3Service {
         String originalFilename = file.getOriginalFilename();
         String extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
         String newFilename = UUID.randomUUID() + "." + extension;
-        String folder = "uploads/" + tipoDocumento + "/";
+        String folder =  tipoDocumento + "/";
         String fullPath = folder + newFilename;
 
         // Subir a S3
