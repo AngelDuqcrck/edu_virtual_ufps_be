@@ -2,6 +2,7 @@ package com.sistemas_mangager_be.edu_virtual_ufps.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Cohorte;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.CohorteGrupo;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.EstadoEstudiante;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Estudiante;
@@ -20,6 +21,8 @@ public interface EstudianteRepository extends JpaRepository <Estudiante, Integer
     List<Estudiante> findByProgramaId(Programa programaId);
 
     List<Estudiante> findByEstadoEstudianteId(EstadoEstudiante estadoEstudianteId);
+
+    
     
 
 }

@@ -12,6 +12,8 @@ import com.sistemas_mangager_be.edu_virtual_ufps.entities.Pensum;
 
 public interface MateriaRepository extends JpaRepository<Materia, Integer> {
 
+    List<Materia> findByPensumIdIn(List<Pensum> pensums);
+
     List<Materia> findByPensumId(Pensum pensumId);
 
     Optional<Materia> findByCodigo(String codigo);

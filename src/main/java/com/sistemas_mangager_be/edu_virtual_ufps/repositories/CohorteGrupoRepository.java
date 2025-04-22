@@ -11,4 +11,6 @@ public interface CohorteGrupoRepository extends JpaRepository<CohorteGrupo, Inte
     
     List<CohorteGrupo> findAllByCohorteId(Cohorte cohorte);
     void deleteAll(Iterable<? extends CohorteGrupo> entities);
+
+    List<CohorteGrupo> findByCohorteId(Cohorte cohorteId);
 }
