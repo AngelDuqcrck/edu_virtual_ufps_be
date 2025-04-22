@@ -11,20 +11,8 @@ public class SolicitudDTO {
     
     private Long id;
 
-    private Integer tipoSolicitudId;
+    private Integer estudianteId;
 
-    private String tipoSolictudNombre;
-
-    private String estudianteId;
-
-    private String matriculaId; //Solo para tipo de solicitud de cancelacion de materias
-
-    private Date fechaCreacion;
-
-    private Date fechaAprobacion;
-
-    private boolean estaAprobada;
-
-    private Integer soporteId;
+    private Long matriculaId; //Solo para tipo de solicitud de cancelacion de materias
 
 }

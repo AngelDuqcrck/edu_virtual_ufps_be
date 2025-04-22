@@ -26,232 +26,260 @@ import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.Contraprestaci
 @Service
 public class ContraprestacionServiceImplementation implements IContraprestacionService {
 
-    public static final String IS_ALREADY_USE = "%s ya esta en uso";
-    public static final String IS_NOT_FOUND = "%s no fue encontrado";
-    public static final String IS_NOT_FOUND_F = "%s no fue encontrada";
-    public static final String IS_NOT_ALLOWED = "no esta permitido %s ";
-    public static final String IS_NOT_VALID = "%s no es valido";
-    public static final String ARE_NOT_EQUALS = "%s no son iguales";
-    public static final String IS_NOT_CORRECT = "%s no es correcta";
-    private static final String CONTRAPRESTACION_EXISTENTE = "El estudiante ya tiene una contraprestación activa para el semestre %s";
+        public static final String IS_ALREADY_USE = "%s ya esta en uso";
+        public static final String IS_NOT_FOUND = "%s no fue encontrado";
+        public static final String IS_NOT_FOUND_F = "%s no fue encontrada";
+        public static final String IS_NOT_ALLOWED = "no esta permitido %s ";
+        public static final String IS_NOT_VALID = "%s no es valido";
+        public static final String ARE_NOT_EQUALS = "%s no son iguales";
+        public static final String IS_NOT_CORRECT = "%s no es correcta";
+        private static final String CONTRAPRESTACION_EXISTENTE = "El estudiante ya tiene una contraprestación activa para el semestre %s";
 
-    @Autowired
-    private S3Service s3Service;
+        @Autowired
+        private S3Service s3Service;
 
-    @Autowired
-    private EstudianteRepository estudianteRepository;
-    @Autowired
-    private ContraprestacionRepository contraprestacionRepository;
+        @Autowired
+        private EstudianteRepository estudianteRepository;
+        @Autowired
+        private ContraprestacionRepository contraprestacionRepository;
 
-    @Autowired
-    private TipoContraprestacionRepository tipoContraprestacionRepository;
+        @Autowired
+        private TipoContraprestacionRepository tipoContraprestacionRepository;
 
-    public void crearContraprestacion(ContraprestacionDTO contraprestacionDTO)
-            throws EstudianteNotFoundException, ContraprestacionException {
+        public void crearContraprestacion(ContraprestacionDTO contraprestacionDTO)
+                        throws EstudianteNotFoundException, ContraprestacionException {
 
-        Estudiante estudiante = estudianteRepository.findById(contraprestacionDTO.getEstudianteId())
-                .orElseThrow(() -> new EstudianteNotFoundException(
-                        String.format(IS_NOT_FOUND, "Estudiante con ID: " + contraprestacionDTO.getEstudianteId())));
+                Estudiante estudiante = estudianteRepository.findById(contraprestacionDTO.getEstudianteId())
+                                .orElseThrow(() -> new EstudianteNotFoundException(
+                                                String.format(IS_NOT_FOUND, "Estudiante con ID: "
+                                                                + contraprestacionDTO.getEstudianteId())));
 
-        TipoContraprestacion tipoContraprestacion = tipoContraprestacionRepository
-                .findById(contraprestacionDTO.getTipoContraprestacionId())
-                .orElseThrow(() -> new ContraprestacionException(
-                        String.format(IS_NOT_FOUND_F,
-                                "Tipo de contraprestacion con ID: " + contraprestacionDTO.getTipoContraprestacionId())
-                                .toLowerCase()));
+                TipoContraprestacion tipoContraprestacion = tipoContraprestacionRepository
+                                .findById(contraprestacionDTO.getTipoContraprestacionId())
+                                .orElseThrow(() -> new ContraprestacionException(
+                                                String.format(IS_NOT_FOUND_F,
+                                                                "Tipo de contraprestacion con ID: "
+                                                                                + contraprestacionDTO
+                                                                                                .getTipoContraprestacionId())
+                                                                .toLowerCase()));
 
-        // Validar si ya existe una contraprestación para este estudiante en el semestre
-        String semestre = calcularSemestre(new Date());
-        if (contraprestacionRepository.existsByEstudianteIdAndSemestre(estudiante, semestre)) {
-            throw new ContraprestacionException(
-                    String.format(CONTRAPRESTACION_EXISTENTE, semestre));
+                // Validar si ya existe una contraprestación para este estudiante en el semestre
+                String semestre = calcularSemestre(new Date());
+                if (contraprestacionRepository.existsByEstudianteIdAndSemestre(estudiante, semestre)) {
+                        throw new ContraprestacionException(
+                                        String.format(CONTRAPRESTACION_EXISTENTE, semestre));
+                }
+
+                Contraprestacion contraprestacion = Contraprestacion.builder()
+                                .aprobada(false)
+                                .actividades(contraprestacionDTO.getActividades())
+                                .fechaCreacion(new Date())
+                                .semestre(semestre)
+                                .fechaFin(contraprestacionDTO.getFechaFin())
+                                .fechaInicio(contraprestacionDTO.getFechaInicio())
+                                .estudianteId(estudiante)
+                                .tipoContraprestacionId(tipoContraprestacion)
+                                .build();
+
+                contraprestacionRepository.save(contraprestacion);
         }
 
-        Contraprestacion contraprestacion = Contraprestacion.builder()
-                .activa(true)
-                .actividades(contraprestacionDTO.getActividades())
-                .fechaCreacion(new Date())
-                .semestre(semestre)
-                .fechaFin(contraprestacionDTO.getFechaFin())
-                .fechaInicio(contraprestacionDTO.getFechaInicio())
-                .estudianteId(estudiante)
-                .tipoContraprestacionId(tipoContraprestacion)
-                .build();
+        public void actualizarContraprestacion(Integer id, ContraprestacionDTO contraprestacionDTO)
+                        throws EstudianteNotFoundException, ContraprestacionException {
 
-        contraprestacionRepository.save(contraprestacion);
-    }
+                Contraprestacion contraprestacion = contraprestacionRepository.findById(id)
+                                .orElseThrow(() -> new ContraprestacionException(
+                                                String.format(IS_NOT_FOUND_F, "Contraprestación con ID: " + id)
+                                                                .toLowerCase()));
 
-    public void actualizarContraprestacion(Integer id, ContraprestacionDTO contraprestacionDTO)
-            throws EstudianteNotFoundException, ContraprestacionException {
+                // Validar si se está cambiando el estudiante o el semestre
+                boolean estudianteCambiado = !contraprestacion.getEstudianteId().getId()
+                                .equals(contraprestacionDTO.getEstudianteId());
+                boolean semestreCambiado = !contraprestacion.getSemestre().equals(calcularSemestre(new Date()));
 
-        Contraprestacion contraprestacion = contraprestacionRepository.findById(id)
-                .orElseThrow(() -> new ContraprestacionException(
-                        String.format(IS_NOT_FOUND_F, "Contraprestación con ID: " + id).toLowerCase()));
+                if (estudianteCambiado || semestreCambiado) {
+                        Estudiante nuevoEstudiante = estudianteCambiado ? estudianteRepository
+                                        .findById(contraprestacionDTO.getEstudianteId())
+                                        .orElseThrow(() -> new EstudianteNotFoundException(
+                                                        String.format(IS_NOT_FOUND,
+                                                                        "Estudiante con ID: " + contraprestacionDTO
+                                                                                        .getEstudianteId())))
+                                        : contraprestacion.getEstudianteId();
 
-        // Validar si se está cambiando el estudiante o el semestre
-        boolean estudianteCambiado = !contraprestacion.getEstudianteId().getId().equals(contraprestacionDTO.getEstudianteId());
-        boolean semestreCambiado = !contraprestacion.getSemestre().equals(calcularSemestre(new Date()));
+                        String nuevoSemestre = semestreCambiado ? calcularSemestre(new Date())
+                                        : contraprestacion.getSemestre();
 
-        if (estudianteCambiado || semestreCambiado) {
-            Estudiante nuevoEstudiante = estudianteCambiado ? 
-                estudianteRepository.findById(contraprestacionDTO.getEstudianteId())
-                    .orElseThrow(() -> new EstudianteNotFoundException(
-                            String.format(IS_NOT_FOUND,
-                                    "Estudiante con ID: " + contraprestacionDTO.getEstudianteId()))) :
-                contraprestacion.getEstudianteId();
+                        // Validar si ya existe una contraprestación para el nuevo estudiante y semestre
+                        if (contraprestacionRepository.existsByEstudianteIdAndSemestre(nuevoEstudiante,
+                                        nuevoSemestre)) {
+                                throw new ContraprestacionException(
+                                                String.format(CONTRAPRESTACION_EXISTENTE, nuevoSemestre));
+                        }
 
-            String nuevoSemestre = semestreCambiado ? calcularSemestre(new Date()) : contraprestacion.getSemestre();
+                        if (estudianteCambiado) {
+                                contraprestacion.setEstudianteId(nuevoEstudiante);
+                        }
+                        if (semestreCambiado) {
+                                contraprestacion.setSemestre(nuevoSemestre);
+                        }
+                }
 
-            // Validar si ya existe una contraprestación para el nuevo estudiante y semestre
-            if (contraprestacionRepository.existsByEstudianteIdAndSemestre(nuevoEstudiante, nuevoSemestre)) {
-                throw new ContraprestacionException(
-                        String.format(CONTRAPRESTACION_EXISTENTE, nuevoSemestre));
-            }
+                // Actualizar tipo de contraprestación si cambió
+                if (!contraprestacion.getTipoContraprestacionId().getId()
+                                .equals(contraprestacionDTO.getTipoContraprestacionId())) {
+                        TipoContraprestacion tipoContraprestacion = tipoContraprestacionRepository
+                                        .findById(contraprestacionDTO.getTipoContraprestacionId())
+                                        .orElseThrow(() -> new ContraprestacionException(
+                                                        String.format(IS_NOT_FOUND_F,
+                                                                        "Tipo de contraprestación con ID: "
+                                                                                        + contraprestacionDTO
+                                                                                                        .getTipoContraprestacionId())
+                                                                        .toLowerCase()));
+                        contraprestacion.setTipoContraprestacionId(tipoContraprestacion);
+                }
 
-            if (estudianteCambiado) {
-                contraprestacion.setEstudianteId(nuevoEstudiante);
-            }
-            if (semestreCambiado) {
-                contraprestacion.setSemestre(nuevoSemestre);
-            }
+                contraprestacion.setActividades(contraprestacionDTO.getActividades());
+                contraprestacion.setFechaInicio(contraprestacionDTO.getFechaInicio());
+                contraprestacion.setFechaFin(contraprestacionDTO.getFechaFin());
+
+                contraprestacionRepository.save(contraprestacion);
         }
 
-        // Actualizar tipo de contraprestación si cambió
-        if (!contraprestacion.getTipoContraprestacionId().getId()
-                .equals(contraprestacionDTO.getTipoContraprestacionId())) {
-            TipoContraprestacion tipoContraprestacion = tipoContraprestacionRepository
-                    .findById(contraprestacionDTO.getTipoContraprestacionId())
-                    .orElseThrow(() -> new ContraprestacionException(
-                            String.format(IS_NOT_FOUND_F,
-                                    "Tipo de contraprestación con ID: "
-                                            + contraprestacionDTO.getTipoContraprestacionId())
-                                    .toLowerCase()));
-            contraprestacion.setTipoContraprestacionId(tipoContraprestacion);
+        public ContraprestacionResponse listarContraprestacion(Integer idContraprestacion)
+                        throws ContraprestacionException {
+                Contraprestacion contraprestacion = contraprestacionRepository.findById(idContraprestacion)
+                                .orElseThrow(() -> new ContraprestacionException(
+                                                String.format(IS_NOT_FOUND_F,
+                                                                "Contraprestacion con ID: " + idContraprestacion)
+                                                                .toLowerCase()));
+                return ContraprestacionResponse.builder()
+                                .id(contraprestacion.getId())
+                                .estudianteId(contraprestacion.getEstudianteId().getId())
+                                .estudianteNombre(contraprestacion.getEstudianteId().getNombre())
+                                .actividades(contraprestacion.getActividades())
+                                .fechaCreacion(contraprestacion.getFechaCreacion())
+                                .fechaInicio(contraprestacion.getFechaInicio())
+                                .fechaFin(contraprestacion.getFechaFin())
+                                .tipoContraprestacionId(contraprestacion.getTipoContraprestacionId().getId())
+                                .tipoContraprestacionNombre(contraprestacion.getTipoContraprestacionId().getNombre())
+                                .porcentajeContraprestacion(
+                                                String.valueOf(contraprestacion.getTipoContraprestacionId()
+                                                                .getPorcentaje()))
+                                .build();
         }
 
-        contraprestacion.setActividades(contraprestacionDTO.getActividades());
-        contraprestacion.setFechaInicio(contraprestacionDTO.getFechaInicio());
-        contraprestacion.setFechaFin(contraprestacionDTO.getFechaFin());
-
-        contraprestacionRepository.save(contraprestacion);
-    }
-
-    public ContraprestacionResponse listarContraprestacion(Integer idContraprestacion) throws ContraprestacionException {
-        Contraprestacion contraprestacion = contraprestacionRepository.findById(idContraprestacion)
-                .orElseThrow(() -> new ContraprestacionException(
-                        String.format(IS_NOT_FOUND_F, "Contraprestacion con ID: " + idContraprestacion)
-                                .toLowerCase()));
-        return ContraprestacionResponse.builder()
-                .id(contraprestacion.getId())
-                .estudianteId(contraprestacion.getEstudianteId().getId())
-                .estudianteNombre(contraprestacion.getEstudianteId().getNombre())
-                .actividades(contraprestacion.getActividades())
-                .fechaCreacion(contraprestacion.getFechaCreacion())
-                .fechaInicio(contraprestacion.getFechaInicio())
-                .fechaFin(contraprestacion.getFechaFin())
-                .tipoContraprestacionId(contraprestacion.getTipoContraprestacionId().getId())
-                .tipoContraprestacionNombre(contraprestacion.getTipoContraprestacionId().getNombre())
-                .porcentajeContraprestacion(
-                        String.valueOf(contraprestacion.getTipoContraprestacionId().getPorcentaje()))
-                .build();
-    }
-
-    public List<ContraprestacionResponse> listarContraprestaciones() {
-        return contraprestacionRepository.findAll().stream().map(contraprestacion -> ContraprestacionResponse.builder()
-                .id(contraprestacion.getId())
-                .estudianteId(contraprestacion.getEstudianteId().getId())
-                .estudianteNombre(contraprestacion.getEstudianteId().getNombre())
-                .actividades(contraprestacion.getActividades())
-                .fechaCreacion(contraprestacion.getFechaCreacion())
-                .fechaInicio(contraprestacion.getFechaInicio())
-                .fechaFin(contraprestacion.getFechaFin())
-                .tipoContraprestacionId(contraprestacion.getTipoContraprestacionId().getId())
-                .tipoContraprestacionNombre(contraprestacion.getTipoContraprestacionId().getNombre())
-                .porcentajeContraprestacion(
-                        String.valueOf(contraprestacion.getTipoContraprestacionId().getPorcentaje()))
-                .build()).collect(Collectors.toList());
-    }
-
-    public List<ContraprestacionResponse> listarContraprestacionesPorEstudiante(Integer estudianteId)
-            throws EstudianteNotFoundException {
-        Estudiante estudiante = estudianteRepository.findById(estudianteId)
-                .orElseThrow(() -> new EstudianteNotFoundException(
-                        String.format(IS_NOT_FOUND, "Estudiante con ID: " + estudianteId)));
-
-        return contraprestacionRepository.findByEstudianteId(estudiante).stream()
-                .map(contraprestacion -> ContraprestacionResponse.builder()
-                        .id(contraprestacion.getId())
-                        .estudianteId(contraprestacion.getEstudianteId().getId())
-                        .estudianteNombre(contraprestacion.getEstudianteId().getNombre())
-                        .actividades(contraprestacion.getActividades())
-                        .fechaCreacion(contraprestacion.getFechaCreacion())
-                        .fechaInicio(contraprestacion.getFechaInicio())
-                        .fechaFin(contraprestacion.getFechaFin())
-                        .tipoContraprestacionId(contraprestacion.getTipoContraprestacionId().getId())
-                        .tipoContraprestacionNombre(contraprestacion.getTipoContraprestacionId().getNombre())
-                        .porcentajeContraprestacion(
-                                String.valueOf(contraprestacion.getTipoContraprestacionId().getPorcentaje()))
-                        .build())
-                .collect(Collectors.toList());
-    }
-
-    public List<ContraprestacionResponse> listarContraprestacionesPorTipoContraprestacion(
-            Integer tipoContraprestacionId) throws ContraprestacionException {
-        TipoContraprestacion tipoContraprestacion = tipoContraprestacionRepository.findById(tipoContraprestacionId)
-                .orElseThrow(() -> new ContraprestacionException(
-                        String.format(IS_NOT_FOUND_F, "Tipo de contraprestacion con ID: " + tipoContraprestacionId)
-                                .toLowerCase()));
-
-        return contraprestacionRepository.findByTipoContraprestacionId(tipoContraprestacion).stream()
-                .map(contraprestacion -> ContraprestacionResponse.builder()
-                        .id(contraprestacion.getId())
-                        .estudianteId(contraprestacion.getEstudianteId().getId())
-                        .estudianteNombre(contraprestacion.getEstudianteId().getNombre())
-                        .actividades(contraprestacion.getActividades())
-                        .fechaCreacion(contraprestacion.getFechaCreacion())
-                        .fechaInicio(contraprestacion.getFechaInicio())
-                        .fechaFin(contraprestacion.getFechaFin())
-                        .tipoContraprestacionId(contraprestacion.getTipoContraprestacionId().getId())
-                        .tipoContraprestacionNombre(contraprestacion.getTipoContraprestacionId().getNombre())
-                        .porcentajeContraprestacion(
-                                String.valueOf(contraprestacion.getTipoContraprestacionId().getPorcentaje()))
-                        .build())
-                .collect(Collectors.toList());
-    }
-
-
-    public void aprobarContraprestacion(Integer id, MultipartFile informeFinal) 
-            throws ContraprestacionException, IOException {
-        
-       
-        Contraprestacion contraprestacion = contraprestacionRepository.findById(id)
-                .orElseThrow(() -> new ContraprestacionException(
-                        String.format(IS_NOT_FOUND_F, "Contraprestación con ID: " + id).toLowerCase()));
-
-        
-        if (informeFinal == null || informeFinal.isEmpty()) {
-            throw new ContraprestacionException("El informe final es requerido para aprobar la contraprestación");
+        public List<ContraprestacionResponse> listarContraprestaciones() {
+                return contraprestacionRepository.findAll().stream().map(contraprestacion -> ContraprestacionResponse
+                                .builder()
+                                .id(contraprestacion.getId())
+                                .estudianteId(contraprestacion.getEstudianteId().getId())
+                                .estudianteNombre(contraprestacion.getEstudianteId().getNombre())
+                                .actividades(contraprestacion.getActividades())
+                                .fechaCreacion(contraprestacion.getFechaCreacion())
+                                .fechaInicio(contraprestacion.getFechaInicio())
+                                .fechaFin(contraprestacion.getFechaFin())
+                                .tipoContraprestacionId(contraprestacion.getTipoContraprestacionId().getId())
+                                .tipoContraprestacionNombre(contraprestacion.getTipoContraprestacionId().getNombre())
+                                .porcentajeContraprestacion(
+                                                String.valueOf(contraprestacion.getTipoContraprestacionId()
+                                                                .getPorcentaje()))
+                                .build()).collect(Collectors.toList());
         }
 
-       
-        Soporte soporte = s3Service.uploadFile(informeFinal, "contraprestaciones");
+        public List<ContraprestacionResponse> listarContraprestacionesPorEstudiante(Integer estudianteId)
+                        throws EstudianteNotFoundException {
+                Estudiante estudiante = estudianteRepository.findById(estudianteId)
+                                .orElseThrow(() -> new EstudianteNotFoundException(
+                                                String.format(IS_NOT_FOUND, "Estudiante con ID: " + estudianteId)));
 
-        // 4. Actualizar la contraprestación
-        contraprestacion.setFechaFin(new Date());
-        contraprestacion.setActiva(false);
-        contraprestacion.setSoporteId(soporte); // Asociar el soporte subido
+                return contraprestacionRepository.findByEstudianteId(estudiante).stream()
+                                .map(contraprestacion -> ContraprestacionResponse.builder()
+                                                .id(contraprestacion.getId())
+                                                .estudianteId(contraprestacion.getEstudianteId().getId())
+                                                .estudianteNombre(contraprestacion.getEstudianteId().getNombre())
+                                                .actividades(contraprestacion.getActividades())
+                                                .fechaCreacion(contraprestacion.getFechaCreacion())
+                                                .fechaInicio(contraprestacion.getFechaInicio())
+                                                .fechaFin(contraprestacion.getFechaFin())
+                                                .tipoContraprestacionId(
+                                                                contraprestacion.getTipoContraprestacionId().getId())
+                                                .tipoContraprestacionNombre(contraprestacion.getTipoContraprestacionId()
+                                                                .getNombre())
+                                                .porcentajeContraprestacion(
+                                                                String.valueOf(contraprestacion
+                                                                                .getTipoContraprestacionId()
+                                                                                .getPorcentaje()))
+                                                .build())
+                                .collect(Collectors.toList());
+        }
 
-        contraprestacionRepository.save(contraprestacion);
-    }
+        public List<ContraprestacionResponse> listarContraprestacionesPorTipoContraprestacion(
+                        Integer tipoContraprestacionId) throws ContraprestacionException {
+                TipoContraprestacion tipoContraprestacion = tipoContraprestacionRepository
+                                .findById(tipoContraprestacionId)
+                                .orElseThrow(() -> new ContraprestacionException(
+                                                String.format(IS_NOT_FOUND_F,
+                                                                "Tipo de contraprestacion con ID: "
+                                                                                + tipoContraprestacionId)
+                                                                .toLowerCase()));
 
+                return contraprestacionRepository.findByTipoContraprestacionId(tipoContraprestacion).stream()
+                                .map(contraprestacion -> ContraprestacionResponse.builder()
+                                                .id(contraprestacion.getId())
+                                                .estudianteId(contraprestacion.getEstudianteId().getId())
+                                                .estudianteNombre(contraprestacion.getEstudianteId().getNombre())
+                                                .actividades(contraprestacion.getActividades())
+                                                .fechaCreacion(contraprestacion.getFechaCreacion())
+                                                .fechaInicio(contraprestacion.getFechaInicio())
+                                                .fechaFin(contraprestacion.getFechaFin())
+                                                .tipoContraprestacionId(
+                                                                contraprestacion.getTipoContraprestacionId().getId())
+                                                .tipoContraprestacionNombre(contraprestacion.getTipoContraprestacionId()
+                                                                .getNombre())
+                                                .porcentajeContraprestacion(
+                                                                String.valueOf(contraprestacion
+                                                                                .getTipoContraprestacionId()
+                                                                                .getPorcentaje()))
+                                                .build())
+                                .collect(Collectors.toList());
+        }
 
-    private String calcularSemestre(Date fechaMatriculacion) {
+        public void aprobarContraprestacion(Integer id, MultipartFile informeFinal)
+                        throws ContraprestacionException, IOException {
+
+                Contraprestacion contraprestacion = contraprestacionRepository.findById(id)
+                                .orElseThrow(() -> new ContraprestacionException(
+                                                String.format(IS_NOT_FOUND_F, "Contraprestación con ID: " + id)
+                                                                .toLowerCase()));
+
+                if (informeFinal == null || informeFinal.isEmpty()) {
+                        throw new ContraprestacionException(
+                                        "El informe final es requerido para aprobar la contraprestación");
+                }
+
+                if (!informeFinal.getContentType().equals("application/pdf") &&
+                                !informeFinal.getContentType().equals(
+                                                "application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
+                        throw new ContraprestacionException("Solo se permiten archivos PDF o DOCX");
+                }
+
+                Soporte soporte = s3Service.uploadFile(informeFinal, "contraprestaciones");
+
+                // 4. Actualizar la contraprestación
+                contraprestacion.setFechaFin(new Date());
+                contraprestacion.setAprobada(true);
+                contraprestacion.setSoporteId(soporte); // Asociar el soporte subido
+
+                contraprestacionRepository.save(contraprestacion);
+        }
+
+        private String calcularSemestre(Date fechaMatriculacion) {
                 Calendar cal = Calendar.getInstance();
                 cal.setTime(fechaMatriculacion);
 
                 int mes = cal.get(Calendar.MONTH) + 1; // Enero = 0
                 int anio = cal.get(Calendar.YEAR);
 
-                return  anio + "-"+ (mes <= 6 ? "I" : "II") ;
+                return anio + "-" + (mes <= 6 ? "I" : "II");
         }
 }
