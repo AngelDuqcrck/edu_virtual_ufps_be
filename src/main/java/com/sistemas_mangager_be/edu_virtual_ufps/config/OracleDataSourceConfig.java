@@ -29,7 +29,7 @@ import javax.sql.DataSource;
 public class OracleDataSourceConfig {
 
     @Bean
-    @ConfigurationProperties("oracle.datasource")
+    @ConfigurationProperties(prefix = "oracle.datasource")
     public DataSourceProperties oracleDataSourceProperties() {
         return new DataSourceProperties();
     }
@@ -46,7 +46,7 @@ public class OracleDataSourceConfig {
                 .dataSource(oracleDataSource())
                 .packages("com.sistemas_mangager_be.edu_virtual_ufps.oracle.entities")
                 .persistenceUnit("oracle")
-                .properties(Map.of("hibernate.dialect", "org.hibernate.dialect.Oracle12cDialect"))
+                .properties(Map.of("hibernate.dialect", "org.hibernate.dialect.OracleDialect"))
                 .build();
     }
 

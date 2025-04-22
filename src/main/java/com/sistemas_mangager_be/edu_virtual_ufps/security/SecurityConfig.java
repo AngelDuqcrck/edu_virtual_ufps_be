@@ -28,89 +28,95 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity // Habilitamos la seguridad basada en anotaciones como @PreAuthorize
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAutheticationEntryPoint jwtAuthenticationEntryPoint;
+        @Autowired
+        private JwtAutheticationEntryPoint jwtAuthenticationEntryPoint;
 
-    @Autowired
-    private CustomUserDetailsService customUserDetailsService;
+        @Autowired
+        private CustomUserDetailsService customUserDetailsService;
 
-    @Autowired
-    private CustomOAuth2UserService customOAuth2UserService;
+        @Autowired
+        private CustomOAuth2UserService customOAuth2UserService;
 
-    // Este bean va a encargarse de verificar la información de los usuarios que se
-    // logearan en el sistema
-    @Bean
-    AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
-            throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
+        // Este bean va a encargarse de verificar la información de los usuarios que se
+        // logearan en el sistema
+        @Bean
+        AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+                        throws Exception {
+                return authenticationConfiguration.getAuthenticationManager();
+        }
 
-    // Con este bean nos encargaremos de encriptar todas nuestras passwords
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        // Con este bean nos encargaremos de encriptar todas nuestras passwords
+        @Bean
+        PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
-    // Este bean incorpora el filtro de seguridad de JWT del jwt authentication
-    // filter
-    @Bean
-    JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter();
-    }
+        // Este bean incorpora el filtro de seguridad de JWT del jwt authentication
+        // filter
+        @Bean
+        JwtAuthenticationFilter jwtAuthenticationFilter() {
+                return new JwtAuthenticationFilter();
+        }
 
-    @Bean
-    public JwtTokenGenerator jwtTokenGenerator() {
-        return new JwtTokenGenerator();
-    }
+        @Bean
+        public JwtTokenGenerator jwtTokenGenerator() {
+                return new JwtTokenGenerator();
+        }
 
-    // Este bean establece una cadena de filtros de seguridad del sistema y define
-    // permisos basados en roles
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .exceptionHandling(exceptionHandling -> exceptionHandling
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint))
-                .sessionManagement(sessionManagement -> sessionManagement
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/auth/**", "/oauth2/**,", "/**").permitAll() // Rutas públicas
-                        .anyRequest().authenticated())
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService) // Usar el servicio personalizado de OAuth2
-                        )
-                        .successHandler((request, response, authentication) -> {
-                            // Lógica después de un inicio de sesión exitoso con Google
-                            response.sendRedirect("/home");
-                        }))
-                .httpBasic(Customizer.withDefaults());
+        // Este bean establece una cadena de filtros de seguridad del sistema y define
+        // permisos basados en roles
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+                http
+                                .csrf(csrf -> csrf.disable())
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                                .exceptionHandling(exceptionHandling -> exceptionHandling
+                                                .authenticationEntryPoint(jwtAuthenticationEntryPoint))
+                                .sessionManagement(sessionManagement -> sessionManagement
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .authorizeHttpRequests(authorize -> authorize
+                                                .requestMatchers("/auth/**", "/oauth2/**,", "/**").permitAll() // Rutas
+                                                                                                               // públicas
+                                                .anyRequest().authenticated())
+                                .oauth2Login(oauth2 -> oauth2
+                                                .userInfoEndpoint(userInfo -> userInfo
+                                                                .userService(customOAuth2UserService) // Usar el
+                                                                                                      // servicio
+                                                                                                      // personalizado
+                                                                                                      // de OAuth2
+                                                )
+                                                .successHandler((request, response, authentication) -> {
+                                                        // Lógica después de un inicio de sesión exitoso con Google
+                                                        response.sendRedirect("/home");
+                                                }))
+                                .httpBasic(Customizer.withDefaults());
 
-        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+                return http.build();
+        }
 
-    /*
-     * Este bean es responsable de configurar las opciones de seguridad de CORS
-     * para nuestra aplicacion
-     * 
-     */
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:5173"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(
-                Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
-        configuration
-                .setExposedHeaders(Arrays.asList("Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L); // 1 hora de cache para preflight
+        /*
+         * Este bean es responsable de configurar las opciones de seguridad de CORS
+         * para nuestra aplicacion
+         * 
+         */
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration configuration = new CorsConfiguration();
+                configuration.setAllowedOrigins(
+                                List.of("http://localhost:4200", "http://localhost:5173", "http://localhost:4173"));
+                configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+                configuration.setAllowedHeaders(
+                                Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
+                configuration
+                                .setExposedHeaders(Arrays.asList("Access-Control-Allow-Origin",
+                                                "Access-Control-Allow-Credentials"));
+                configuration.setAllowCredentials(true);
+                configuration.setMaxAge(3600L); // 1 hora de cache para preflight
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", configuration);
+                return source;
+        }
 }

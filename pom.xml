@@ -44,6 +44,11 @@
 		</dependency>
 		<!-- Oracle -->
 		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>6.6.8.Final</version>
+		</dependency>
+		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>
 			<artifactId>ojdbc8</artifactId>
 			<version>19.3.0.0</version>
@@ -74,16 +79,16 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-xml</artifactId>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-aws</artifactId>
-			<version>2.2.6.RELEASE</version> <!-- o la versión más reciente compatible -->
+			<version>2.2.6.RELEASE</version>			<!-- o la versión más reciente compatible -->
 		</dependency>
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
-			<version>1.12.782</version> <!-- Verifica la versión más reciente -->
+			<version>1.12.782</version>			<!-- Verifica la versión más reciente -->
 		</dependency>
 
 		<!--Dependicias para configurar la seguridad de la aplicacion-->

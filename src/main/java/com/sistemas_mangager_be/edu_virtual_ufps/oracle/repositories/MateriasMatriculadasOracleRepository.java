@@ -16,5 +16,8 @@ public interface MateriasMatriculadasOracleRepository
 
     List<MateriasMatriculadasOracle> findByCodAlumnoAndCodMateria(String codAlumno, String codMateria);
 
-    // O lo que necesites según tu consulta
+    List<MateriasMatriculadasOracle> findByCodCarMatAndCodMatMatAndGrupo(String codCarMat, String codMatMat,
+            String grupo);
+
+    List<MateriasMatriculadasOracle> findByCodCarreraAndCodAlumno(String codCarrera, String codAlumno);
 }
