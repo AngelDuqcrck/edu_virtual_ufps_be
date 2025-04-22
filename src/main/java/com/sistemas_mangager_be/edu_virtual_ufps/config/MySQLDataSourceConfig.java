@@ -16,11 +16,7 @@ import java.util.Map;
 
 @Configuration
 @EntityScan(basePackages = "com.sistemas_mangager_be.edu_virtual_ufps.entities")
-@EnableJpaRepositories(
-        basePackages = "com.sistemas_mangager_be.edu_virtual_ufps.repositories",
-        entityManagerFactoryRef = "mysqlEntityManagerFactory",
-        transactionManagerRef = "mysqlTransactionManager"
-)
+@EnableJpaRepositories(basePackages = "com.sistemas_mangager_be.edu_virtual_ufps.repositories", entityManagerFactoryRef = "mysqlEntityManagerFactory", transactionManagerRef = "mysqlTransactionManager")
 public class MySQLDataSourceConfig {
 
     @Autowired

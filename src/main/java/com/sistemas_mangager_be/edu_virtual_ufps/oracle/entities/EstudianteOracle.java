@@ -15,18 +15,40 @@ import lombok.*;
 public class EstudianteOracle {
 
     @Id
-    private String CODIGO;
+    @Column(name = "CODIGO")
+    private String codigo;
 
-    private String NOMCARRERA;
-    private String PRIMER_NOMBRE;
-    private String SEGUNDO_NOMBRE;
-    private String PRIMER_APELLIDO;
-    private String SEGUNDO_APELLIDO;
-    private String DOCUMENTO;
-    private String TIPO_DOCUMENTO;
-    private Date FECHA_NACIMIENTO;
-    private String TMATRICULADO;
-    private String DESC_TIPOCAR;
-    private String EMAIL;
+    @Column(name = "NOMCARRERA")
+    private String nomCarrera;
+
+    @Column(name = "PRIMER_NOMBRE")
+    private String primerNombre;
+
+    @Column(name = "SEGUNDO_NOMBRE")
+    private String segundoNombre;
+
+    @Column(name = "PRIMER_APELLIDO")
+    private String primerApellido;
+
+    @Column(name = "SEGUNDO_APELLIDO")
+    private String segundoApellido;
+
+    @Column(name = "DOCUMENTO")
+    private String documento;
+
+    @Column(name = "TIPO_DOCUMENTO")
+    private String tipoDocumento;
+
+    @Column(name = "FECHA_NACIMIENTO")
+    private Date fechaNacimiento;
+
+    @Column(name = "TMATRICULADO")
+    private String tMatriculado;
+
+    @Column(name = "DESC_TIPOCAR")
+    private String descTipoCar;
+
+    @Column(name = "EMAIL")
+    private String email;
 
 }

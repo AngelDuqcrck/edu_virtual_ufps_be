@@ -41,4 +41,19 @@ public class MateriasMatriculadasOracleController {
             @RequestParam String codMateria) {
         return materiasMatriculadasOracleRepository.findByCodAlumnoAndCodMateria(codAlumno, codMateria);
     }
+
+    @GetMapping("/filtrar")
+    public List<MateriasMatriculadasOracle> filtrarPorCarreraMateriaYGrupo(
+            @RequestParam String codCarMat,
+            @RequestParam String codMatMat,
+            @RequestParam String grupo) {
+        return materiasMatriculadasOracleRepository.findByCodCarMatAndCodMatMatAndGrupo(codCarMat, codMatMat, grupo);
+    }
+
+    @GetMapping("/alumno-carrera")
+    public List<MateriasMatriculadasOracle> obtenerPorCarreraYAlumno(
+            @RequestParam String codCarrera,
+            @RequestParam String codAlumno) {
+        return materiasMatriculadasOracleRepository.findByCodCarreraAndCodAlumno(codCarrera, codAlumno);
+    }
 }
