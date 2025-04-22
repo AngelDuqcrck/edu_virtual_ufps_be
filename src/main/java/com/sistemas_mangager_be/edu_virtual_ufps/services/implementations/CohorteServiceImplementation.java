@@ -1,7 +1,7 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.services.implementations;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,11 +9,24 @@ import org.springframework.stereotype.Service;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Cohorte;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.CohorteGrupo;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Estudiante;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Grupo;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.GrupoCohorte;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Materia;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Pensum;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Programa;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.CohorteNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.CohorteGrupoRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.CohorteRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.EstudianteRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.GrupoCohorteRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.GrupoRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.MateriaRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.PensumRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.ProgramaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.ICohorteService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.CohorteDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.CohortePorCarreraDTO;
 
 import jakarta.transaction.Transactional;
 import net.minidev.json.writer.BeansMapper.Bean;
@@ -30,10 +43,27 @@ public class CohorteServiceImplementation implements ICohorteService {
     public static final String IS_NOT_CORRECT = "%s no es correcta";
 
     @Autowired
+    private EstudianteRepository estudianteRepository;
+    @Autowired
     private CohorteRepository cohorteRepository;
 
     @Autowired
     private CohorteGrupoRepository cohorteGrupoRepository;
+
+    @Autowired
+    private ProgramaRepository programaRepository;
+
+    @Autowired
+    private PensumRepository pensumRepository;
+
+    @Autowired
+    private MateriaRepository materiaRepository;
+
+    @Autowired
+    private GrupoRepository grupoRepository;
+
+    @Autowired
+    private GrupoCohorteRepository grupoCohorteRepository;
 
     @Override
     public CohorteDTO crearCohorte(CohorteDTO cohorteDTO) {
@@ -143,5 +173,94 @@ public class CohorteServiceImplementation implements ICohorteService {
 
         cohorteGrupoRepository.save(grupoA);
         cohorteGrupoRepository.save(grupoB);
+    }
+
+    public List<CohortePorCarreraDTO> listarCohortesPorCarreraConGrupos() {
+        Map<Programa, List<Cohorte>> cohortesPorCarrera = listarCohortesPorCarrera();
+        
+        return cohortesPorCarrera.entrySet().stream()
+                .map(entry -> new CohortePorCarreraDTO(
+                        entry.getKey(), 
+                        entry.getValue(), 
+                        cohorteGrupoRepository))
+                .collect(Collectors.toList());
+    }
+
+    public Map<Programa, List<Cohorte>> listarCohortesPorCarrera() {
+        // Obtener todos los programas (carreras)
+        List<Programa> programas = programaRepository.findAll();
+        
+        Map<Programa, List<Cohorte>> cohortesPorCarrera = new LinkedHashMap<>();
+        
+        for (Programa programa : programas) {
+            // Obtener cohortes relacionadas con el programa a través de dos caminos posibles
+            List<Cohorte> cohortes = obtenerCohortesPorPrograma(programa);
+            
+            if (!cohortes.isEmpty()) {
+                cohortesPorCarrera.put(programa, cohortes);
+            }
+        }
+        
+        return cohortesPorCarrera;
+    }
+
+    private List<Cohorte> obtenerCohortesPorPrograma(Programa programa) {
+        // Primer camino: Programa -> Pensum -> Materia -> Grupo -> GrupoCohorte -> CohorteGrupo -> Cohorte
+        List<Cohorte> cohortesCamino1 = obtenerCohortesPorProgramaCamino1(programa);
+        
+        // Segundo camino: Programa -> Estudiante -> CohorteGrupo -> Cohorte
+        List<Cohorte> cohortesCamino2 = obtenerCohortesPorProgramaCamino2(programa);
+        
+        // Combinar y eliminar duplicados
+        Set<Cohorte> cohortesUnicas = new LinkedHashSet<>();
+        cohortesUnicas.addAll(cohortesCamino1);
+        cohortesUnicas.addAll(cohortesCamino2);
+        
+        return new ArrayList<>(cohortesUnicas);
+    }
+
+    private List<Cohorte> obtenerCohortesPorProgramaCamino1(Programa programa) {
+        // 1. Obtener todos los pensums del programa
+        List<Pensum> pensums = pensumRepository.findByProgramaId(programa);
+        
+        // 2. Obtener todas las materias de esos pensums
+        List<Materia> materias = materiaRepository.findByPensumIdIn(pensums);
+        
+        // 3. Obtener todos los grupos de esas materias
+        List<Grupo> grupos = grupoRepository.findByMateriaIdIn(materias);
+        
+        // 4. Obtener todos los grupoCohortes de esos grupos
+        List<GrupoCohorte> grupoCohortes = grupoCohorteRepository.findByGrupoIdIn(grupos);
+        
+        // 5. Obtener los cohorteGrupos de esos grupoCohortes
+        List<CohorteGrupo> cohorteGrupos = grupoCohortes.stream()
+                .map(GrupoCohorte::getCohorteGrupoId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        
+        // 6. Obtener las cohortes de esos cohorteGrupos
+        return cohorteGrupos.stream()
+                .map(CohorteGrupo::getCohorteId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    private List<Cohorte> obtenerCohortesPorProgramaCamino2(Programa programa) {
+        // 1. Obtener todos los estudiantes del programa
+        List<Estudiante> estudiantes = estudianteRepository.findByProgramaId(programa);
+        
+        // 2. Obtener los cohorteGrupos de esos estudiantes
+        List<CohorteGrupo> cohorteGrupos = estudiantes.stream()
+                .map(Estudiante::getCohorteId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        
+        // 3. Obtener las cohortes de esos cohorteGrupos
+        return cohorteGrupos.stream()
+                .map(CohorteGrupo::getCohorteId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
     }
 }

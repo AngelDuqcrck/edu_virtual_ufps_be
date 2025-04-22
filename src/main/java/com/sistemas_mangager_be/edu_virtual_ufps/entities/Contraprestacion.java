@@ -13,7 +13,7 @@ import jakarta.persistence.*;
 @NoArgsConstructor
 @Table(name = "contraprestaciones")
 public class Contraprestacion {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -24,9 +24,11 @@ public class Contraprestacion {
 
     private String actividades;
 
-    private Boolean activa;
+    private Boolean aprobada;
 
     private Date fechaCreacion;
+
+    private String semestre;
 
     private Date fechaInicio;
 
