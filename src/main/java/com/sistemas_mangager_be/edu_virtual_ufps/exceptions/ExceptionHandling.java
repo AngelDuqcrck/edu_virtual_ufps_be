@@ -87,6 +87,10 @@ public class ExceptionHandling {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
+    @ExceptionHandler(SolicitudException.class)
+    public ResponseEntity<HttpResponse> solicitudException(SolicitudException exception) {
+        return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
     @ExceptionHandler(MatriculaException.class)
     public ResponseEntity<HttpResponse> matriculaException(MatriculaException exception) {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
