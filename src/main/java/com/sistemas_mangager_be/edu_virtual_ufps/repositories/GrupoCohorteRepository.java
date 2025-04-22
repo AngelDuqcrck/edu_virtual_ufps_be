@@ -28,6 +28,6 @@ public interface GrupoCohorteRepository extends JpaRepository<GrupoCohorte, Long
            "WHERE g.materiaId.id = :materiaId")
     List<GrupoCohorte> findByMateriaIdWithRelations(@Param("materiaId") Integer materiaId);
 
-    
+    List<GrupoCohorte> findByGrupoIdIn(List<Grupo> grupos);
 
 }

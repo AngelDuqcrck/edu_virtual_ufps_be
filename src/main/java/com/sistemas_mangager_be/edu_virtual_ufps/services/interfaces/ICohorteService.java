@@ -1,9 +1,13 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces;
 
 import java.util.List;
+import java.util.Map;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Cohorte;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Programa;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.CohorteNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.CohorteDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.CohortePorCarreraDTO;
 
 public interface ICohorteService {
     
@@ -15,5 +19,8 @@ public interface ICohorteService {
 
     List<CohorteDTO> listarCohortes();
 
+    Map<Programa, List<Cohorte>> listarCohortesPorCarrera();
+    
+     List<CohortePorCarreraDTO> listarCohortesPorCarreraConGrupos();
 
 }
