@@ -5,7 +5,9 @@ import java.util.List;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.*;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.GrupoDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.GrupoRequest;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.EstudianteGrupoResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.GrupoCohorteDocenteResponse;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.GrupoCohorteResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.GrupoResponse;
 
 public interface IGrupoService {
@@ -44,4 +46,7 @@ public interface IGrupoService {
 
       public List<GrupoCohorteDocenteResponse> listarGruposPorDocente (Integer docenteId) throws UserNotFoundException;
 
+      public List<GrupoCohorteResponse> listarGruposPorCohorteGrupo (Integer cohorteGrupoId) throws CohorteNotFoundException;
+
+      public EstudianteGrupoResponse listarEstudiantesPorGrupoCohorte(Long grupoCohorteId);
 }

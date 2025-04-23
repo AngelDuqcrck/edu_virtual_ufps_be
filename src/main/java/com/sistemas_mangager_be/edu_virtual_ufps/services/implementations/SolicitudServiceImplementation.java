@@ -115,8 +115,7 @@ public class SolicitudServiceImplementation implements ISolicitudService {
         }
 
         // 3. Validar y actualizar estudiante si viene en el DTO
-        if (solicitudDTO.getEstudianteId() != null &&
-                !solicitudDTO.getEstudianteId().equals(solicitud.getEstudianteId().getId())) {
+        if (solicitudDTO.getEstudianteId() != null ) {
 
             Estudiante estudiante = estudianteRepository.findById(solicitudDTO.getEstudianteId())
                     .orElseThrow(() -> new EstudianteNotFoundException(
@@ -237,4 +236,6 @@ public class SolicitudServiceImplementation implements ISolicitudService {
 
         return anio + "-" + (mes <= 6 ? "I" : "II");
     }
+
+    
 }
