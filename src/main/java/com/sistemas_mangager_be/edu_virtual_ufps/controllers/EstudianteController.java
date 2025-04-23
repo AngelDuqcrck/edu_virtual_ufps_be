@@ -22,7 +22,9 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundExce
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IEstudianteService;
+import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IGrupoService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.EstudianteDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.EstudianteGrupoResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.EstudianteResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.HttpResponse;
 
@@ -32,6 +34,9 @@ public class EstudianteController {
 
     @Autowired
     private IEstudianteService estudianteService;
+
+    @Autowired
+    private IGrupoService iGrupoService;
 
     @PostMapping("/crear")
     public ResponseEntity<HttpResponse> crearEstudiante(@RequestBody EstudianteDTO estudianteDTO)
@@ -96,5 +101,11 @@ public class EstudianteController {
             throws EstadoEstudianteNotFoundException {
         List<EstudianteResponse> estudianteResponse = estudianteService.listarEstudiantesPorEstado(estadoEstudianteId);
         return new ResponseEntity<>(estudianteResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/grupo-cohorte/{grupoCohorteId}")
+    public ResponseEntity<EstudianteGrupoResponse> listarEstudiantesPorGrupoCohorte(@PathVariable Long grupoCohorteId) {
+        EstudianteGrupoResponse estudianteGrupoResponse = iGrupoService.listarEstudiantesPorGrupoCohorte(grupoCohorteId);
+        return new ResponseEntity<>(estudianteGrupoResponse, HttpStatus.OK);
     }
 }

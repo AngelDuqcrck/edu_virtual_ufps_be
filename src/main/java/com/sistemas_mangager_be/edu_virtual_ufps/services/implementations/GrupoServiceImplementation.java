@@ -2,6 +2,7 @@ package com.sistemas_mangager_be.edu_virtual_ufps.services.implementations;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +10,12 @@ import org.springframework.stereotype.Service;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Cohorte;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.CohorteGrupo;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.EstadoMatricula;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Estudiante;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Grupo;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.GrupoCohorte;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Materia;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Matricula;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Rol;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Usuario;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.CohorteNotFoundException;
@@ -23,14 +27,18 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundExceptio
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.VinculacionNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.CohorteGrupoRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.CohorteRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.EstadoMatriculaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.GrupoRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.MateriaRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.MatriculaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.RolRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.UsuarioRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IGrupoService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.GrupoDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.GrupoRequest;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.EstudianteGrupoResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.GrupoCohorteDocenteResponse;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.GrupoCohorteResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.GrupoResponse;
 
 @Service
@@ -61,6 +69,12 @@ public class GrupoServiceImplementation implements IGrupoService {
 
     @Autowired
     private GrupoCohorteRepository grupoCohorteRepository;
+
+    @Autowired
+    private MatriculaRepository matriculaRepository;
+
+    @Autowired
+    private EstadoMatriculaRepository estadoMatriculaRepository;
 
     @Override
     public GrupoDTO crearGrupo(GrupoDTO grupoDTO)
@@ -424,4 +438,63 @@ public class GrupoServiceImplementation implements IGrupoService {
             return grupoCohorteDocenteResponse;
         }).toList();
     }
+
+    public List<GrupoCohorteResponse> listarGruposPorCohorteGrupo (Integer cohorteGrupoId) throws CohorteNotFoundException{
+        CohorteGrupo cohorteGrupo = cohorteGrupoRepository.findById(cohorteGrupoId).orElse(null);
+        if(cohorteGrupo == null){
+            throw new CohorteNotFoundException("El grupo de cohorte no fue encontrado");
+
+        }
+        List<GrupoCohorte> gruposCohorte = grupoCohorteRepository.findByCohorteGrupoId(cohorteGrupo);
+        
+        return gruposCohorte.stream().map(grupoCohorte ->
+        {
+            GrupoCohorteResponse grupoCohorteResponse = new GrupoCohorteResponse().builder()
+                    .id(grupoCohorte.getId())
+                    .grupoNombre(grupoCohorte.getGrupoId().getNombre())
+                    .grupoId(grupoCohorte.getGrupoId().getId())
+                    .grupoCodigo(grupoCohorte.getGrupoId().getCodigo())
+                    .cohorteGrupoId(grupoCohorte.getCohorteGrupoId().getId())
+                    .cohorteGrupoNombre(grupoCohorte.getCohorteGrupoId().getNombre())
+                    .cohorteId(grupoCohorte.getCohorteId().getId())
+                    .cohorteNombre(grupoCohorte.getCohorteId().getNombre())
+                    .build();
+            return grupoCohorteResponse;
+        }).toList();     
+    }
+
+    public EstudianteGrupoResponse listarEstudiantesPorGrupoCohorte(Long grupoCohorteId) {
+        // 1. Obtener el grupo cohorte
+        GrupoCohorte grupoCohorte = grupoCohorteRepository.findById(grupoCohorteId)
+                .orElseThrow(() -> new RuntimeException("Grupo Cohorte no encontrado"));
+
+        // 2. Obtener estado "En curso" (ID 2)
+        EstadoMatricula estadoEnCurso = estadoMatriculaRepository.findById(2)
+                .orElseThrow(() -> new RuntimeException("Estado de matrícula 'En curso' no configurado"));
+
+        // 3. Obtener matrículas en curso para este grupo cohorte
+        List<Matricula> matriculas = matriculaRepository.findByGrupoCohorteIdAndEstadoMatriculaId(
+                grupoCohorte, estadoEnCurso);
+
+        // 4. Construir la respuesta
+        return EstudianteGrupoResponse.builder()
+                .id(grupoCohorte.getId())
+                .grupoNombre(grupoCohorte.getGrupoId().getNombre())
+                .grupoCodigo(grupoCohorte.getGrupoId().getCodigo())
+                .grupoCohorte(grupoCohorte.getCohorteGrupoId().getNombre())
+                .grupoCohorteId(grupoCohorte.getCohorteGrupoId().getId())
+                .estudiantes(matriculas.stream()
+                        .map(matricula -> {
+                            Estudiante e = matricula.getEstudianteId();
+                            return new EstudianteGrupoResponse.estudianteResponse(
+                                    e.getId(),
+                                    e.getNombre() + " " + e.getApellido(),
+                                    e.getCodigo(),
+                                    e.getEmail()
+                            );
+                        })
+                        .collect(Collectors.toList()))
+                .build();
+    }
+    
 }

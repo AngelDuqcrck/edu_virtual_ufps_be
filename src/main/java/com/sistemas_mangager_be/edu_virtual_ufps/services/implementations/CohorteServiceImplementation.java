@@ -263,4 +263,6 @@ public class CohorteServiceImplementation implements ICohorteService {
                 .distinct()
                 .collect(Collectors.toList());
     }
+
+    
 }

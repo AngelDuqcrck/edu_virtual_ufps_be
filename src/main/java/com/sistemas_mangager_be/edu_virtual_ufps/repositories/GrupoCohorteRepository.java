@@ -30,4 +30,6 @@ public interface GrupoCohorteRepository extends JpaRepository<GrupoCohorte, Long
 
     List<GrupoCohorte> findByGrupoIdIn(List<Grupo> grupos);
 
+    List<GrupoCohorte> findByCohorteGrupoId(CohorteGrupo cohorteGrupoId);
+
 }
