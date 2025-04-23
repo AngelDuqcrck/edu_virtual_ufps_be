@@ -31,6 +31,9 @@ public class Estudiante {
     @Column(nullable = false)
     private String apellido;
 
+    @Column(unique = true)
+    private String moodleId;
+
     @NotEmpty(message = "El correo no puede estar vacío")
     @Email(message = "Debe proporcionar un correo electrónico válido")
     @Column(nullable = false, unique = true)
