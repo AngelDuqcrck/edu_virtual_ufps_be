@@ -28,6 +28,6 @@ public class MateriaOracleController {
 
     @GetMapping("/sistemas")
     public List<MateriaOracle> obtenerMateriasSistemas() {
-        return materiaOracleRepository.findByCodCarrera("215");
+        return materiaOracleRepository.findByCodCarrera("115");
     }
 }
