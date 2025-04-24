@@ -20,16 +20,16 @@ public class Usuario {
     private Integer id;
 
     @NotEmpty
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String nombreCompleto;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String primerNombre;
 
     @Column(nullable = true)
     private String segundoNombre;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String primerApellido;
 
     @Column(nullable = true)
