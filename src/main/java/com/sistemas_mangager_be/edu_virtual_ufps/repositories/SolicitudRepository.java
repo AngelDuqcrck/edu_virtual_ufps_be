@@ -19,5 +19,8 @@ public interface SolicitudRepository extends JpaRepository<Solicitud, Long> {
     List<Solicitud> findByEstudianteId(Estudiante estudiante);
     
     List<Solicitud> findByTipoSolicitudId_Id(Integer tipoSolicitudId);
-    
+
+    List<Solicitud> findByEstudianteIdAndAndTipoSolicitudId_Id(Estudiante estudiante, Integer tipoSolicitudId);
+
+
 }

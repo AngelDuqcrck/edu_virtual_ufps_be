@@ -318,7 +318,7 @@ public class GrupoServiceImplementation implements IGrupoService {
                 .grupoId(grupoCohorteDocente.getGrupoId().getId())
                 .cohorteGrupoId(grupoCohorteDocente.getCohorteGrupoId().getId())
                 .docenteId(grupoCohorteDocente.getDocenteId().getId())
-                .docenteNombre(grupoCohorteDocente.getDocenteId().getNombre())
+                .docenteNombre(grupoCohorteDocente.getDocenteId().getNombreCompleto())
                 .cohorteGrupoNombre(grupoCohorteDocente.getCohorteGrupoId().getNombre())
                 .cohorteId(grupoCohorteDocente.getCohorteId().getId())
                 .cohorteNombre(grupoCohorteDocente.getCohorteId().getNombre())
@@ -342,7 +342,7 @@ public class GrupoServiceImplementation implements IGrupoService {
                     .grupoId(grupoCohorteDocente.getGrupoId().getId())
                     .cohorteGrupoId(grupoCohorteDocente.getCohorteGrupoId().getId())
                     .docenteId(grupoCohorteDocente.getDocenteId().getId())
-                    .docenteNombre(grupoCohorteDocente.getDocenteId().getNombre())
+                    .docenteNombre(grupoCohorteDocente.getDocenteId().getNombreCompleto())
                     .cohorteGrupoNombre(grupoCohorteDocente.getCohorteGrupoId().getNombre())
                     .cohorteId(grupoCohorteDocente.getCohorteId().getId())
                     .cohorteNombre(grupoCohorteDocente.getCohorteId().getNombre())
@@ -370,7 +370,7 @@ public class GrupoServiceImplementation implements IGrupoService {
                     .grupoId(grupoCohorteDocente.getGrupoId().getId())
                     .cohorteGrupoId(grupoCohorteDocente.getCohorteGrupoId().getId())
                     .docenteId(grupoCohorteDocente.getDocenteId().getId())
-                    .docenteNombre(grupoCohorteDocente.getDocenteId().getNombre())
+                    .docenteNombre(grupoCohorteDocente.getDocenteId().getNombreCompleto())
                     .cohorteGrupoNombre(grupoCohorteDocente.getCohorteGrupoId().getNombre())
                     .cohorteId(grupoCohorteDocente.getCohorteId().getId())
                     .cohorteNombre(grupoCohorteDocente.getCohorteId().getNombre())
@@ -397,7 +397,7 @@ public class GrupoServiceImplementation implements IGrupoService {
                     .grupoId(grupoCohorteDocente.getGrupoId().getId())
                     .cohorteGrupoId(grupoCohorteDocente.getCohorteGrupoId().getId())
                     .docenteId(grupoCohorteDocente.getDocenteId().getId())
-                    .docenteNombre(grupoCohorteDocente.getDocenteId().getNombre())
+                    .docenteNombre(grupoCohorteDocente.getDocenteId().getNombreCompleto())
                     .cohorteGrupoNombre(grupoCohorteDocente.getCohorteGrupoId().getNombre())
                     .cohorteId(grupoCohorteDocente.getCohorteId().getId())
                     .cohorteNombre(grupoCohorteDocente.getCohorteId().getNombre())
@@ -425,7 +425,7 @@ public class GrupoServiceImplementation implements IGrupoService {
                     .grupoId(grupoCohorteDocente.getGrupoId().getId())
                     .cohorteGrupoId(grupoCohorteDocente.getCohorteGrupoId().getId())
                     .docenteId(grupoCohorteDocente.getDocenteId().getId())
-                    .docenteNombre(grupoCohorteDocente.getDocenteId().getNombre())
+                    .docenteNombre(grupoCohorteDocente.getDocenteId().getNombreCompleto())
                     .cohorteGrupoNombre(grupoCohorteDocente.getCohorteGrupoId().getNombre())
                     .cohorteId(grupoCohorteDocente.getCohorteId().getId())
                     .cohorteNombre(grupoCohorteDocente.getCohorteId().getNombre())
@@ -439,16 +439,16 @@ public class GrupoServiceImplementation implements IGrupoService {
         }).toList();
     }
 
-    public List<GrupoCohorteResponse> listarGruposPorCohorteGrupo (Integer cohorteGrupoId) throws CohorteNotFoundException{
+    public List<GrupoCohorteResponse> listarGruposPorCohorteGrupo(Integer cohorteGrupoId)
+            throws CohorteNotFoundException {
         CohorteGrupo cohorteGrupo = cohorteGrupoRepository.findById(cohorteGrupoId).orElse(null);
-        if(cohorteGrupo == null){
+        if (cohorteGrupo == null) {
             throw new CohorteNotFoundException("El grupo de cohorte no fue encontrado");
 
         }
         List<GrupoCohorte> gruposCohorte = grupoCohorteRepository.findByCohorteGrupoId(cohorteGrupo);
-        
-        return gruposCohorte.stream().map(grupoCohorte ->
-        {
+
+        return gruposCohorte.stream().map(grupoCohorte -> {
             GrupoCohorteResponse grupoCohorteResponse = new GrupoCohorteResponse().builder()
                     .id(grupoCohorte.getId())
                     .grupoNombre(grupoCohorte.getGrupoId().getNombre())
@@ -460,7 +460,7 @@ public class GrupoServiceImplementation implements IGrupoService {
                     .cohorteNombre(grupoCohorte.getCohorteId().getNombre())
                     .build();
             return grupoCohorteResponse;
-        }).toList();     
+        }).toList();
     }
 
     public EstudianteGrupoResponse listarEstudiantesPorGrupoCohorte(Long grupoCohorteId) {
@@ -493,11 +493,10 @@ public class GrupoServiceImplementation implements IGrupoService {
                                     e.getApellido(),
                                     e.getApellido2(),
                                     e.getCodigo(),
-                                    e.getEmail()
-                            );
+                                    e.getEmail());
                         })
                         .collect(Collectors.toList()))
                 .build();
     }
-    
+
 }
