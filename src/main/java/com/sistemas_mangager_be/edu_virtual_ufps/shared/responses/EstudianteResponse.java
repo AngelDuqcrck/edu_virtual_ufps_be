@@ -14,8 +14,12 @@ public class EstudianteResponse {
     private String codigo;
 
     private String nombre;
+    
+    private String nombre2;
 
     private String apellido;
+
+    private String apellido2;
 
     private String email;
 

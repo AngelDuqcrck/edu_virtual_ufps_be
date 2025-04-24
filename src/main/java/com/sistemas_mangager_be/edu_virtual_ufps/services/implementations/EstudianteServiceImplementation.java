@@ -79,7 +79,7 @@ public class EstudianteServiceImplementation implements IEstudianteService {
         } else {
 
             usuario = Usuario.builder()
-                    .nombre(estudianteDTO.getNombre() + " " + estudianteDTO.getApellido())
+                    .nombre(estudianteDTO.getNombre() +" "+estudianteDTO.getNombre2()+ " " + estudianteDTO.getApellido()+" "+estudianteDTO.getApellido2())
                     .email(estudianteDTO.getEmail())
                     .telefono(estudianteDTO.getTelefono())
                     .cedula(estudianteDTO.getCedula())
@@ -168,7 +168,7 @@ public class EstudianteServiceImplementation implements IEstudianteService {
         estudiante.setEsPosgrado(pensum.getProgramaId().getEsPosgrado());
         estudiante.setCohorteId(cohorteGrupo);
 
-        usuario.setNombre(estudianteDTO.getNombre() + " " + estudianteDTO.getApellido());
+        usuario.setNombre(estudianteDTO.getNombre() +" "+estudianteDTO.getNombre2() +" " + estudianteDTO.getApellido()+" "+estudianteDTO.getApellido2());
         usuario.setEmail(estudianteDTO.getEmail());
         usuario.setTelefono(estudianteDTO.getTelefono());
         usuario.setCedula(estudianteDTO.getCedula());
