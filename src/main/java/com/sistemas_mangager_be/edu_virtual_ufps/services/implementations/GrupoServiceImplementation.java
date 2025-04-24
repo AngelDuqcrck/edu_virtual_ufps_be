@@ -488,7 +488,10 @@ public class GrupoServiceImplementation implements IGrupoService {
                             Estudiante e = matricula.getEstudianteId();
                             return new EstudianteGrupoResponse.estudianteResponse(
                                     e.getId(),
-                                    e.getNombre() + " " + e.getApellido(),
+                                    e.getNombre(),
+                                    e.getNombre2(),
+                                    e.getApellido(),
+                                    e.getApellido2(),
                                     e.getCodigo(),
                                     e.getEmail()
                             );

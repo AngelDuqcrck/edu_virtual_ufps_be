@@ -22,6 +22,9 @@ public class EstudianteGrupoResponse {
     public static class estudianteResponse{
         private Integer id;
         private String nombre;
+        private String nombre2;
+        private String apellido;
+        private String apellido2;
         private String codigo;
         private String email;
     }

@@ -303,7 +303,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
 
                 // 4. Construir el CorreoResponse
                 CorreoResponse correoResponse = CorreoResponse.builder()
-                                .nombreEstudiante(estudiante.getNombre())
+                                .nombreEstudiante(estudiante.getNombre()+" "+estudiante.getApellido())
                                 .correo(estudiante.getEmail())
                                 .semestre(calcularSemestre(new Date())) // Método para obtener el semestre actual
                                 .fecha(new Date())
