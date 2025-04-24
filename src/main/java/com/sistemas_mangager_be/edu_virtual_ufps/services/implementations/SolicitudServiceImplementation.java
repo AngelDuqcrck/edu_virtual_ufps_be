@@ -1,19 +1,28 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.services.implementations;
 
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.CohorteGrupo;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.EstadoEstudiante;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.EstadoMatricula;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Estudiante;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Matricula;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Solicitud;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Soporte;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.TipoSolicitud;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EstudianteNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.SolicitudException;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.CohorteGrupoRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.EstadoEstudianteRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.EstadoMatriculaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.EstudianteRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.MatriculaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.SolicitudRepository;
@@ -21,6 +30,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.repositories.SoporteRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.TipoSolicitudRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.ISolicitudService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.SolicitudDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.SolicitudResponse;
 
 @Service
 public class SolicitudServiceImplementation implements ISolicitudService {
@@ -50,6 +60,15 @@ public class SolicitudServiceImplementation implements ISolicitudService {
 
     @Autowired
     private CohorteGrupoRepository cohorteGrupoRepository;
+
+    @Autowired
+    private EstadoEstudianteRepository estadoEstudianteRepository;
+
+    @Autowired
+    private EstadoMatriculaRepository estadoMatriculaRepository;
+
+    @Autowired
+    private S3Service s3Service;
 
     public Solicitud crearSolicitud(SolicitudDTO solicitudDTO, Integer tipoSolicitudId)
             throws SolicitudException, EstudianteNotFoundException {
@@ -115,7 +134,7 @@ public class SolicitudServiceImplementation implements ISolicitudService {
         }
 
         // 3. Validar y actualizar estudiante si viene en el DTO
-        if (solicitudDTO.getEstudianteId() != null ) {
+        if (solicitudDTO.getEstudianteId() != null) {
 
             Estudiante estudiante = estudianteRepository.findById(solicitudDTO.getEstudianteId())
                     .orElseThrow(() -> new EstudianteNotFoundException(
@@ -146,6 +165,157 @@ public class SolicitudServiceImplementation implements ISolicitudService {
 
         // 6. Guardar los cambios
         return solicitudRepository.save(solicitud);
+    }
+
+    public SolicitudResponse listarSolicitudPorId(Long id) throws SolicitudException {
+        Solicitud solicitud = solicitudRepository.findById(id).orElse(null);
+        if (solicitud == null) {
+            throw new SolicitudException(String.format(IS_NOT_FOUND_F, "La solicitud con ID: " + id));
+        }
+
+        SolicitudResponse solicitudResponse = new SolicitudResponse();
+        BeanUtils.copyProperties(solicitud, solicitudResponse);
+
+        if (solicitud.getTipoSolicitudId().getId() == 1) {
+
+            solicitudResponse.setGrupoCohorteId(solicitud.getMatriculaId().getGrupoCohorteId().getId());
+            solicitudResponse.setGrupoId(solicitud.getMatriculaId().getGrupoCohorteId().getGrupoId().getId());
+            solicitudResponse.setGrupoNombre(solicitud.getMatriculaId().getGrupoCohorteId().getGrupoId().getNombre());
+            solicitudResponse.setGrupoCodigo(solicitud.getMatriculaId().getGrupoCohorteId().getGrupoId().getCodigo());
+
+        }
+
+        solicitudResponse.setEstudianteId(solicitud.getEstudianteId().getId());
+        solicitudResponse.setEstudianteNombre(
+                solicitud.getEstudianteId().getNombre() + " " + solicitud.getEstudianteId().getNombre2() + " "
+                        + solicitud.getEstudianteId().getApellido() + " " + solicitud.getEstudianteId().getApellido2());
+        solicitudResponse.setTipoSolicitudId(solicitud.getTipoSolicitudId().getId());
+        solicitudResponse.setTipoSolicitudNombre(solicitud.getTipoSolicitudId().getNombre());
+        solicitudResponse.setSemestre(calcularSemestre(solicitud.getFechaCreacion()));
+        return solicitudResponse;
+
+    }
+
+    public List<SolicitudResponse> listarSolicitudesPorTipo(Integer tipoSolicitudId) throws SolicitudException {
+        List<Solicitud> solicitudes = solicitudRepository.findByTipoSolicitudId_Id(tipoSolicitudId);
+        return solicitudes.stream().map(solicitud -> {
+            SolicitudResponse solicitudResponse = new SolicitudResponse();
+            BeanUtils.copyProperties(solicitud, solicitudResponse);
+
+            if (solicitud.getTipoSolicitudId().getId() == 1) {
+                solicitudResponse.setGrupoCohorteId(solicitud.getMatriculaId().getGrupoCohorteId().getId());
+                solicitudResponse.setGrupoId(solicitud.getMatriculaId().getGrupoCohorteId().getGrupoId().getId());
+                solicitudResponse
+                        .setGrupoNombre(solicitud.getMatriculaId().getGrupoCohorteId().getGrupoId().getNombre());
+                solicitudResponse
+                        .setGrupoCodigo(solicitud.getMatriculaId().getGrupoCohorteId().getGrupoId().getCodigo());
+            }
+
+            solicitudResponse.setEstudianteId(solicitud.getEstudianteId().getId());
+            solicitudResponse.setEstudianteNombre(solicitud.getEstudianteId().getNombre() + " "
+                    + solicitud.getEstudianteId().getNombre2() + " " + solicitud.getEstudianteId().getApellido() + " "
+                    + solicitud.getEstudianteId().getApellido2());
+            solicitudResponse.setTipoSolicitudId(solicitud.getTipoSolicitudId().getId());
+            solicitudResponse.setTipoSolicitudNombre(solicitud.getTipoSolicitudId().getNombre());
+            solicitudResponse.setSemestre(calcularSemestre(solicitud.getFechaCreacion()));
+            return solicitudResponse;
+        }).toList();
+    }
+
+    public void aprobarSolicitud(Long solicitudId, Integer tiposolicitudId, MultipartFile documento)
+            throws SolicitudException, IOException {
+
+        // 1. Obtener la solicitud
+        Solicitud solicitud = solicitudRepository.findById(solicitudId)
+                .orElseThrow(() -> new SolicitudException(
+                        String.format(IS_NOT_FOUND_F, "Solicitud con ID: " + solicitudId)));
+
+        if(solicitud.getTipoSolicitudId().getId() != tiposolicitudId){
+            throw new SolicitudException("Tipo de solicitud no válido");
+        }
+
+        // 2. Verificar que no esté ya aprobada
+        if (solicitud.getEstaAprobada()) {
+            throw new SolicitudException("La solicitud ya está aprobada");
+        }
+
+        // 3. Procesar según el tipo de solicitud
+        switch (solicitud.getTipoSolicitudId().getId()) {
+            case 1: // Cancelación de materias
+                aprobarCancelacionMaterias(solicitud);
+                break;
+
+            case 2: // Aplazamiento de semestre
+                aprobarAplazamientoSemestre(solicitud, documento);
+                break;
+
+            case 3: // Reintegro
+                aprobarReintegro(solicitud, documento);
+                break;
+
+            default:
+                throw new SolicitudException("Tipo de solicitud no válido");
+        }
+
+        // 4. Actualizar estado de aprobación
+        solicitud.setEstaAprobada(true);
+        solicitud.setFechaAprobacion(new Date());
+
+        solicitudRepository.save(solicitud);
+    }
+
+    //------------------------------------------------------- MÉTODOS AUXILIARES -------------------------------------------------------------------
+
+    private void aprobarCancelacionMaterias(Solicitud solicitud) throws SolicitudException {
+        // 1. Validar que tenga matrícula asociada
+        if (solicitud.getMatriculaId() == null) {
+            throw new SolicitudException("La solicitud de cancelación no tiene matrícula asociada");
+        }
+
+        // 2. Cambiar estado de la matrícula a "Cancelada" (ID 3)
+        EstadoMatricula estadoCancelada = estadoMatriculaRepository.findById(3)
+                .orElseThrow(() -> new SolicitudException("Estado 'Cancelada' no configurado"));
+
+        solicitud.getMatriculaId().setEstadoMatriculaId(estadoCancelada);
+        matriculaRepository.save(solicitud.getMatriculaId());
+    }
+
+    private void aprobarAplazamientoSemestre(Solicitud solicitud, MultipartFile documento)
+            throws SolicitudException, IOException {
+        // 1. Validar documento de soporte
+        if (documento == null || documento.isEmpty()) {
+            throw new SolicitudException("Se requiere documento de soporte para aprobar aplazamiento");
+        }
+
+        // 2. Subir documento a S3
+        Soporte soporte = s3Service.uploadFile(documento, "aplazamientos");
+        solicitud.setSoporteId(soporte);
+
+        // 3. Cambiar estado del estudiante a "Inactivo" (ID 2)
+        EstadoEstudiante estadoInactivo = estadoEstudianteRepository.findById(2)
+                .orElseThrow(() -> new SolicitudException("Estado 'Inactivo' no configurado"));
+
+        solicitud.getEstudianteId().setEstadoEstudianteId(estadoInactivo);
+        estudianteRepository.save(solicitud.getEstudianteId());
+    }
+
+    private void aprobarReintegro(Solicitud solicitud, MultipartFile documento)
+            throws SolicitudException, IOException {
+        // 1. Validar documento de soporte
+        if (documento == null || documento.isEmpty()) {
+            throw new SolicitudException("Se requiere documento de soporte para aprobar reintegro");
+        }
+
+        // 2. Subir documento a S3
+        Soporte soporte = s3Service.uploadFile(documento, "reintegros");
+        solicitud.setSoporteId(soporte);
+
+        // 3. Cambiar estado del estudiante a "En curso" (ID 1)
+        EstadoEstudiante estadoEnCurso = estadoEstudianteRepository.findById(1)
+                .orElseThrow(() -> new SolicitudException("Estado 'En curso' no configurado"));
+
+        solicitud.getEstudianteId().setEstadoEstudianteId(estadoEnCurso);
+        estudianteRepository.save(solicitud.getEstudianteId());
     }
 
     private void validarEstudianteParaTipoSolicitud(Estudiante estudiante, TipoSolicitud tipoSolicitud)
@@ -237,5 +407,4 @@ public class SolicitudServiceImplementation implements ISolicitudService {
         return anio + "-" + (mes <= 6 ? "I" : "II");
     }
 
-    
 }

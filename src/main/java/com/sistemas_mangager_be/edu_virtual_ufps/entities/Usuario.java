@@ -14,15 +14,27 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class Usuario {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @NotEmpty
     @Column(nullable = false)
-    private String nombre;
-    
+    private String nombreCompleto;
+
+    @Column(nullable = false)
+    private String primerNombre;
+
+    @Column(nullable = true)
+    private String segundoNombre;
+
+    @Column(nullable = false)
+    private String primerApellido;
+
+    @Column(nullable = true)
+    private String segundoApellido;
+
     // @NotEmpty(message = "La cédula no puede estar vacía")
     @Size(min = 6, max = 12, message = "El numero de documento debe tener entre 6 y 20 dígitos")
     @Column(unique = true)
@@ -31,14 +43,14 @@ public class Usuario {
     @Email
     @Column(nullable = false, unique = true)
     private String email;
-    
+
     @Size(min = 10, message = "El número de teléfono debe tener 10 digitos")
     @Pattern(regexp = "^[3-6]\\d{9}$", message = "El número de teléfono debe tener 10 digitos y comenzar con 3 o 6")
     private String telefono;
 
     @Column(unique = true)
     private String codigo;
-    
+
     @ManyToOne
     @JoinColumn(name = "rol_id")
     private Rol rolId;

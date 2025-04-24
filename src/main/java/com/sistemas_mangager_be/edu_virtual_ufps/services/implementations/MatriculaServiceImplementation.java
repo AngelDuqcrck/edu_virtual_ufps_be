@@ -180,7 +180,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
         public List<GrupoCohorteDocenteResponse> listarGrupoCohorteDocentePorMateria(String codigoMateria)
                         throws MateriaNotFoundException {
 
-                Materia materia =materiaRepository.findByCodigo(codigoMateria)
+                Materia materia = materiaRepository.findByCodigo(codigoMateria)
                                 .orElseThrow(() -> new MateriaNotFoundException(
                                                 String.format(IS_NOT_FOUND_F, "La Materia con ID: " + codigoMateria)
                                                                 .toLowerCase()));
@@ -303,7 +303,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
 
                 // 4. Construir el CorreoResponse
                 CorreoResponse correoResponse = CorreoResponse.builder()
-                                .nombreEstudiante(estudiante.getNombre()+" "+estudiante.getApellido())
+                                .nombreEstudiante(estudiante.getNombre() + " " + estudiante.getApellido())
                                 .correo(estudiante.getEmail())
                                 .semestre(calcularSemestre(new Date())) // Método para obtener el semestre actual
                                 .fecha(new Date())
@@ -409,7 +409,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                 int mes = cal.get(Calendar.MONTH) + 1; // Enero = 0
                 int anio = cal.get(Calendar.YEAR);
 
-                return  anio + "-"+ (mes <= 6 ? "I" : "II") ;
+                return anio + "-" + (mes <= 6 ? "I" : "II");
         }
 
         private MatriculaDTO convertirAmatriculaDTO(Matricula matricula) {
@@ -424,30 +424,44 @@ public class MatriculaServiceImplementation implements IMatriculaService {
 
         private GrupoCohorteDocenteResponse convertirAResponse(GrupoCohorte grupoCohorte) {
                 return GrupoCohorteDocenteResponse.builder()
-                        .id(grupoCohorte.getId())
-                        .grupoCohorteId(grupoCohorte.getId())
-                        .grupoId(grupoCohorte.getGrupoId() != null ? grupoCohorte.getGrupoId().getId() : null)
-                        .cohorteGrupoId(grupoCohorte.getCohorteGrupoId() != null ? grupoCohorte.getCohorteGrupoId().getId() : null)
-                        .docenteId(grupoCohorte.getDocenteId() != null ? grupoCohorte.getDocenteId().getId() : null)
-                        .docenteNombre(grupoCohorte.getDocenteId() != null ? 
-                                grupoCohorte.getDocenteId().getNombre() : "Sin asignar")
-                        .cohorteGrupoNombre(grupoCohorte.getCohorteGrupoId() != null ? 
-                                grupoCohorte.getCohorteGrupoId().getNombre() : null)
-                        .cohorteId(grupoCohorte.getCohorteId() != null ? grupoCohorte.getCohorteId().getId() : null)
-                        .cohorteNombre(grupoCohorte.getCohorteId() != null ? 
-                                grupoCohorte.getCohorteId().getNombre() : null)
-                        .fechaCreacion(grupoCohorte.getFechaCreacion() != null ? 
-                                grupoCohorte.getFechaCreacion().toString() : null)
-                        .grupoNombre(grupoCohorte.getGrupoId() != null ? 
-                                grupoCohorte.getGrupoId().getNombre() : null)
-                        .codigoGrupo(grupoCohorte.getGrupoId().getCodigo())
-                        .materia(grupoCohorte.getGrupoId() != null && grupoCohorte.getGrupoId().getMateriaId() != null ? 
-                                grupoCohorte.getGrupoId().getMateriaId().getNombre() : null)
-                        .codigoMateria(grupoCohorte.getGrupoId() != null && grupoCohorte.getGrupoId().getMateriaId() != null ? 
-                                grupoCohorte.getGrupoId().getMateriaId().getCodigo() : null)
-                        .semestreMateria(grupoCohorte.getGrupoId() != null && grupoCohorte.getGrupoId().getMateriaId().getSemestre() != null ?
-                                grupoCohorte.getGrupoId().getMateriaId().getSemestre() : null)
-                        .build();
-            }
+                                .id(grupoCohorte.getId())
+                                .grupoCohorteId(grupoCohorte.getId())
+                                .grupoId(grupoCohorte.getGrupoId() != null ? grupoCohorte.getGrupoId().getId() : null)
+                                .cohorteGrupoId(grupoCohorte.getCohorteGrupoId() != null
+                                                ? grupoCohorte.getCohorteGrupoId().getId()
+                                                : null)
+                                .docenteId(grupoCohorte.getDocenteId() != null ? grupoCohorte.getDocenteId().getId()
+                                                : null)
+                                .docenteNombre(grupoCohorte.getDocenteId() != null
+                                                ? grupoCohorte.getDocenteId().getNombreCompleto()
+                                                : "Sin asignar")
+                                .cohorteGrupoNombre(grupoCohorte.getCohorteGrupoId() != null
+                                                ? grupoCohorte.getCohorteGrupoId().getNombre()
+                                                : null)
+                                .cohorteId(grupoCohorte.getCohorteId() != null ? grupoCohorte.getCohorteId().getId()
+                                                : null)
+                                .cohorteNombre(grupoCohorte.getCohorteId() != null
+                                                ? grupoCohorte.getCohorteId().getNombre()
+                                                : null)
+                                .fechaCreacion(grupoCohorte.getFechaCreacion() != null
+                                                ? grupoCohorte.getFechaCreacion().toString()
+                                                : null)
+                                .grupoNombre(grupoCohorte.getGrupoId() != null ? grupoCohorte.getGrupoId().getNombre()
+                                                : null)
+                                .codigoGrupo(grupoCohorte.getGrupoId().getCodigo())
+                                .materia(grupoCohorte.getGrupoId() != null
+                                                && grupoCohorte.getGrupoId().getMateriaId() != null
+                                                                ? grupoCohorte.getGrupoId().getMateriaId().getNombre()
+                                                                : null)
+                                .codigoMateria(grupoCohorte.getGrupoId() != null
+                                                && grupoCohorte.getGrupoId().getMateriaId() != null
+                                                                ? grupoCohorte.getGrupoId().getMateriaId().getCodigo()
+                                                                : null)
+                                .semestreMateria(grupoCohorte.getGrupoId() != null
+                                                && grupoCohorte.getGrupoId().getMateriaId().getSemestre() != null
+                                                                ? grupoCohorte.getGrupoId().getMateriaId().getSemestre()
+                                                                : null)
+                                .build();
+        }
 
 }

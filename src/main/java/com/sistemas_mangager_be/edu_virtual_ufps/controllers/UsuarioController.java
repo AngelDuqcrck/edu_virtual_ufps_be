@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserExistException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundException;
+import com.sistemas_mangager_be.edu_virtual_ufps.services.implementations.UsuarioServiceImplementation;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IUsuarioService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.DocenteRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.LoginGoogleRequest;
@@ -27,8 +28,11 @@ import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.UsuarioRespons
 @RequestMapping("/usuarios")
 public class UsuarioController {
     
+    // @Autowired
+    // private IUsuarioService iUsuarioService;
+
     @Autowired
-    private IUsuarioService iUsuarioService;
+    private UsuarioServiceImplementation iUsuarioService;
 
 
     @PostMapping("/google/login")

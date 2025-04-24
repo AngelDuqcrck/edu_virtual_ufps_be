@@ -36,299 +36,331 @@ import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.EstudianteResp
 @Service
 public class EstudianteServiceImplementation implements IEstudianteService {
 
-    public static final String IS_ALREADY_USE = "%s ya esta en uso";
-    public static final String IS_NOT_FOUND = "%s no fue encontrado";
-    public static final String IS_NOT_FOUND_F = "%s no fue encontrada";
-    public static final String IS_NOT_ALLOWED = "no esta permitido %s ";
-    public static final String IS_NOT_VALID = "%s no es valido";
-    public static final String ARE_NOT_EQUALS = "%s no son iguales";
-    public static final String IS_NOT_CORRECT = "%s no es correcta";
+        public static final String IS_ALREADY_USE = "%s ya esta en uso";
+        public static final String IS_NOT_FOUND = "%s no fue encontrado";
+        public static final String IS_NOT_FOUND_F = "%s no fue encontrada";
+        public static final String IS_NOT_ALLOWED = "no esta permitido %s ";
+        public static final String IS_NOT_VALID = "%s no es valido";
+        public static final String ARE_NOT_EQUALS = "%s no son iguales";
+        public static final String IS_NOT_CORRECT = "%s no es correcta";
 
-    @Autowired
-    private PensumRepository pensumRepository;
+        @Autowired
+        private PensumRepository pensumRepository;
 
-    @Autowired
-    private CohorteGrupoRepository cohorteGrupoRepository;
+        @Autowired
+        private CohorteGrupoRepository cohorteGrupoRepository;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+        @Autowired
+        private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private EstadoEstudianteRepository estadoEstudianteRepository;
+        @Autowired
+        private EstadoEstudianteRepository estadoEstudianteRepository;
 
-    @Autowired
-    private EstudianteRepository estudianteRepository;
+        @Autowired
+        private EstudianteRepository estudianteRepository;
 
-    @Autowired
-    private RolRepository rolRepository;
+        @Autowired
+        private RolRepository rolRepository;
 
-    @Autowired
-    private ProgramaRepository programaRepository;
+        @Autowired
+        private ProgramaRepository programaRepository;
 
+        @Override
+        public EstudianteDTO crearEstudiante(EstudianteDTO estudianteDTO)
+                        throws PensumNotFoundException, CohorteNotFoundException, EstadoEstudianteNotFoundException,
+                        RoleNotFoundException {
 
-    @Override
-    public EstudianteDTO crearEstudiante(EstudianteDTO estudianteDTO)
-            throws PensumNotFoundException, CohorteNotFoundException, EstadoEstudianteNotFoundException,
-            RoleNotFoundException {
+                Optional<Usuario> usuarioExistente = usuarioRepository.findByEmail(estudianteDTO.getEmail());
 
-        Optional<Usuario> usuarioExistente = usuarioRepository.findByEmail(estudianteDTO.getEmail());
+                Usuario usuario;
+                if (usuarioExistente.isPresent()) {
+                        usuario = usuarioExistente.get();
+                } else {
 
-        Usuario usuario;
-        if (usuarioExistente.isPresent()) {
-            usuario = usuarioExistente.get();
-        } else {
+                        usuario = Usuario.builder()
+                                        .nombreCompleto(estudianteDTO.getNombre() + " " + estudianteDTO.getNombre2() + " "
+                                                        + estudianteDTO.getApellido() + " "
+                                                        + estudianteDTO.getApellido2())
+                                        .primerNombre(estudianteDTO.getNombre())
+                                        .segundoNombre(estudianteDTO.getNombre2())
+                                        .primerApellido(estudianteDTO.getApellido())
+                                        .segundoApellido(estudianteDTO.getApellido2())
+                                        .email(estudianteDTO.getEmail())
+                                        .telefono(estudianteDTO.getTelefono())
+                                        .cedula(estudianteDTO.getCedula())
+                                        .codigo(estudianteDTO.getCodigo()) // Código único del estudiante
+                                        .rolId(rolRepository.findById(1)
+                                                        .orElseThrow(() -> new RoleNotFoundException(
+                                                                        String.format(IS_NOT_FOUND, "EL ROL ESTUDIANTE")
+                                                                                        .toLowerCase()))) // Asigna el
+                                                                                                          // rol
+                                                                                                          // de
+                                                                                                          // estudiante
+                                        .googleId(null) // Se llenará cuando inicie sesión con Google
+                                        .fotoUrl(null) // Se llenará con la foto de Google si aplica
+                                        .build();
 
-            usuario = Usuario.builder()
-                    .nombre(estudianteDTO.getNombre() +" "+estudianteDTO.getNombre2()+ " " + estudianteDTO.getApellido()+" "+estudianteDTO.getApellido2())
-                    .email(estudianteDTO.getEmail())
-                    .telefono(estudianteDTO.getTelefono())
-                    .cedula(estudianteDTO.getCedula())
-                    .codigo(estudianteDTO.getCodigo()) // Código único del estudiante
-                    .rolId(rolRepository.findById(1)
-                            .orElseThrow(() -> new RoleNotFoundException(
-                                    String.format(IS_NOT_FOUND, "EL ROL ESTUDIANTE").toLowerCase()))) // Asigna el rol
-                                                                                                      // de estudiante
-                    .googleId(null) // Se llenará cuando inicie sesión con Google
-                    .fotoUrl(null) // Se llenará con la foto de Google si aplica
-                    .build();
+                        usuario = usuarioRepository.save(usuario);
+                }
 
-            usuario = usuarioRepository.save(usuario);
+                // Crear el estudiante y asignarle el usuario
+                Estudiante estudiante = new Estudiante();
+                BeanUtils.copyProperties(estudianteDTO, estudiante);
+
+                Pensum pensum = pensumRepository.findById(estudianteDTO.getPensumId())
+                                .orElseThrow(() -> new PensumNotFoundException(
+                                                String.format(IS_NOT_FOUND,
+                                                                "EL PENSUN CON ID " + estudianteDTO.getPensumId())
+                                                                .toLowerCase()));
+
+                CohorteGrupo cohorteGrupo = cohorteGrupoRepository.findById(estudianteDTO.getCohorteId())
+                                .orElseThrow(() -> new CohorteNotFoundException(String
+                                                .format(IS_NOT_FOUND_F,
+                                                                "LA COHORTE CON ID " + estudianteDTO.getCohorteId())
+                                                .toLowerCase()));
+
+                EstadoEstudiante estadoEstudiante = estadoEstudianteRepository.findById(1) // Estado en curso
+                                .orElseThrow(() -> new EstadoEstudianteNotFoundException(String
+                                                .format(IS_NOT_FOUND,
+                                                                "EL ESTADO DEL ESTUDIANTE CON ID "
+                                                                                + estudianteDTO.getEstadoEstudianteId())
+                                                .toLowerCase()));
+
+                Boolean estudiantePosgrado = pensum.getProgramaId().getEsPosgrado();
+                estudiante.setProgramaId(pensum.getProgramaId());
+                estudiante.setEsPosgrado(estudiantePosgrado);
+                estudiante.setPensumId(pensum);
+                estudiante.setCohorteId(cohorteGrupo);
+                estudiante.setEstadoEstudianteId(estadoEstudiante);
+                estudiante.setUsuarioId(usuario);
+
+                estudiante = estudianteRepository.save(estudiante);
+
+                EstudianteDTO estudianteCreado = new EstudianteDTO();
+                BeanUtils.copyProperties(estudiante, estudianteCreado);
+                estudianteDTO.setId(estudiante.getId());
+                estudianteDTO.setUsuarioId(usuario.getId());
+                estudianteDTO.setCohorteId(estudiante.getCohorteId().getId());
+                estudianteDTO.setPensumId(estudiante.getPensumId().getId());
+                estudianteDTO.setEstadoEstudianteId(estudiante.getEstadoEstudianteId().getId());
+
+                return estudianteCreado;
         }
 
-        // Crear el estudiante y asignarle el usuario
-        Estudiante estudiante = new Estudiante();
-        BeanUtils.copyProperties(estudianteDTO, estudiante);
+        @Override
+        public EstudianteDTO actualizarEstudiante(Integer id, EstudianteDTO estudianteDTO)
+                        throws UserNotFoundException, PensumNotFoundException, CohorteNotFoundException,
+                        EstadoEstudianteNotFoundException, EstudianteNotFoundException, EmailExistException {
+                Estudiante estudiante = estudianteRepository.findById(id)
+                                .orElseThrow(() -> new EstudianteNotFoundException(
+                                                String.format(IS_NOT_FOUND, "EL ESTUDIANTE CON ID " + id)
+                                                                .toLowerCase()));
 
-        Pensum pensum = pensumRepository.findById(estudianteDTO.getPensumId())
-                .orElseThrow(() -> new PensumNotFoundException(
-                        String.format(IS_NOT_FOUND, "EL PENSUN CON ID " + estudianteDTO.getPensumId()).toLowerCase()));
+                Usuario usuario = usuarioRepository.findById(estudiante.getUsuarioId().getId())
+                                .orElseThrow(() -> new UserNotFoundException(
+                                                String.format(IS_NOT_FOUND, " EL USUARIO ASOCIADO AL ESTUDIANTE")
+                                                                .toLowerCase()));
 
-        CohorteGrupo cohorteGrupo = cohorteGrupoRepository.findById(estudianteDTO.getCohorteId())
-                .orElseThrow(() -> new CohorteNotFoundException(String
-                        .format(IS_NOT_FOUND_F, "LA COHORTE CON ID " + estudianteDTO.getCohorteId()).toLowerCase()));
+                if (!estudiante.getEmail().equals(estudianteDTO.getEmail()) &&
+                                usuarioRepository.existsByEmail(estudianteDTO.getEmail())) {
+                        throw new UserNotFoundException(
+                                        String.format(IS_NOT_FOUND, "EL USUARIO CON EMAIL " + estudianteDTO.getEmail())
+                                                        .toLowerCase());
+                }
 
-        EstadoEstudiante estadoEstudiante = estadoEstudianteRepository.findById(1) // Estado en curso
-                .orElseThrow(() -> new EstadoEstudianteNotFoundException(String
-                        .format(IS_NOT_FOUND,
-                                "EL ESTADO DEL ESTUDIANTE CON ID " + estudianteDTO.getEstadoEstudianteId())
-                        .toLowerCase()));
+                BeanUtils.copyProperties(estudianteDTO, estudiante, "id", "usuarioId", "estadoEstudianteId");
 
-        Boolean estudiantePosgrado = pensum.getProgramaId().getEsPosgrado();
-        estudiante.setProgramaId(pensum.getProgramaId());
-        estudiante.setEsPosgrado(estudiantePosgrado);
-        estudiante.setPensumId(pensum);
-        estudiante.setCohorteId(cohorteGrupo);
-        estudiante.setEstadoEstudianteId(estadoEstudiante);
-        estudiante.setUsuarioId(usuario);
+                Pensum pensum = pensumRepository.findById(estudianteDTO.getPensumId())
+                                .orElseThrow(() -> new PensumNotFoundException(
+                                                String.format(IS_NOT_FOUND,
+                                                                "EL PENSUN CON ID " + estudianteDTO.getPensumId())
+                                                                .toLowerCase()));
 
-        estudiante = estudianteRepository.save(estudiante);
+                CohorteGrupo cohorteGrupo = cohorteGrupoRepository.findById(estudianteDTO.getCohorteId())
+                                .orElseThrow(() -> new CohorteNotFoundException(String
+                                                .format(IS_NOT_FOUND_F,
+                                                                "LA COHORTE CON ID " + estudianteDTO.getCohorteId())
+                                                .toLowerCase()));
+                
+                estudiante.setId(id);
+                estudiante.setPensumId(pensum);
+                estudiante.setProgramaId(pensum.getProgramaId());
+                estudiante.setEsPosgrado(pensum.getProgramaId().getEsPosgrado());
+                estudiante.setCohorteId(cohorteGrupo);
 
-        EstudianteDTO estudianteCreado = new EstudianteDTO();
-        BeanUtils.copyProperties(estudiante, estudianteCreado);
-        estudianteDTO.setId(estudiante.getId());
-        estudianteDTO.setUsuarioId(usuario.getId());
-        estudianteDTO.setCohorteId(estudiante.getCohorteId().getId());
-        estudianteDTO.setPensumId(estudiante.getPensumId().getId());
-        estudianteDTO.setEstadoEstudianteId(estudiante.getEstadoEstudianteId().getId());
+                usuario.setNombreCompleto(estudianteDTO.getNombre() + " " + estudianteDTO.getNombre2() + " "
+                                + estudianteDTO.getApellido() + " " + estudianteDTO.getApellido2());
+                usuario.setPrimerNombre(estudianteDTO.getNombre());
+                usuario.setSegundoNombre(estudianteDTO.getNombre2());
+                usuario.setPrimerApellido(estudianteDTO.getApellido());
+                usuario.setSegundoApellido(estudianteDTO.getApellido2());
+                usuario.setEmail(estudianteDTO.getEmail());
+                usuario.setTelefono(estudianteDTO.getTelefono());
+                usuario.setCedula(estudianteDTO.getCedula());
+                usuario.setCodigo(estudianteDTO.getCodigo());
 
-        return estudianteCreado;
-    }
+                usuarioRepository.save(usuario);
+                estudiante = estudianteRepository.save(estudiante);
 
-    @Override
-    public EstudianteDTO actualizarEstudiante(Integer id, EstudianteDTO estudianteDTO)
-            throws UserNotFoundException, PensumNotFoundException, CohorteNotFoundException,
-            EstadoEstudianteNotFoundException, EstudianteNotFoundException, EmailExistException {
-        Estudiante estudiante = estudianteRepository.findById(id)
-                .orElseThrow(() -> new EstudianteNotFoundException(
-                        String.format(IS_NOT_FOUND, "EL ESTUDIANTE CON ID " + id).toLowerCase()));
+                EstudianteDTO estudianteActualizado = new EstudianteDTO();
+                BeanUtils.copyProperties(estudiante, estudianteActualizado);
+                estudianteActualizado.setUsuarioId(usuario.getId());
+                estudianteActualizado.setCohorteId(estudiante.getCohorteId().getId());
+                estudianteActualizado.setPensumId(estudiante.getPensumId().getId());
+                estudianteActualizado.setEstadoEstudianteId(estudiante.getEstadoEstudianteId().getId());
 
-        Usuario usuario = usuarioRepository.findById(estudiante.getUsuarioId().getId())
-                .orElseThrow(() -> new UserNotFoundException(
-                        String.format(IS_NOT_FOUND, " EL USUARIO ASOCIADO AL ESTUDIANTE").toLowerCase()));
-
-        if (!estudiante.getEmail().equals(estudianteDTO.getEmail()) &&
-                usuarioRepository.existsByEmail(estudianteDTO.getEmail())) {
-            throw new UserNotFoundException(
-                    String.format(IS_NOT_FOUND, "EL USUARIO CON EMAIL " + estudianteDTO.getEmail()).toLowerCase());
+                return estudianteActualizado;
         }
 
-        BeanUtils.copyProperties(estudianteDTO, estudiante, "id", "usuarioId", "estadoEstudianteId");
+        @Override
+        public EstudianteResponse listarEstudiante(Integer id) throws EstudianteNotFoundException {
+                Estudiante estudiante = estudianteRepository.findById(id)
+                                .orElseThrow(() -> new EstudianteNotFoundException(
+                                                String.format(IS_NOT_FOUND, "EL ESTUDIANTE CON ID " + id)
+                                                                .toLowerCase()));
 
-        Pensum pensum = pensumRepository.findById(estudianteDTO.getPensumId())
-                .orElseThrow(() -> new PensumNotFoundException(
-                        String.format(IS_NOT_FOUND, "EL PENSUN CON ID " + estudianteDTO.getPensumId()).toLowerCase()));
+                EstudianteResponse estudianteResponse = new EstudianteResponse();
+                BeanUtils.copyProperties(estudiante, estudianteResponse);
+                estudianteResponse.setUsuarioId(estudiante.getUsuarioId().getId());
+                estudianteResponse.setCohorteId(estudiante.getCohorteId().getId());
+                estudianteResponse.setCohorteNombre(estudiante.getCohorteId().getNombre());
+                estudianteResponse.setPensumId(estudiante.getPensumId().getId());
+                estudianteResponse.setPensumNombre(estudiante.getPensumId().getNombre());
+                estudianteResponse.setProgramaId(estudiante.getProgramaId().getId());
+                estudianteResponse.setProgramaNombre(estudiante.getProgramaId().getNombre());
+                estudianteResponse.setEstadoEstudianteId(estudiante.getEstadoEstudianteId().getId());
+                estudianteResponse.setEstadoEstudianteNombre(estudiante.getEstadoEstudianteId().getNombre());
+                return estudianteResponse;
+        }
 
-        CohorteGrupo cohorteGrupo = cohorteGrupoRepository.findById(estudianteDTO.getCohorteId())
-                .orElseThrow(() -> new CohorteNotFoundException(String
-                        .format(IS_NOT_FOUND_F, "LA COHORTE CON ID " + estudianteDTO.getCohorteId()).toLowerCase()));
+        public List<EstudianteResponse> listarEstudiantes() {
 
-        estudiante.setId(id);
-        estudiante.setPensumId(pensum);
-        estudiante.setProgramaId(pensum.getProgramaId());
-        estudiante.setEsPosgrado(pensum.getProgramaId().getEsPosgrado());
-        estudiante.setCohorteId(cohorteGrupo);
+                return estudianteRepository.findAll().stream().map(estudiante -> {
+                        EstudianteResponse estudianteResponse = new EstudianteResponse();
+                        BeanUtils.copyProperties(estudiante, estudianteResponse);
+                        estudianteResponse.setUsuarioId(estudiante.getUsuarioId().getId());
+                        estudianteResponse.setCohorteId(estudiante.getCohorteId().getId());
+                        estudianteResponse.setCohorteNombre(estudiante.getCohorteId().getNombre());
+                        estudianteResponse.setPensumId(estudiante.getPensumId().getId());
+                        estudianteResponse.setPensumNombre(estudiante.getPensumId().getNombre());
+                        estudianteResponse.setProgramaId(estudiante.getProgramaId().getId());
+                        estudianteResponse.setProgramaNombre(estudiante.getProgramaId().getNombre());
+                        estudianteResponse.setEstadoEstudianteId(estudiante.getEstadoEstudianteId().getId());
+                        estudianteResponse.setEstadoEstudianteNombre(estudiante.getEstadoEstudianteId().getNombre());
+                        return estudianteResponse;
+                })
+                                .collect(Collectors.toList());
+        }
 
-        usuario.setNombre(estudianteDTO.getNombre() +" "+estudianteDTO.getNombre2() +" " + estudianteDTO.getApellido()+" "+estudianteDTO.getApellido2());
-        usuario.setEmail(estudianteDTO.getEmail());
-        usuario.setTelefono(estudianteDTO.getTelefono());
-        usuario.setCedula(estudianteDTO.getCedula());
-        usuario.setCodigo(estudianteDTO.getCodigo());
+        @Override
+        public List<EstudianteResponse> listarEstudiantesPorPensum(Integer pensumId) throws PensumNotFoundException {
 
-        usuarioRepository.save(usuario);
-        estudiante = estudianteRepository.save(estudiante);
+                Pensum pensum = pensumRepository.findById(pensumId)
+                                .orElseThrow(() -> new PensumNotFoundException(
+                                                String.format(IS_NOT_FOUND, "EL PENSUM CON ID " + pensumId)
+                                                                .toLowerCase()));
 
-        EstudianteDTO estudianteActualizado = new EstudianteDTO();
-        BeanUtils.copyProperties(estudiante, estudianteActualizado);
-        estudianteActualizado.setUsuarioId(usuario.getId());
-        estudianteActualizado.setCohorteId(estudiante.getCohorteId().getId());
-        estudianteActualizado.setPensumId(estudiante.getPensumId().getId());
-        estudianteActualizado.setEstadoEstudianteId(estudiante.getEstadoEstudianteId().getId());
+                List<Estudiante> estudiantes = estudianteRepository.findByPensumId(pensum);
 
-        return estudianteActualizado;
-    }
+                return estudiantes.stream().map(estudiante -> {
+                        EstudianteResponse estudianteResponse = new EstudianteResponse();
+                        BeanUtils.copyProperties(estudiante, estudianteResponse);
+                        estudianteResponse.setUsuarioId(estudiante.getUsuarioId().getId());
+                        estudianteResponse.setCohorteId(estudiante.getCohorteId().getId());
+                        estudianteResponse.setCohorteNombre(estudiante.getCohorteId().getNombre());
+                        estudianteResponse.setPensumId(estudiante.getPensumId().getId());
+                        estudianteResponse.setPensumNombre(estudiante.getPensumId().getNombre());
+                        estudianteResponse.setProgramaId(estudiante.getProgramaId().getId());
+                        estudianteResponse.setProgramaNombre(estudiante.getProgramaId().getNombre());
+                        estudianteResponse.setEstadoEstudianteId(estudiante.getEstadoEstudianteId().getId());
+                        estudianteResponse.setEstadoEstudianteNombre(estudiante.getEstadoEstudianteId().getNombre());
+                        return estudianteResponse;
+                })
+                                .collect(Collectors.toList());
 
-    
-    @Override
-    public EstudianteResponse listarEstudiante(Integer id) throws EstudianteNotFoundException {
-        Estudiante estudiante = estudianteRepository.findById(id)
-                .orElseThrow(() -> new EstudianteNotFoundException(
-                        String.format(IS_NOT_FOUND, "EL ESTUDIANTE CON ID " + id).toLowerCase()));
+        }
 
-        EstudianteResponse estudianteResponse = new EstudianteResponse();
-        BeanUtils.copyProperties(estudiante, estudianteResponse);
-        estudianteResponse.setUsuarioId(estudiante.getUsuarioId().getId());
-        estudianteResponse.setCohorteId(estudiante.getCohorteId().getId());
-        estudianteResponse.setCohorteNombre(estudiante.getCohorteId().getNombre());
-        estudianteResponse.setPensumId(estudiante.getPensumId().getId());
-        estudianteResponse.setPensumNombre(estudiante.getPensumId().getNombre());
-        estudianteResponse.setProgramaId(estudiante.getProgramaId().getId());
-        estudianteResponse.setProgramaNombre(estudiante.getProgramaId().getNombre());
-        estudianteResponse.setEstadoEstudianteId(estudiante.getEstadoEstudianteId().getId());
-        estudianteResponse.setEstadoEstudianteNombre(estudiante.getEstadoEstudianteId().getNombre());
-        return estudianteResponse;
-    }
+        @Override
+        public List<EstudianteResponse> listarEstudiantesPorCohorte(Integer cohorteId) throws CohorteNotFoundException {
 
-    public List<EstudianteResponse> listarEstudiantes(){
-        
-        return estudianteRepository.findAll().stream().map(estudiante -> {
-            EstudianteResponse estudianteResponse = new EstudianteResponse();
-            BeanUtils.copyProperties(estudiante, estudianteResponse);
-            estudianteResponse.setUsuarioId(estudiante.getUsuarioId().getId());
-            estudianteResponse.setCohorteId(estudiante.getCohorteId().getId());
-            estudianteResponse.setCohorteNombre(estudiante.getCohorteId().getNombre());
-            estudianteResponse.setPensumId(estudiante.getPensumId().getId());
-            estudianteResponse.setPensumNombre(estudiante.getPensumId().getNombre());
-            estudianteResponse.setProgramaId(estudiante.getProgramaId().getId());
-            estudianteResponse.setProgramaNombre(estudiante.getProgramaId().getNombre());
-            estudianteResponse.setEstadoEstudianteId(estudiante.getEstadoEstudianteId().getId());
-            estudianteResponse.setEstadoEstudianteNombre(estudiante.getEstadoEstudianteId().getNombre());
-            return estudianteResponse;
-        })   
-        .collect(Collectors.toList());
-    }
+                CohorteGrupo cohorteGrupo = cohorteGrupoRepository.findById(cohorteId)
+                                .orElseThrow(() -> new CohorteNotFoundException(
+                                                String.format(IS_NOT_FOUND_F, "LA COHORTE CON ID " + cohorteId)
+                                                                .toLowerCase()));
 
-    @Override
-    public List<EstudianteResponse> listarEstudiantesPorPensum(Integer pensumId) throws PensumNotFoundException{
+                List<Estudiante> estudiantes = estudianteRepository.findByCohorteId(cohorteGrupo);
 
-        Pensum pensum = pensumRepository.findById(pensumId)
-                .orElseThrow(() -> new PensumNotFoundException(
-                        String.format(IS_NOT_FOUND, "EL PENSUM CON ID " + pensumId).toLowerCase()));
+                return estudiantes.stream().map(estudiante -> {
+                        EstudianteResponse estudianteResponse = new EstudianteResponse();
+                        BeanUtils.copyProperties(estudiante, estudianteResponse);
+                        estudianteResponse.setUsuarioId(estudiante.getUsuarioId().getId());
+                        estudianteResponse.setCohorteId(estudiante.getCohorteId().getId());
+                        estudianteResponse.setCohorteNombre(estudiante.getCohorteId().getNombre());
+                        estudianteResponse.setPensumId(estudiante.getPensumId().getId());
+                        estudianteResponse.setPensumNombre(estudiante.getPensumId().getNombre());
+                        estudianteResponse.setProgramaId(estudiante.getProgramaId().getId());
+                        estudianteResponse.setProgramaNombre(estudiante.getProgramaId().getNombre());
+                        estudianteResponse.setEstadoEstudianteId(estudiante.getEstadoEstudianteId().getId());
+                        estudianteResponse.setEstadoEstudianteNombre(estudiante.getEstadoEstudianteId().getNombre());
+                        return estudianteResponse;
+                })
+                                .collect(Collectors.toList());
+        }
 
-        List<Estudiante> estudiantes = estudianteRepository.findByPensumId(pensum);
+        @Override
+        public List<EstudianteResponse> listarEstudiantesPorPrograma(Integer programaId)
+                        throws ProgramaNotFoundException {
 
-        return estudiantes.stream().map(estudiante -> {
-            EstudianteResponse estudianteResponse = new EstudianteResponse();
-            BeanUtils.copyProperties(estudiante, estudianteResponse);
-            estudianteResponse.setUsuarioId(estudiante.getUsuarioId().getId());
-            estudianteResponse.setCohorteId(estudiante.getCohorteId().getId());
-            estudianteResponse.setCohorteNombre(estudiante.getCohorteId().getNombre());
-            estudianteResponse.setPensumId(estudiante.getPensumId().getId());
-            estudianteResponse.setPensumNombre(estudiante.getPensumId().getNombre());
-            estudianteResponse.setProgramaId(estudiante.getProgramaId().getId());
-            estudianteResponse.setProgramaNombre(estudiante.getProgramaId().getNombre());
-            estudianteResponse.setEstadoEstudianteId(estudiante.getEstadoEstudianteId().getId());
-            estudianteResponse.setEstadoEstudianteNombre(estudiante.getEstadoEstudianteId().getNombre());
-            return estudianteResponse;
-        })   
-        .collect(Collectors.toList());
-    
-    }
+                Programa programa = programaRepository.findById(programaId)
+                                .orElseThrow(() -> new ProgramaNotFoundException(
+                                                String.format(IS_NOT_FOUND, "EL PROGRAMA CON ID " + programaId)
+                                                                .toLowerCase()));
 
-    @Override
-    public List<EstudianteResponse> listarEstudiantesPorCohorte(Integer cohorteId) throws CohorteNotFoundException{
+                List<Estudiante> estudiantes = estudianteRepository.findByProgramaId(programa);
 
-        CohorteGrupo cohorteGrupo = cohorteGrupoRepository.findById(cohorteId)
-                .orElseThrow(() -> new CohorteNotFoundException(
-                        String.format(IS_NOT_FOUND_F, "LA COHORTE CON ID " + cohorteId).toLowerCase()));
+                return estudiantes.stream().map(estudiante -> {
+                        EstudianteResponse estudianteResponse = new EstudianteResponse();
+                        BeanUtils.copyProperties(estudiante, estudianteResponse);
+                        estudianteResponse.setUsuarioId(estudiante.getUsuarioId().getId());
+                        estudianteResponse.setCohorteId(estudiante.getCohorteId().getId());
+                        estudianteResponse.setCohorteNombre(estudiante.getCohorteId().getNombre());
+                        estudianteResponse.setPensumId(estudiante.getPensumId().getId());
+                        estudianteResponse.setPensumNombre(estudiante.getPensumId().getNombre());
+                        estudianteResponse.setProgramaId(estudiante.getProgramaId().getId());
+                        estudianteResponse.setProgramaNombre(estudiante.getProgramaId().getNombre());
+                        estudianteResponse.setEstadoEstudianteId(estudiante.getEstadoEstudianteId().getId());
+                        estudianteResponse.setEstadoEstudianteNombre(estudiante.getEstadoEstudianteId().getNombre());
+                        return estudianteResponse;
+                })
+                                .collect(Collectors.toList());
+        }
 
-        List<Estudiante> estudiantes = estudianteRepository.findByCohorteId(cohorteGrupo);
+        @Override
+        public List<EstudianteResponse> listarEstudiantesPorEstado(Integer estadoEstudianteId)
+                        throws EstadoEstudianteNotFoundException {
 
-        return estudiantes.stream().map(estudiante -> {
-            EstudianteResponse estudianteResponse = new EstudianteResponse();
-            BeanUtils.copyProperties(estudiante, estudianteResponse);
-            estudianteResponse.setUsuarioId(estudiante.getUsuarioId().getId());
-            estudianteResponse.setCohorteId(estudiante.getCohorteId().getId());
-            estudianteResponse.setCohorteNombre(estudiante.getCohorteId().getNombre());
-            estudianteResponse.setPensumId(estudiante.getPensumId().getId());
-            estudianteResponse.setPensumNombre(estudiante.getPensumId().getNombre());
-            estudianteResponse.setProgramaId(estudiante.getProgramaId().getId());
-            estudianteResponse.setProgramaNombre(estudiante.getProgramaId().getNombre());
-            estudianteResponse.setEstadoEstudianteId(estudiante.getEstadoEstudianteId().getId());
-            estudianteResponse.setEstadoEstudianteNombre(estudiante.getEstadoEstudianteId().getNombre());
-            return estudianteResponse;
-        })   
-        .collect(Collectors.toList());
-    }
+                EstadoEstudiante estadoEstudiante = estadoEstudianteRepository.findById(estadoEstudianteId)
+                                .orElseThrow(() -> new EstadoEstudianteNotFoundException(
+                                                String.format(IS_NOT_FOUND,
+                                                                "EL ESTADO ESTUDIANTE CON ID " + estadoEstudianteId)
+                                                                .toLowerCase()));
 
-    @Override
-    public List<EstudianteResponse> listarEstudiantesPorPrograma(Integer programaId) throws ProgramaNotFoundException{
+                List<Estudiante> estudiantes = estudianteRepository.findByEstadoEstudianteId(estadoEstudiante);
 
-        Programa programa = programaRepository.findById(programaId)
-                .orElseThrow(() -> new ProgramaNotFoundException(
-                        String.format(IS_NOT_FOUND, "EL PROGRAMA CON ID " + programaId).toLowerCase()));
-
-        List<Estudiante> estudiantes = estudianteRepository.findByProgramaId(programa);
-
-        return estudiantes.stream().map(estudiante -> {
-            EstudianteResponse estudianteResponse = new EstudianteResponse();
-            BeanUtils.copyProperties(estudiante, estudianteResponse);
-            estudianteResponse.setUsuarioId(estudiante.getUsuarioId().getId());
-            estudianteResponse.setCohorteId(estudiante.getCohorteId().getId());
-            estudianteResponse.setCohorteNombre(estudiante.getCohorteId().getNombre());
-            estudianteResponse.setPensumId(estudiante.getPensumId().getId());
-            estudianteResponse.setPensumNombre(estudiante.getPensumId().getNombre());
-            estudianteResponse.setProgramaId(estudiante.getProgramaId().getId());
-            estudianteResponse.setProgramaNombre(estudiante.getProgramaId().getNombre());
-            estudianteResponse.setEstadoEstudianteId(estudiante.getEstadoEstudianteId().getId());
-            estudianteResponse.setEstadoEstudianteNombre(estudiante.getEstadoEstudianteId().getNombre());
-            return estudianteResponse;
-        })   
-        .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<EstudianteResponse> listarEstudiantesPorEstado(Integer estadoEstudianteId) throws EstadoEstudianteNotFoundException{
-
-        EstadoEstudiante estadoEstudiante = estadoEstudianteRepository.findById(estadoEstudianteId)
-                .orElseThrow(() -> new EstadoEstudianteNotFoundException(
-                        String.format(IS_NOT_FOUND, "EL ESTADO ESTUDIANTE CON ID " + estadoEstudianteId).toLowerCase()));
-
-        List<Estudiante> estudiantes = estudianteRepository.findByEstadoEstudianteId(estadoEstudiante);
-
-        return estudiantes.stream().map(estudiante -> {
-            EstudianteResponse estudianteResponse = new EstudianteResponse();
-            BeanUtils.copyProperties(estudiante, estudianteResponse);
-            estudianteResponse.setUsuarioId(estudiante.getUsuarioId().getId()); 
-            estudianteResponse.setCohorteId(estudiante.getCohorteId().getId());
-            estudianteResponse.setCohorteNombre(estudiante.getCohorteId().getNombre());
-            estudianteResponse.setPensumId(estudiante.getPensumId().getId());
-            estudianteResponse.setPensumNombre(estudiante.getPensumId().getNombre());
-            estudianteResponse.setProgramaId(estudiante.getProgramaId().getId());
-            estudianteResponse.setProgramaNombre(estudiante.getProgramaId().getNombre());
-            estudianteResponse.setEstadoEstudianteId(estudiante.getEstadoEstudianteId().getId());
-            estudianteResponse.setEstadoEstudianteNombre(estudiante.getEstadoEstudianteId().getNombre());
-            return estudianteResponse;
-        })   
-        .collect(Collectors.toList());
-    }
+                return estudiantes.stream().map(estudiante -> {
+                        EstudianteResponse estudianteResponse = new EstudianteResponse();
+                        BeanUtils.copyProperties(estudiante, estudianteResponse);
+                        estudianteResponse.setUsuarioId(estudiante.getUsuarioId().getId());
+                        estudianteResponse.setCohorteId(estudiante.getCohorteId().getId());
+                        estudianteResponse.setCohorteNombre(estudiante.getCohorteId().getNombre());
+                        estudianteResponse.setPensumId(estudiante.getPensumId().getId());
+                        estudianteResponse.setPensumNombre(estudiante.getPensumId().getNombre());
+                        estudianteResponse.setProgramaId(estudiante.getProgramaId().getId());
+                        estudianteResponse.setProgramaNombre(estudiante.getProgramaId().getNombre());
+                        estudianteResponse.setEstadoEstudianteId(estudiante.getEstadoEstudianteId().getId());
+                        estudianteResponse.setEstadoEstudianteNombre(estudiante.getEstadoEstudianteId().getNombre());
+                        return estudianteResponse;
+                })
+                                .collect(Collectors.toList());
+        }
 }
