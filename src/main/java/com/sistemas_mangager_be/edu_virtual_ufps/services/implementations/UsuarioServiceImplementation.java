@@ -61,6 +61,7 @@ public class UsuarioServiceImplementation implements IUsuarioService {
 
         Usuario docente = new Usuario();
         docente.setCodigo(docenteRequest.getCodigo());
+        docente.setNombreCompleto(docenteRequest.getPrimerNombre() + " " + docenteRequest.getSegundoNombre() + " " + docenteRequest.getPrimerApellido() + " " + docenteRequest.getSegundoApellido());
         BeanUtils.copyProperties(docenteRequest, docente);
 
         // 5. Asignar rol docente (2 es el ID del rol docente)
@@ -80,8 +81,10 @@ public class UsuarioServiceImplementation implements IUsuarioService {
                 usuario -> {
                     // Actualización de usuario existente
                     usuario.setGoogleId(loginGoogleRequest.getGoogleId());
-                    usuario.setNombre(loginGoogleRequest.getNombre().isEmpty() ? usuario.getNombre() : loginGoogleRequest.getNombre());
-                    usuario.setFotoUrl(loginGoogleRequest.getFotoUrl() == null ? usuario.getFotoUrl() : loginGoogleRequest.getFotoUrl());
+                    usuario.setNombreCompleto(loginGoogleRequest.getNombre().isEmpty() ? usuario.getNombreCompleto()
+                            : loginGoogleRequest.getNombre());
+                    usuario.setFotoUrl(loginGoogleRequest.getFotoUrl() == null ? usuario.getFotoUrl()
+                            : loginGoogleRequest.getFotoUrl());
 
                     // Si es un estudiante (rol por defecto) pero ya estaba registrado como docente,
                     // mantener rol
@@ -97,7 +100,8 @@ public class UsuarioServiceImplementation implements IUsuarioService {
                     Usuario nuevoUsuario = new Usuario();
                     nuevoUsuario.setEmail(loginGoogleRequest.getEmail());
                     nuevoUsuario.setGoogleId(loginGoogleRequest.getGoogleId());
-                    nuevoUsuario.setNombre(loginGoogleRequest.getNombre()); // si no se le pasa, se usa el nombre del usuario
+                    nuevoUsuario.setNombreCompleto(loginGoogleRequest.getNombre()); // si no se le pasa, se usa el
+                                                                                    // nombre del usuario
                     nuevoUsuario.setFotoUrl(loginGoogleRequest.getFotoUrl());
 
                     Rol rolEstudiante = rolRepository.findById(1).orElseThrow();
@@ -105,7 +109,7 @@ public class UsuarioServiceImplementation implements IUsuarioService {
 
                     usuarioRepository.save(nuevoUsuario);
                 });
-            }
+    }
 
     @Override
     @Transactional
@@ -119,7 +123,7 @@ public class UsuarioServiceImplementation implements IUsuarioService {
                 usuario -> {
                     // Actualización de usuario existente
                     usuario.setGoogleId(googleId);
-                    usuario.setNombre(nombre.isEmpty() ? usuario.getNombre() : nombre);
+                    usuario.setNombreCompleto(nombre.isEmpty() ? usuario.getNombreCompleto() : nombre);
                     usuario.setFotoUrl(fotoUrl == null ? usuario.getFotoUrl() : fotoUrl);
 
                     // Si es un estudiante (rol por defecto) pero ya estaba registrado como docente,
@@ -136,7 +140,7 @@ public class UsuarioServiceImplementation implements IUsuarioService {
                     Usuario nuevoUsuario = new Usuario();
                     nuevoUsuario.setEmail(email);
                     nuevoUsuario.setGoogleId(googleId);
-                    nuevoUsuario.setNombre(nombre);
+                    nuevoUsuario.setNombreCompleto(nombre);
                     nuevoUsuario.setFotoUrl(fotoUrl);
 
                     Rol rolEstudiante = rolRepository.findById(1).orElseThrow();
@@ -162,7 +166,11 @@ public class UsuarioServiceImplementation implements IUsuarioService {
             throw new UserExistException(String.format(IS_ALREADY_USE, "ESTE CORREO").toLowerCase());
         }
 
-        profesor.setNombre(docenteRequest.getNombre());
+        profesor.setNombreCompleto(docenteRequest.getPrimerNombre() + " " + docenteRequest.getSegundoNombre() + " " + docenteRequest.getPrimerApellido() + " " + docenteRequest.getSegundoApellido());
+        profesor.setPrimerNombre(docenteRequest.getPrimerNombre());
+        profesor.setSegundoNombre(docenteRequest.getSegundoNombre());
+        profesor.setPrimerApellido(docenteRequest.getPrimerApellido());
+        profesor.setSegundoApellido(docenteRequest.getSegundoApellido());
         profesor.setEmail(docenteRequest.getEmail());
         profesor.setTelefono(docenteRequest.getTelefono());
         profesor.setCedula(docenteRequest.getCedula());
@@ -217,7 +225,7 @@ public class UsuarioServiceImplementation implements IUsuarioService {
 
     private UsuarioDTO actualizarEstudianteADocente(Usuario usuario, DocenteRequest docenteRequest) {
         // Actualizar datos básicos
-        usuario.setNombre(docenteRequest.getNombre());
+        usuario.setNombreCompleto(docenteRequest.getNombre());
         usuario.setTelefono(docenteRequest.getTelefono());
         usuario.setCedula(docenteRequest.getCedula());
         usuario.setCodigo(docenteRequest.getCodigo());
