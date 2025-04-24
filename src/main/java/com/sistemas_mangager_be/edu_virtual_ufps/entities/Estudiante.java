@@ -28,8 +28,14 @@ public class Estudiante {
     @Column(nullable = false)
     private String nombre;
 
+    @Column(nullable =  true)
+    private String nombre2;
+
     @Column(nullable = false)
     private String apellido;
+
+    @Column(nullable = true)
+    private String apellido2;
 
     @Column(unique = true)
     private String moodleId;
