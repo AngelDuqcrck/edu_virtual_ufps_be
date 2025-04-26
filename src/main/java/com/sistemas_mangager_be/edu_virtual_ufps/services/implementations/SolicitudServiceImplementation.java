@@ -103,6 +103,7 @@ public class SolicitudServiceImplementation implements ISolicitudService {
 
         // Crear la solicitud
         Solicitud solicitud = new Solicitud();
+        solicitud.setDescripcion(solicitudDTO.getDescripcion());
         solicitud.setTipoSolicitudId(tipoSolicitud);
         solicitud.setEstudianteId(estudiante);
         solicitud.setFechaCreacion(new Date());
@@ -162,7 +163,8 @@ public class SolicitudServiceImplementation implements ISolicitudService {
                 solicitud.setMatriculaId(matricula);
             }
         }
-
+        solicitud.setDescripcion(solicitudDTO.getDescripcion());
+        
         // 6. Guardar los cambios
         return solicitudRepository.save(solicitud);
     }
@@ -189,6 +191,7 @@ public class SolicitudServiceImplementation implements ISolicitudService {
         solicitudResponse.setEstudianteNombre(
                 solicitud.getEstudianteId().getNombre() + " " + solicitud.getEstudianteId().getNombre2() + " "
                         + solicitud.getEstudianteId().getApellido() + " " + solicitud.getEstudianteId().getApellido2());
+        solicitudResponse.setDescripcion(solicitud.getDescripcion());
         solicitudResponse.setTipoSolicitudId(solicitud.getTipoSolicitudId().getId());
         solicitudResponse.setTipoSolicitudNombre(solicitud.getTipoSolicitudId().getNombre());
         solicitudResponse.setSemestre(calcularSemestre(solicitud.getFechaCreacion()));
@@ -215,6 +218,7 @@ public class SolicitudServiceImplementation implements ISolicitudService {
             solicitudResponse.setEstudianteNombre(solicitud.getEstudianteId().getNombre() + " "
                     + solicitud.getEstudianteId().getNombre2() + " " + solicitud.getEstudianteId().getApellido() + " "
                     + solicitud.getEstudianteId().getApellido2());
+            solicitudResponse.setDescripcion(solicitud.getDescripcion());
             solicitudResponse.setTipoSolicitudId(solicitud.getTipoSolicitudId().getId());
             solicitudResponse.setTipoSolicitudNombre(solicitud.getTipoSolicitudId().getNombre());
             solicitudResponse.setSemestre(calcularSemestre(solicitud.getFechaCreacion()));
@@ -230,7 +234,7 @@ public class SolicitudServiceImplementation implements ISolicitudService {
                 .orElseThrow(() -> new SolicitudException(
                         String.format(IS_NOT_FOUND_F, "Solicitud con ID: " + solicitudId)));
 
-        if(solicitud.getTipoSolicitudId().getId() != tiposolicitudId){
+        if (solicitud.getTipoSolicitudId().getId() != tiposolicitudId) {
             throw new SolicitudException("Tipo de solicitud no válido");
         }
 
@@ -264,7 +268,8 @@ public class SolicitudServiceImplementation implements ISolicitudService {
         solicitudRepository.save(solicitud);
     }
 
-    //------------------------------------------------------- MÉTODOS AUXILIARES -------------------------------------------------------------------
+    // ------------------------------------------------------- MÉTODOS AUXILIARES
+    // -------------------------------------------------------------------
 
     private void aprobarCancelacionMaterias(Solicitud solicitud) throws SolicitudException {
         // 1. Validar que tenga matrícula asociada

@@ -76,4 +76,6 @@ public class Estudiante {
     @OneToOne
     @JoinColumn(name = "usuario_id")
     private Usuario usuarioId;
+
+    private Boolean migrado;
 }

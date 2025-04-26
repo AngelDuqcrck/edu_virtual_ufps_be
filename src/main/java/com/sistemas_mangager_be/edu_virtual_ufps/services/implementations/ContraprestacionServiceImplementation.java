@@ -21,6 +21,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.repositories.EstudianteReposito
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.TipoContraprestacionRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IContraprestacionService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.ContraprestacionDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.CertificadoResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.ContraprestacionResponse;
 
 @Service
@@ -273,6 +274,35 @@ public class ContraprestacionServiceImplementation implements IContraprestacionS
                 contraprestacionRepository.save(contraprestacion);
         }
 
+
+        public CertificadoResponse listarInformacionCertificado(Integer contraprestacionId) throws ContraprestacionException{
+                Contraprestacion contraprestacion = contraprestacionRepository.findById(contraprestacionId).orElse(null);
+
+                if(contraprestacion == null){
+                        throw new ContraprestacionException(String.format(IS_NOT_FOUND_F, "La contraprestación con ID: " + contraprestacionId));
+                }
+
+                if(contraprestacion.getAprobada() == false){
+                        throw new ContraprestacionException("La contraprestación no ha sido aprobada");
+                }
+                return CertificadoResponse.builder()
+                                .id(contraprestacion.getId())
+                                .nombreCompleto(contraprestacion.getEstudianteId().getNombre()+" "+contraprestacion.getEstudianteId().getNombre2()+" "+contraprestacion.getEstudianteId().getApellido()+" "+contraprestacion.getEstudianteId().getApellido2())
+                                .cedula(contraprestacion.getEstudianteId().getCedula())
+                                .programa(contraprestacion.getEstudianteId().getProgramaId().getNombre())
+                                .programaId(contraprestacion.getEstudianteId().getProgramaId().getId())
+                                .cohorteId(contraprestacion.getEstudianteId().getCohorteId().getId())
+                                .cohorteNombre(contraprestacion.getEstudianteId().getCohorteId().getNombre())
+                                .fechaCreacion(contraprestacion.getFechaCreacion())
+                                .semestre(contraprestacion.getSemestre())
+                                .actividades(contraprestacion.getActividades())
+                                .fechaInicio(contraprestacion.getFechaInicio())
+                                .fechaFin(contraprestacion.getFechaFin())
+                                .fechaCertificado(new Date())
+                                .aprobada(contraprestacion.getAprobada())
+                                .codigoEstudiante(contraprestacion.getEstudianteId().getCodigo())
+                                .build();
+        }
         private String calcularSemestre(Date fechaMatriculacion) {
                 Calendar cal = Calendar.getInstance();
                 cal.setTime(fechaMatriculacion);
