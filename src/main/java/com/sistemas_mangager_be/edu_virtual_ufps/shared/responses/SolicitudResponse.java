@@ -11,6 +11,8 @@ public class SolicitudResponse {
     
     private Long id;
 
+    private String descripcion;
+
     private Integer EstudianteId;
 
     private String estudianteNombre;

@@ -21,6 +21,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.PensumNotFoundExcept
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundException;
+import com.sistemas_mangager_be.edu_virtual_ufps.services.implementations.MigracionEstudiantesService;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IEstudianteService;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IGrupoService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.EstudianteDTO;
@@ -37,6 +38,9 @@ public class EstudianteController {
 
     @Autowired
     private IGrupoService iGrupoService;
+
+    @Autowired
+    private MigracionEstudiantesService migracionEstudiantesService;
 
     @PostMapping("/crear")
     public ResponseEntity<HttpResponse> crearEstudiante(@RequestBody EstudianteDTO estudianteDTO)
@@ -108,4 +112,13 @@ public class EstudianteController {
         EstudianteGrupoResponse estudianteGrupoResponse = iGrupoService.listarEstudiantesPorGrupoCohorte(grupoCohorteId);
         return new ResponseEntity<>(estudianteGrupoResponse, HttpStatus.OK);
     }
+
+    // @PostMapping("/migrar")
+    // public ResponseEntity<HttpResponse> migrarEstudiantesTIC() {
+    //     migracionEstudiantesService.migrarEstudiantesTIC();
+    //     return new ResponseEntity<>(
+    //             new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+    //                     " Estudiantes migrados con exito"),
+    //             HttpStatus.OK);
+    // }
 }

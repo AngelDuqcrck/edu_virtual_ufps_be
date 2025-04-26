@@ -22,6 +22,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.PensumNotFoundExcept
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundException;
+import com.sistemas_mangager_be.edu_virtual_ufps.oracle.repositories.EstudianteOracleRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.CohorteGrupoRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.EstadoEstudianteRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.EstudianteRepository;
@@ -43,6 +44,8 @@ public class EstudianteServiceImplementation implements IEstudianteService {
         public static final String IS_NOT_VALID = "%s no es valido";
         public static final String ARE_NOT_EQUALS = "%s no son iguales";
         public static final String IS_NOT_CORRECT = "%s no es correcta";
+
+       
 
         @Autowired
         private PensumRepository pensumRepository;
@@ -133,7 +136,7 @@ public class EstudianteServiceImplementation implements IEstudianteService {
                 estudiante.setCohorteId(cohorteGrupo);
                 estudiante.setEstadoEstudianteId(estadoEstudiante);
                 estudiante.setUsuarioId(usuario);
-
+                estudiante.setMigrado(false);
                 estudiante = estudianteRepository.save(estudiante);
 
                 EstudianteDTO estudianteCreado = new EstudianteDTO();
