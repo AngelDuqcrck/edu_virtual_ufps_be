@@ -96,16 +96,17 @@ public class ContraprestacionController {
     }
 
     @PostMapping("/generar/certificado/{contraprestacionId}")
-    public ResponseEntity<byte[]> generarCertificado(@PathVariable Integer contraprestacionId) throws ContraprestacionException{
-        // Obtener datos del certificado
+    public ResponseEntity<byte[]> generarCertificado(@PathVariable Integer contraprestacionId) 
+            throws ContraprestacionException, IOException {
+        
+        // Generar certificado (el servicio maneja toda la lógica)
+        byte[] pdfBytes = contraprestacionService.generarCertificado(contraprestacionId);
+        
+        // Obtener datos para el nombre del archivo
         CertificadoResponse certificado = contraprestacionService.listarInformacionCertificado(contraprestacionId);
-        
-        // Generar PDF
-        byte[] pdfBytes = pdfGeneratorService.generateCertificadoPdf(certificado);
-        
-        // Configurar respuesta
         String nombreArchivo = "certificado_contraprestacion_" + certificado.getCodigoEstudiante() + ".pdf";
         
+        // Configurar respuesta
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + nombreArchivo)
                 .contentType(MediaType.APPLICATION_PDF)
