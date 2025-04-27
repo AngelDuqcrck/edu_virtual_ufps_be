@@ -17,9 +17,7 @@ public class PdfGeneratorService {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             ITextRenderer renderer = new ITextRenderer();
 
-            // Configuración para manejar imágenes embebidas
-            renderer.getSharedContext().setReplacedElementFactory(
-                    new ImageReplacedElementFactory(renderer.getSharedContext().getReplacedElementFactory()));
+         
 
             renderer.setDocumentFromString(htmlContent);
             renderer.layout();

@@ -33,4 +33,6 @@ public interface IContraprestacionService {
                         throws ContraprestacionException, IOException;
 
         CertificadoResponse listarInformacionCertificado(Integer contraprestacionId) throws ContraprestacionException;
+
+        public byte[] generarCertificado(Integer contraprestacionId) throws ContraprestacionException, IOException;
 }
