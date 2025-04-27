@@ -3,6 +3,7 @@ package com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ContraprestacionException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EstudianteNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.ContraprestacionDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.CertificadoResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.ContraprestacionResponse;
 
 import java.io.IOException;
@@ -31,4 +32,5 @@ public interface IContraprestacionService {
         void aprobarContraprestacion(Integer id, MultipartFile informeFinal)
                         throws ContraprestacionException, IOException;
 
+        CertificadoResponse listarInformacionCertificado(Integer contraprestacionId) throws ContraprestacionException;
 }

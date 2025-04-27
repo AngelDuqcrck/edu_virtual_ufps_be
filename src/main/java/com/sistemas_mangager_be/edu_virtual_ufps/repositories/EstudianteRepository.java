@@ -10,6 +10,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.entities.Pensum;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Programa;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface EstudianteRepository extends JpaRepository <Estudiante, Integer> {
@@ -23,6 +24,6 @@ public interface EstudianteRepository extends JpaRepository <Estudiante, Integer
     List<Estudiante> findByEstadoEstudianteId(EstadoEstudiante estadoEstudianteId);
 
     
-    
+    Optional<Estudiante> findByCodigo(String codigo);
 
 }

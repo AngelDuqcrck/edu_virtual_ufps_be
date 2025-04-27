@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS materias (
 
  -- Insertamos los programas académicos 
 INSERT IGNORE INTO programas (id,nombre, codigo , es_posgrado) VALUES 
-(1,'Maestria en Tecnologias de Informacion y Comunicacion (TIC) Aplicadas a la Educacion', '001', true),
+(1,'Maestria en Tecnologias de Informacion y Comunicacion (TIC) Aplicadas a la Educacion', '247', true),
 (2,'Tecnologia en Analitica de Datos', '002', false);
 
 

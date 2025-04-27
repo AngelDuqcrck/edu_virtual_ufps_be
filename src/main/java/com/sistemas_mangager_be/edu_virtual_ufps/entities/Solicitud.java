@@ -18,6 +18,8 @@ public class Solicitud {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String descripcion;
+
     @ManyToOne
     @JoinColumn(name = "tipo_solicitud_id")
     private TipoSolicitud tipoSolicitudId;

@@ -15,11 +15,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ContraprestacionException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EstudianteNotFoundException;
+import com.sistemas_mangager_be.edu_virtual_ufps.services.implementations.PdfGeneratorService;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IContraprestacionService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.ContraprestacionDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.CertificadoResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.ContraprestacionResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.HttpResponse;
 
@@ -29,6 +33,9 @@ public class ContraprestacionController {
     
     @Autowired
     private IContraprestacionService  contraprestacionService;
+
+    @Autowired
+    private PdfGeneratorService pdfGeneratorService;
 
     @PostMapping("/crear")
     public ResponseEntity<HttpResponse> crearContraprestacion(@RequestBody ContraprestacionDTO contraprestacionDTO) throws ContraprestacionException, EstudianteNotFoundException{
@@ -79,5 +86,29 @@ public class ContraprestacionController {
                                 new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
                                                 " Contraprestacion aprobada con exito"),
                                 HttpStatus.OK);
+    }
+
+    @GetMapping("/certificado/{idContraprestacion}")
+    public ResponseEntity<CertificadoResponse> listarInformacionCertificado(@PathVariable Integer idContraprestacion) throws ContraprestacionException{
+        CertificadoResponse certificadoResponse = contraprestacionService.listarInformacionCertificado(idContraprestacion); 
+        return new ResponseEntity<>(certificadoResponse, HttpStatus.OK);
+        
+    }
+
+    @PostMapping("/generar/certificado/{contraprestacionId}")
+    public ResponseEntity<byte[]> generarCertificado(@PathVariable Integer contraprestacionId) throws ContraprestacionException{
+        // Obtener datos del certificado
+        CertificadoResponse certificado = contraprestacionService.listarInformacionCertificado(contraprestacionId);
+        
+        // Generar PDF
+        byte[] pdfBytes = pdfGeneratorService.generateCertificadoPdf(certificado);
+        
+        // Configurar respuesta
+        String nombreArchivo = "certificado_contraprestacion_" + certificado.getCodigoEstudiante() + ".pdf";
+        
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + nombreArchivo)
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
     }
 }
