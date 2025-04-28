@@ -41,4 +41,8 @@ public class Matricula {
 
     private String semestre; //Con la fecha de matriculacion se calcula el semestre de la matricula primer o segundo semestre de X año
     
+
+    private boolean correoEnviado;
+
+    private Date fechaCorreoEnviado;
 }

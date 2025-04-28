@@ -48,6 +48,11 @@ public interface MatriculaRepository extends JpaRepository<Matricula, Long> {
 
         List<Matricula> findByGrupoCohorteIdAndEstadoMatriculaId(GrupoCohorte grupoCohorte, EstadoMatricula estado);
 
+        boolean existsByEstudianteIdAndEstadoMatriculaId_IdAndCorreoEnviado(
+                @Param("estudianteId") Estudiante estudiante,
+                @Param("estadoMatriculaId") Integer estadoMatriculaId,
+                @Param("correoEnviado") boolean correoEnviado);
+        
         // boolean
         // existsByEstudianteIdAndAndGrupoCohorteIdAndEstadoMatriculaId_Id(Estudiante
         // estudiante, GrupoCohorte grupoCohorte, String estadoMatriculaId);
