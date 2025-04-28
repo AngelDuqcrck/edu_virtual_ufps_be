@@ -20,7 +20,9 @@ public interface IMatriculaService {
 
     public void anularMatricula(Long idMatricula) throws MatriculaException;
 
-    public CorreoResponse enviarCorreo(Integer estudianteId) throws EstudianteNotFoundException;
+    public CorreoResponse enviarCorreo(Integer estudianteId) throws EstudianteNotFoundException, MatriculaException;
+
+    public boolean verificarCorreoEnviado(Integer estudianteId) throws EstudianteNotFoundException;
 
     public List<MatriculaResponse> listarMatriculasEnCursoPorEstudiante(Integer estudianteId) throws EstudianteNotFoundException;
 
