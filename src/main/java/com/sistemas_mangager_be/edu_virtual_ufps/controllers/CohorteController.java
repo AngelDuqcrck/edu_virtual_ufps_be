@@ -19,6 +19,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.CohorteNotFoundExcep
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.ICohorteService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.CohorteDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.CohortePorCarreraDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.CohorteResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.HttpResponse;
 
 @RestController
@@ -40,8 +41,8 @@ public class CohorteController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CohorteDTO> listarCohorte(@PathVariable Integer id) throws CohorteNotFoundException {
-        CohorteDTO cohorte = cohorteService.listarCohorte(id);
+    public ResponseEntity<CohorteResponse> listarCohorte(@PathVariable Integer id) throws CohorteNotFoundException {
+        CohorteResponse cohorte = cohorteService.listarCohorte(id);
         return new ResponseEntity<>(cohorte, HttpStatus.OK);
     }
 
