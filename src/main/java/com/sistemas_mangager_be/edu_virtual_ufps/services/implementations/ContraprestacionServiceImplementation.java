@@ -161,7 +161,10 @@ public class ContraprestacionServiceImplementation implements IContraprestacionS
                 return ContraprestacionResponse.builder()
                                 .id(contraprestacion.getId())
                                 .estudianteId(contraprestacion.getEstudianteId().getId())
-                                .estudianteNombre(contraprestacion.getEstudianteId().getNombre())
+                                .estudianteNombre(contraprestacion.getEstudianteId().getNombre() + " " +
+                                                contraprestacion.getEstudianteId().getNombre2() + " " +
+                                                contraprestacion.getEstudianteId().getApellido() + " " +
+                                                contraprestacion.getEstudianteId().getApellido2())
                                 .actividades(contraprestacion.getActividades())
                                 .fechaCreacion(contraprestacion.getFechaCreacion())
                                 .fechaInicio(contraprestacion.getFechaInicio())
@@ -171,6 +174,13 @@ public class ContraprestacionServiceImplementation implements IContraprestacionS
                                 .porcentajeContraprestacion(
                                                 String.valueOf(contraprestacion.getTipoContraprestacionId()
                                                                 .getPorcentaje()))
+                                .aprobada(contraprestacion.getAprobada())
+                                .semestre(contraprestacion.getSemestre())
+                                .soporte(contraprestacion.getSoporteId())
+                                .primerNombre(contraprestacion.getEstudianteId().getNombre())
+                                .segundoNombre(contraprestacion.getEstudianteId().getNombre2())
+                                .primerApellido(contraprestacion.getEstudianteId().getApellido())
+                                .segundoApellido(contraprestacion.getEstudianteId().getApellido2())
                                 .build();
         }
 
@@ -179,7 +189,10 @@ public class ContraprestacionServiceImplementation implements IContraprestacionS
                                 .builder()
                                 .id(contraprestacion.getId())
                                 .estudianteId(contraprestacion.getEstudianteId().getId())
-                                .estudianteNombre(contraprestacion.getEstudianteId().getNombre())
+                                .estudianteNombre(contraprestacion.getEstudianteId().getNombre() + " " +
+                                                contraprestacion.getEstudianteId().getNombre2() + " " +
+                                                contraprestacion.getEstudianteId().getApellido() + " " +
+                                                contraprestacion.getEstudianteId().getApellido2())
                                 .actividades(contraprestacion.getActividades())
                                 .fechaCreacion(contraprestacion.getFechaCreacion())
                                 .fechaInicio(contraprestacion.getFechaInicio())
@@ -189,6 +202,7 @@ public class ContraprestacionServiceImplementation implements IContraprestacionS
                                 .porcentajeContraprestacion(
                                                 String.valueOf(contraprestacion.getTipoContraprestacionId()
                                                                 .getPorcentaje()))
+                                .semestre(contraprestacion.getSemestre())
                                 .build()).collect(Collectors.toList());
         }
 
