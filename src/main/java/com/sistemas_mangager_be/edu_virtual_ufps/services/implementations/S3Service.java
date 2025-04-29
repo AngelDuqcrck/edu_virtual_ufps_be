@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Soporte;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.SoporteRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.FileDownloadInfo;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -96,6 +97,36 @@ public class S3Service {
                         .withExpiration(new Date(expTimeMillis));
         
         return amazonS3.generatePresignedUrl(generatePresignedUrlRequest).toString();
+    }
+    
+    /**
+     * Descarga un archivo directamente desde S3
+     * @param soporteId ID del soporte del archivo a descargar
+     * @return ResponseInputStream con el contenido del archivo
+     */
+    public S3ObjectInputStream downloadFile(Integer soporteId) {
+        Soporte soporte = getFileMetadata(soporteId);
+        
+        GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, soporte.getRuta());
+        S3Object s3Object = amazonS3.getObject(getObjectRequest);
+        
+        return s3Object.getObjectContent();
+    }
+    
+    /**
+     * Obtiene la información necesaria para descargar un archivo
+     * @param soporteId ID del soporte
+     * @return Objeto con información para la descarga
+     */
+    public FileDownloadInfo getFileDownloadInfo(Integer soporteId) {
+        Soporte soporte = getFileMetadata(soporteId);
+        
+        return FileDownloadInfo.builder()
+                .fileName(soporte.getNombre_archivo())
+                .contentType(soporte.getMime_type())
+                .contentLength(soporte.getTamano_bytes())
+                .soporteId(soporteId)
+                .build();
     }
 
     // Método auxiliar para formatear tamaño
