@@ -34,9 +34,18 @@ public class Contraprestacion {
 
     private Date fechaFin;
 
+    private Date fechaCertificado;
+
+    private Boolean certificadoGenerado;
+
+    @ManyToOne
+    @JoinColumn(name = "certificado_id")
+    private Soporte certificadoId;
+
     @ManyToOne
     @JoinColumn(name = "tipo_contraprestacion_id")
     private TipoContraprestacion tipoContraprestacionId;
+
 
     @ManyToOne
     @JoinColumn(name = "soporte_id")

@@ -18,8 +18,11 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.TipoContraprestacion;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ContraprestacionException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EstudianteNotFoundException;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.TipoContraprestacionRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.implementations.PdfGeneratorService;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IContraprestacionService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.ContraprestacionDTO;
@@ -33,6 +36,9 @@ public class ContraprestacionController {
     
     @Autowired
     private IContraprestacionService  contraprestacionService;
+
+    @Autowired
+    private TipoContraprestacionRepository tipoContraprestacionRepository;
 
     @Autowired
     private PdfGeneratorService pdfGeneratorService;
@@ -96,19 +102,26 @@ public class ContraprestacionController {
     }
 
     @PostMapping("/generar/certificado/{contraprestacionId}")
-    public ResponseEntity<byte[]> generarCertificado(@PathVariable Integer contraprestacionId) throws ContraprestacionException{
-        // Obtener datos del certificado
+    public ResponseEntity<byte[]> generarCertificado(@PathVariable Integer contraprestacionId) 
+            throws ContraprestacionException, IOException {
+        
+        // Generar certificado (el servicio maneja toda la lógica)
+        byte[] pdfBytes = contraprestacionService.generarCertificado(contraprestacionId);
+        
+        // Obtener datos para el nombre del archivo
         CertificadoResponse certificado = contraprestacionService.listarInformacionCertificado(contraprestacionId);
-        
-        // Generar PDF
-        byte[] pdfBytes = pdfGeneratorService.generateCertificadoPdf(certificado);
-        
-        // Configurar respuesta
         String nombreArchivo = "certificado_contraprestacion_" + certificado.getCodigoEstudiante() + ".pdf";
         
+        // Configurar respuesta
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + nombreArchivo)
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdfBytes);
+    }
+
+    @GetMapping("/tipos")
+    public ResponseEntity<List<TipoContraprestacion>> listarTiposContraprestacion() {
+        List<TipoContraprestacion> tiposContraprestacion = tipoContraprestacionRepository.findAll();
+        return new ResponseEntity<>(tiposContraprestacion, HttpStatus.OK);
     }
 }

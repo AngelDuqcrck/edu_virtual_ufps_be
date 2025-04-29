@@ -8,12 +8,13 @@ import com.sistemas_mangager_be.edu_virtual_ufps.entities.Programa;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.CohorteNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.CohorteDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.CohortePorCarreraDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.CohorteResponse;
 
 public interface ICohorteService {
     
     CohorteDTO crearCohorte(CohorteDTO cohorteDTO);
 
-    CohorteDTO listarCohorte (Integer id) throws CohorteNotFoundException;
+    CohorteResponse listarCohorte(Integer id) throws CohorteNotFoundException;
 
     CohorteDTO actualizarCohorte(CohorteDTO cohorteDTO, Integer id) throws CohorteNotFoundException;
 

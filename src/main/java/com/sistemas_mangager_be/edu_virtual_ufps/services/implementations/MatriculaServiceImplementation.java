@@ -287,38 +287,59 @@ public class MatriculaServiceImplementation implements IMatriculaService {
         }
 
         @Override
-        public CorreoResponse enviarCorreo(Integer estudianteId) throws EstudianteNotFoundException {
+        public CorreoResponse enviarCorreo(Integer estudianteId) throws EstudianteNotFoundException, MatriculaException {
                 // 1. Obtener el estudiante
                 Estudiante estudiante = estudianteRepository.findById(estudianteId)
-                                .orElseThrow(() -> new EstudianteNotFoundException("Estudiante no encontrado"));
-
+                        .orElseThrow(() -> new EstudianteNotFoundException("Estudiante no encontrado"));
+            
                 // 2. Obtener las matrículas en curso del estudiante
                 List<Matricula> matriculas = matriculaRepository.findByEstudianteIdAndEstadoMatriculaId_Id(
-                                estudiante, 2); // 2 = En curso
-
+                        estudiante, 2); // 2 = En curso
+            
+                // Verificar si hay matrículas para notificar
+                if(matriculas.isEmpty()) {
+                    throw new MatriculaException("El estudiante no tiene matrículas en curso");
+                }
+            
                 // 3. Mapear a MatriculaResponse
                 List<MatriculaResponse> matriculasResponse = matriculas.stream()
-                                .map(this::convertirAMatriculaResponse)
-                                .collect(Collectors.toList());
-
+                        .map(this::convertirAMatriculaResponse)
+                        .collect(Collectors.toList());
+            
                 // 4. Construir el CorreoResponse
                 CorreoResponse correoResponse = CorreoResponse.builder()
-                                .nombreEstudiante(estudiante.getNombre() + " " + estudiante.getApellido())
-                                .correo(estudiante.getEmail())
-                                .semestre(calcularSemestre(new Date())) // Método para obtener el semestre actual
-                                .fecha(new Date())
-                                .matriculas(matriculasResponse)
-                                .build();
-
+                        .nombreEstudiante(estudiante.getNombre() + " " + estudiante.getApellido())
+                        .correo(estudiante.getEmail())
+                        .semestre(calcularSemestre(new Date()))
+                        .fecha(new Date())
+                        .matriculas(matriculasResponse)
+                        .build();
+            
                 // 5. Enviar el correo
                 emailService.sendEmail(
-                                estudiante.getEmail(),
-                                "Matricula Académica - " + correoResponse.getSemestre(),
-                                correoResponse);
-
+                        estudiante.getEmail(),
+                        "Matricula Académica - " + correoResponse.getSemestre(),
+                        correoResponse);
+            
+                // 6. Actualizar las matrículas para indicar que se envió el correo
+                Date ahora = new Date();
+                matriculas.forEach(matricula -> {
+                    matricula.setCorreoEnviado(true);
+                    matricula.setFechaCorreoEnviado(ahora);
+                    matriculaRepository.save(matricula);
+                });
+            
                 return correoResponse;
-        }
+            }
 
+            public boolean verificarCorreoEnviado(Integer estudianteId) throws EstudianteNotFoundException {
+                Estudiante estudiante = estudianteRepository.findById(estudianteId)
+                        .orElseThrow(() -> new EstudianteNotFoundException("Estudiante no encontrado"));
+                
+                // Buscar al menos una matrícula en curso que tenga el correo enviado
+                return matriculaRepository.existsByEstudianteIdAndEstadoMatriculaId_IdAndCorreoEnviado(
+                        estudiante, 2, true);
+            }
         // <-----------------------------------------------METODOS
         // AUXILIARES------------------------------------------------>
 
@@ -338,6 +359,8 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                                 .semestreMateria(
                                                 matricula.getGrupoCohorteId().getGrupoId().getMateriaId().getSemestre())
                                 .creditos(matricula.getGrupoCohorteId().getGrupoId().getMateriaId().getCreditos())
+                                .correoEnviado(matricula.isCorreoEnviado())
+                                .fechaCorreoEnviado(matricula.getFechaCorreoEnviado())
                                 .build();
         }
 

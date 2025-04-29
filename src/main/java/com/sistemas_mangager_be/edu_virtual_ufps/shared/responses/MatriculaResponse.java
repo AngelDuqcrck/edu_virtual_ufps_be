@@ -24,4 +24,6 @@ public class MatriculaResponse {
     private String codigoMateria;
     private String semestreMateria;
     private String creditos;
+    private Boolean correoEnviado;
+    private Date fechaCorreoEnviado;
 }

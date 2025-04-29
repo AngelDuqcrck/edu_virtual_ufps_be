@@ -27,6 +27,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.repositories.ProgramaRepository
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.ICohorteService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.CohorteDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.CohortePorCarreraDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.CohorteResponse;
 
 import jakarta.transaction.Transactional;
 import net.minidev.json.writer.BeansMapper.Bean;
@@ -91,17 +92,28 @@ public class CohorteServiceImplementation implements ICohorteService {
     }
 
     @Override
-    public CohorteDTO listarCohorte(Integer id) throws CohorteNotFoundException {
+    public CohorteResponse listarCohorte(Integer id) throws CohorteNotFoundException {
         Cohorte cohorte = cohorteRepository.findById(id).orElse(null);
         if (cohorte == null) {
             throw new CohorteNotFoundException(
                     String.format(IS_NOT_FOUND_F, "LA COHORTE CON EL ID " + id).toLowerCase());
 
         }
-
-        CohorteDTO cohorteDTO = new CohorteDTO();
-        BeanUtils.copyProperties(cohorte, cohorteDTO);
-        return cohorteDTO;
+        List<CohorteGrupo> cohorteGrupos = cohorteGrupoRepository.findAllByCohorteId(cohorte);
+        List<CohorteResponse.CohortesGrupos> cohortesGrupos = new ArrayList<>();
+        for (CohorteGrupo cohorteGrupo : cohorteGrupos) {
+            CohorteResponse.CohortesGrupos cohortesGrupos1 = new CohorteResponse.CohortesGrupos();
+            cohortesGrupos1.setId(cohorteGrupo.getId());
+            cohortesGrupos1.setNombre(cohorteGrupo.getNombre());
+            cohortesGrupos.add(cohortesGrupos1);
+        }
+        CohorteResponse cohorteResponse = new CohorteResponse().builder()
+                .id(cohorte.getId())
+                .nombre(cohorte.getNombre())
+                .fechaCreacion(cohorte.getFechaCreacion())
+                .cohortesGrupos(cohortesGrupos)
+                .build();
+        return cohorteResponse;
     }
 
     @Override
