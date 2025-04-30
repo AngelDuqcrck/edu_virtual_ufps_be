@@ -23,7 +23,7 @@ public interface EstudianteRepository extends JpaRepository <Estudiante, Integer
 
     List<Estudiante> findByEstadoEstudianteId(EstadoEstudiante estadoEstudianteId);
 
-    
+    List<Estudiante> findByEstadoEstudianteId_IdAndCohorteId(Integer estadoEstudianteId, CohorteGrupo cohorteId);
     Optional<Estudiante> findByCodigo(String codigo);
 
 }

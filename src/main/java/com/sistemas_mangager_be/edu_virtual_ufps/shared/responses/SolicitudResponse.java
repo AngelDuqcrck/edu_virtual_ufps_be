@@ -32,4 +32,6 @@ public class SolicitudResponse {
     private Integer tipoSolicitudId;
 
     private String tipoSolicitudNombre;
+
+    private Boolean estaAprobado;
 }
