@@ -196,6 +196,8 @@ public class SolicitudServiceImplementation implements ISolicitudService {
         solicitudResponse.setTipoSolicitudNombre(solicitud.getTipoSolicitudId().getNombre());
         solicitudResponse.setSemestre(calcularSemestre(solicitud.getFechaCreacion()));
         solicitudResponse.setEstaAprobado(solicitud.getEstaAprobada());
+        solicitudResponse.setEstudianteCodigo(solicitud.getEstudianteId().getCodigo());
+        solicitudResponse.setSoporte(solicitud.getSoporteId());
         return solicitudResponse;
 
     }
@@ -224,6 +226,8 @@ public class SolicitudServiceImplementation implements ISolicitudService {
             solicitudResponse.setTipoSolicitudNombre(solicitud.getTipoSolicitudId().getNombre());
             solicitudResponse.setSemestre(calcularSemestre(solicitud.getFechaCreacion()));
             solicitudResponse.setEstaAprobado(solicitud.getEstaAprobada());
+            solicitudResponse.setEstudianteCodigo(solicitud.getEstudianteId().getCodigo());
+            solicitudResponse.setSoporte(solicitud.getSoporteId());
             return solicitudResponse;
         }).toList();
     }
