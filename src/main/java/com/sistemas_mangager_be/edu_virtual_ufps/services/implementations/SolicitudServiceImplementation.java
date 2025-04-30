@@ -164,7 +164,7 @@ public class SolicitudServiceImplementation implements ISolicitudService {
             }
         }
         solicitud.setDescripcion(solicitudDTO.getDescripcion());
-        
+
         // 6. Guardar los cambios
         return solicitudRepository.save(solicitud);
     }
@@ -195,6 +195,7 @@ public class SolicitudServiceImplementation implements ISolicitudService {
         solicitudResponse.setTipoSolicitudId(solicitud.getTipoSolicitudId().getId());
         solicitudResponse.setTipoSolicitudNombre(solicitud.getTipoSolicitudId().getNombre());
         solicitudResponse.setSemestre(calcularSemestre(solicitud.getFechaCreacion()));
+        solicitudResponse.setEstaAprobado(solicitud.getEstaAprobada());
         return solicitudResponse;
 
     }
@@ -222,6 +223,7 @@ public class SolicitudServiceImplementation implements ISolicitudService {
             solicitudResponse.setTipoSolicitudId(solicitud.getTipoSolicitudId().getId());
             solicitudResponse.setTipoSolicitudNombre(solicitud.getTipoSolicitudId().getNombre());
             solicitudResponse.setSemestre(calcularSemestre(solicitud.getFechaCreacion()));
+            solicitudResponse.setEstaAprobado(solicitud.getEstaAprobada());
             return solicitudResponse;
         }).toList();
     }
@@ -296,7 +298,26 @@ public class SolicitudServiceImplementation implements ISolicitudService {
         Soporte soporte = s3Service.uploadFile(documento, "aplazamientos");
         solicitud.setSoporteId(soporte);
 
-        // 3. Cambiar estado del estudiante a "Inactivo" (ID 2)
+        // 3. Calcular el semestre actual
+        String semestreActual = calcularSemestre(new Date());
+
+        // 4. Buscar todas las matrículas en curso del estudiante para el semestre
+        // actual
+        List<Matricula> matriculasEnCurso = matriculaRepository.findByEstudianteIdAndEstadoMatriculaId_IdAndSemestre(
+                solicitud.getEstudianteId(), 2, semestreActual); // 2 = En curso
+
+        // 5. Cambiar estado de las matrículas a "Cancelada" (ID 3)
+        if (!matriculasEnCurso.isEmpty()) {
+            EstadoMatricula estadoCancelada = estadoMatriculaRepository.findById(3)
+                    .orElseThrow(() -> new SolicitudException("Estado 'Cancelada' no configurado"));
+
+            for (Matricula matricula : matriculasEnCurso) {
+                matricula.setEstadoMatriculaId(estadoCancelada);
+                matriculaRepository.save(matricula);
+            }
+        }
+
+        // 6. Cambiar estado del estudiante a "Inactivo" (ID 2)
         EstadoEstudiante estadoInactivo = estadoEstudianteRepository.findById(2)
                 .orElseThrow(() -> new SolicitudException("Estado 'Inactivo' no configurado"));
 

@@ -32,4 +32,6 @@ public interface IMatriculaService {
 
     public List<GrupoCohorteDocenteResponse> listarGrupoCohorteDocentePorMateria(String codigoMateria)
                         throws MateriaNotFoundException;
+
+
 }

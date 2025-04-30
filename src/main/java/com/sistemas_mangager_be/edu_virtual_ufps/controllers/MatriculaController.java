@@ -82,7 +82,7 @@ public class MatriculaController {
                 HttpStatus.OK);
     }
 
-    @GetMapping("/matriculas/{estudianteId}/correo-enviado")
+    @GetMapping("/correo-enviado/{estudianteId}")
     public ResponseEntity<Boolean> verificarCorreoEnviado(@PathVariable Integer estudianteId)
             throws EstudianteNotFoundException {
         boolean correoEnviado = matriculaService.verificarCorreoEnviado(estudianteId);
