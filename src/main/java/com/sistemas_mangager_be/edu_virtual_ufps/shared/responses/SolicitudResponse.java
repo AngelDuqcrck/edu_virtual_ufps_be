@@ -1,6 +1,8 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.shared.responses;
 import java.util.Date;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Soporte;
+
 import lombok.*;
 
 @Data
@@ -32,4 +34,10 @@ public class SolicitudResponse {
     private Integer tipoSolicitudId;
 
     private String tipoSolicitudNombre;
+
+    private Boolean estaAprobado;
+
+    private String estudianteCodigo;
+
+    private Soporte soporte;
 }

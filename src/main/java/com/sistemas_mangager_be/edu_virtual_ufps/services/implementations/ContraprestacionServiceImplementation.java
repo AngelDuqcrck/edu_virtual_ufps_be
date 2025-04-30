@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Contraprestacion;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Estudiante;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Soporte;
@@ -202,7 +203,14 @@ public class ContraprestacionServiceImplementation implements IContraprestacionS
                                 .porcentajeContraprestacion(
                                                 String.valueOf(contraprestacion.getTipoContraprestacionId()
                                                                 .getPorcentaje()))
+                                .aprobada(contraprestacion.getAprobada())
                                 .semestre(contraprestacion.getSemestre())
+                                .soporte(contraprestacion.getSoporteId())
+                                .primerNombre(contraprestacion.getEstudianteId().getNombre())
+                                .segundoNombre(contraprestacion.getEstudianteId().getNombre2())
+                                .primerApellido(contraprestacion.getEstudianteId().getApellido())
+                                .segundoApellido(contraprestacion.getEstudianteId().getApellido2())
+
                                 .build()).collect(Collectors.toList());
         }
 
@@ -323,15 +331,31 @@ public class ContraprestacionServiceImplementation implements IContraprestacionS
         }
 
         public byte[] generarCertificado(Integer contraprestacionId) throws ContraprestacionException, IOException {
+                // Buscar la contraprestación para verificar si ya tiene certificado generado
+                Contraprestacion contraprestacion = contraprestacionRepository.findById(contraprestacionId)
+                                .orElseThrow(() -> new ContraprestacionException(
+                                                String.format(IS_NOT_FOUND_F, "La contraprestación con ID: " + contraprestacionId)));
+                
+                // Si ya hay un certificado generado, descargarlo directamente desde S3
+                if (Boolean.TRUE.equals(contraprestacion.getCertificadoGenerado()) && contraprestacion.getCertificadoId() != null) {
+                        try (S3ObjectInputStream objectContent = s3Service.downloadFile(contraprestacion.getCertificadoId().getId())) {
+                                // Leer todos los bytes del stream y devolverlos
+                                return objectContent.readAllBytes();
+                        } catch (IOException e) {
+                                throw new IOException("Error al obtener certificado desde S3: " + e.getMessage(), e);
+                        }
+                }
+                
+                // Si no existe certificado, generar uno nuevo
                 // 1. Validar y obtener datos del certificado
                 CertificadoResponse certificado = validarYGenerarDatosCertificado(contraprestacionId);
-
+                
                 // 2. Generar PDF
                 byte[] pdfBytes = pdfGeneratorService.generateCertificadoPdf(certificado);
-
+                
                 // 3. Subir a S3 y guardar metadata
                 guardarCertificadoEnS3(contraprestacionId, pdfBytes, certificado.getCodigoEstudiante());
-
+                
                 return pdfBytes;
         }
 
@@ -361,19 +385,20 @@ public class ContraprestacionServiceImplementation implements IContraprestacionS
                                 nombreArchivo,
                                 "application/pdf",
                                 pdfBytes);
-
+                Contraprestacion contraprestacion = contraprestacionRepository.findById(contraprestacionId)
+                                .orElse(null);
+                
                 // Subir a S3
                 Soporte soporte = s3Service.uploadFile(multipartFile, "certificados");
 
                 // Actualizar contraprestación
-                Contraprestacion contraprestacion = contraprestacionRepository.findById(contraprestacionId)
-                                .orElse(null);
                 if (contraprestacion != null) {
                         contraprestacion.setCertificadoGenerado(true);
                         contraprestacion.setFechaCertificado(new Date());
                         contraprestacion.setCertificadoId(soporte);
                         contraprestacionRepository.save(contraprestacion);
-                }
+                }                
+                
         }
 
         private String calcularSemestre(Date fechaMatriculacion) {
