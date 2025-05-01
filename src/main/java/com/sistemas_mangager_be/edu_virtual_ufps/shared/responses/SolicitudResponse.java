@@ -40,4 +40,8 @@ public class SolicitudResponse {
     private String estudianteCodigo;
 
     private Soporte soporte;
+
+    private String SemestreAplazamiento;
+
+    private String semestreReintegro;
 }

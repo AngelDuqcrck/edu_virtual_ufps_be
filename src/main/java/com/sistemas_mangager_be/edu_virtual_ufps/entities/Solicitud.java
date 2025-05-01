@@ -42,5 +42,8 @@ public class Solicitud {
     @JoinColumn(name = "soporte_id")
     private Soporte soporteId;
 
+    @ManyToOne
+    @JoinColumn(name = "solicitud_aplazamiento_id")
+    private Solicitud solicitudAplazamientoId;
 
 }
