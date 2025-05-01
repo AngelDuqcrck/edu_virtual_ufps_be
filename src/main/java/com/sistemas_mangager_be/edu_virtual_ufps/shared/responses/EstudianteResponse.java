@@ -3,23 +3,26 @@ package com.sistemas_mangager_be.edu_virtual_ufps.shared.responses;
 import java.util.Date;
 
 import lombok.*;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class EstudianteResponse {
-    
+
     private Integer id;
 
     private String codigo;
 
     private String nombre;
-    
+
     private String nombre2;
 
     private String apellido;
 
     private String apellido2;
+
+    private String cedula;
 
     private String email;
 

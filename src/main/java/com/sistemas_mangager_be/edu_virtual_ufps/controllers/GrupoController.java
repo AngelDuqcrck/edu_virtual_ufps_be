@@ -1,6 +1,8 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.controllers;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,23 +33,28 @@ import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.HttpResponse;
 @RequestMapping("/grupos")
 @RestController
 public class GrupoController {
-    
+
     @Autowired
     private IGrupoService iGrupoService;
 
-
     @PostMapping("/crear")
-    public ResponseEntity<HttpResponse> crearGrupo(@RequestBody GrupoDTO grupoDTO) throws MateriaNotFoundException, CohorteNotFoundException, UserNotFoundException, RoleNotFoundException {
-        iGrupoService.crearGrupo(grupoDTO);
-        return new ResponseEntity<>(
-                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                        " Grupo creado con exito"),
-                HttpStatus.OK);
+    public ResponseEntity<Object> crearGrupo(@RequestBody GrupoDTO grupoDTO)
+            throws MateriaNotFoundException, CohorteNotFoundException, UserNotFoundException, RoleNotFoundException {
+        // Guarda el grupo y obtén el grupo creado con su ID asignada
+        GrupoDTO grupoCreado = iGrupoService.crearGrupo(grupoDTO);
 
+        // Crea un mapa que contenga tanto el mensaje como el grupo creado
+        Map<String, Object> response = new HashMap<>();
+        response.put("mensaje", "Grupo creado con éxito");
+        response.put("grupo", grupoCreado);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<HttpResponse> actualizarGrupo(@RequestBody GrupoDTO grupoDTO, @PathVariable Integer id) throws MateriaNotFoundException, CohorteNotFoundException, UserNotFoundException, RoleNotFoundException, GrupoNotFoundException {
+    public ResponseEntity<HttpResponse> actualizarGrupo(@RequestBody GrupoDTO grupoDTO, @PathVariable Integer id)
+            throws MateriaNotFoundException, CohorteNotFoundException, UserNotFoundException, RoleNotFoundException,
+            GrupoNotFoundException {
         iGrupoService.actualizarGrupo(grupoDTO, id);
         return new ResponseEntity<>(
                 new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
@@ -67,10 +74,9 @@ public class GrupoController {
         return new ResponseEntity<>(grupoResponse, HttpStatus.OK);
     }
 
-    
-
     @GetMapping("/materia/{materiaId}")
-    public ResponseEntity<List<GrupoResponse>> listarGruposPorMateria(@PathVariable Integer materiaId) throws MateriaNotFoundException {
+    public ResponseEntity<List<GrupoResponse>> listarGruposPorMateria(@PathVariable Integer materiaId)
+            throws MateriaNotFoundException {
         List<GrupoResponse> grupoResponse = iGrupoService.listarGruposPorMateria(materiaId);
         return new ResponseEntity<>(grupoResponse, HttpStatus.OK);
     }
@@ -115,7 +121,8 @@ public class GrupoController {
     }
 
     @GetMapping("/vinculado/{id}")
-    public ResponseEntity<GrupoCohorteDocenteResponse> listarGrupoCohorteDocente(@PathVariable Long id) throws VinculacionNotFoundException {
+    public ResponseEntity<GrupoCohorteDocenteResponse> listarGrupoCohorteDocente(@PathVariable Long id)
+            throws VinculacionNotFoundException {
         GrupoCohorteDocenteResponse grupoCohorteDocenteResponse = iGrupoService.listarGrupoCohorteDocente(id);
         return new ResponseEntity<>(grupoCohorteDocenteResponse, HttpStatus.OK);
     }
@@ -127,32 +134,37 @@ public class GrupoController {
     }
 
     @GetMapping("/cohorte/{cohorteId}")
-    public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGruposPorCohorte(@PathVariable Integer cohorteId) throws CohorteNotFoundException {
+    public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGruposPorCohorte(@PathVariable Integer cohorteId)
+            throws CohorteNotFoundException {
         List<GrupoCohorteDocenteResponse> grupoCohorteDocenteResponse = iGrupoService.listarGruposPorCohorte(cohorteId);
         return new ResponseEntity<>(grupoCohorteDocenteResponse, HttpStatus.OK);
     }
 
     @GetMapping("/grupo/{grupoId}")
-    public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGruposPorGrupo(@PathVariable Integer grupoId) throws GrupoNotFoundException {
+    public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGruposPorGrupo(@PathVariable Integer grupoId)
+            throws GrupoNotFoundException {
         List<GrupoCohorteDocenteResponse> grupoCohorteDocenteResponse = iGrupoService.listarGruposPorGrupo(grupoId);
         return new ResponseEntity<>(grupoCohorteDocenteResponse, HttpStatus.OK);
     }
 
     @GetMapping("/docente/{docenteId}")
-    public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGruposPorDocente(@PathVariable Integer docenteId) throws UserNotFoundException {
+    public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGruposPorDocente(@PathVariable Integer docenteId)
+            throws UserNotFoundException {
         List<GrupoCohorteDocenteResponse> grupoCohorteDocenteResponse = iGrupoService.listarGruposPorDocente(docenteId);
         return new ResponseEntity<>(grupoCohorteDocenteResponse, HttpStatus.OK);
     }
 
     @GetMapping("/cohortegrupo/{cohorteGrupoId}")
-    public ResponseEntity<List<GrupoCohorteResponse>> listarGruposPorCohorteGrupo(@PathVariable Integer cohorteGrupoId) throws CohorteNotFoundException {
+    public ResponseEntity<List<GrupoCohorteResponse>> listarGruposPorCohorteGrupo(@PathVariable Integer cohorteGrupoId)
+            throws CohorteNotFoundException {
         List<GrupoCohorteResponse> grupoCohorteResponse = iGrupoService.listarGruposPorCohorteGrupo(cohorteGrupoId);
         return new ResponseEntity<>(grupoCohorteResponse, HttpStatus.OK);
     }
 
     @GetMapping("/estudiantes/grupocohorte/{grupoCohorteId}")
     public ResponseEntity<EstudianteGrupoResponse> listarEstudiantesPorGrupoCohorte(@PathVariable Long grupoCohorteId) {
-        EstudianteGrupoResponse estudianteGrupoResponse = iGrupoService.listarEstudiantesPorGrupoCohorte(grupoCohorteId);
+        EstudianteGrupoResponse estudianteGrupoResponse = iGrupoService
+                .listarEstudiantesPorGrupoCohorte(grupoCohorteId);
         return new ResponseEntity<>(estudianteGrupoResponse, HttpStatus.OK);
     }
 }

@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EstudianteDTO {
-    
+
     private Integer id;
 
     private String codigo;
@@ -25,7 +25,7 @@ public class EstudianteDTO {
     private String email;
 
     private String cedula;
-    
+
     private String telefono;
 
     private Date fechaNacimiento;
@@ -43,5 +43,5 @@ public class EstudianteDTO {
     private Integer estadoEstudianteId;
 
     private Integer usuarioId;
-  
+
 }
