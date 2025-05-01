@@ -8,9 +8,17 @@ import lombok.*;
 @Builder
 public class UsuarioDTO {
     private String nombre;
-    
+
+    private String primerNombre;
+
+    private String segundoNombre;
+
+    private String primerApellido;
+
+    private String segundoApellido;
+
     private String email;
-    
+
     private String googleId;
 
     private String fotoUrl;

@@ -36,7 +36,7 @@ public class Usuario {
     private String segundoApellido;
 
     // @NotEmpty(message = "La cédula no puede estar vacía")
-    @Size(min = 6, max = 12, message = "El numero de documento debe tener entre 6 y 20 dígitos")
+    @Size(min = 6, max = 12, message = "El numero de documento debe tener entre 6 y 12 dígitos")
     @Column(unique = true)
     private String cedula;
 

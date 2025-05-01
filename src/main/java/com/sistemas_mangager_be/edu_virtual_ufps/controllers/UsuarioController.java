@@ -27,13 +27,12 @@ import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.UsuarioRespons
 @RestController
 @RequestMapping("/usuarios")
 public class UsuarioController {
-    
+
     // @Autowired
     // private IUsuarioService iUsuarioService;
 
     @Autowired
     private UsuarioServiceImplementation iUsuarioService;
-
 
     @PostMapping("/google/login")
     public ResponseEntity<HttpResponse> loginGoogle(@RequestBody LoginGoogleRequest loginGoogleRequest) {
@@ -44,30 +43,32 @@ public class UsuarioController {
                         " Usuario registrado con exito"),
                 HttpStatus.OK);
     }
-    
+
     @PostMapping("/profesores/crear")
-    public ResponseEntity<HttpResponse> crearProfesor(@RequestBody DocenteRequest docenteRequest) throws UserExistException, RoleNotFoundException{
+    public ResponseEntity<HttpResponse> crearProfesor(@RequestBody DocenteRequest docenteRequest)
+            throws UserExistException, RoleNotFoundException {
         iUsuarioService.crearProfesor(docenteRequest);
 
         return new ResponseEntity<>(
-                                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                                                " Docente registrado con exito"),
-                                HttpStatus.OK);
+                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                        " Docente registrado con exito"),
+                HttpStatus.OK);
     }
-    
 
     @PutMapping("/profesores/{id}")
-    public ResponseEntity<HttpResponse> actualizarProfesor(@RequestBody DocenteRequest docenteRequest, @PathVariable Integer id) throws UserExistException, RoleNotFoundException, UserNotFoundException{
+    public ResponseEntity<HttpResponse> actualizarProfesor(@RequestBody DocenteRequest docenteRequest,
+            @PathVariable Integer id) throws UserExistException, RoleNotFoundException, UserNotFoundException {
         iUsuarioService.actualizarProfesor(docenteRequest, id);
 
         return new ResponseEntity<>(
-                                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                                                " Docente actualizado con exito"),  
-                                HttpStatus.OK);
+                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                        " Docente actualizado con exito"),
+                HttpStatus.OK);
     }
 
     @GetMapping("/rol/{rolId}")
-    public ResponseEntity<List<UsuarioResponse>> listarUsuariosPorRol(@PathVariable Integer rolId) throws RoleNotFoundException {
+    public ResponseEntity<List<UsuarioResponse>> listarUsuariosPorRol(@PathVariable Integer rolId)
+            throws RoleNotFoundException {
         List<UsuarioResponse> usuarioResponse = iUsuarioService.listarUsuariosPorRol(rolId);
         return new ResponseEntity<>(usuarioResponse, HttpStatus.OK);
     }
