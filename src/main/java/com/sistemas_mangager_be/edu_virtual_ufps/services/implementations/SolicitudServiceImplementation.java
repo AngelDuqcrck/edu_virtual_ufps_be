@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,6 +118,18 @@ public class SolicitudServiceImplementation implements ISolicitudService {
             solicitud.setMatriculaId(matricula);
         }
 
+        // Vincular reintegro con la última solicitud de aplazamiento aprobada
+        if (tipoSolicitud.getId() == 3) { // Si es reintegro
+            Optional<Solicitud> ultimoAplazamiento = solicitudRepository
+                    .findLastAplazamientoAprobadoByEstudiante(estudiante);
+
+            if (ultimoAplazamiento.isPresent()) {
+                solicitud.setSolicitudAplazamientoId(ultimoAplazamiento.get());
+            } else {
+                throw new SolicitudException("No se encontró un aplazamiento aprobado previo.");
+            }
+        }
+
         return solicitudRepository.save(solicitud);
     }
 
@@ -136,7 +149,6 @@ public class SolicitudServiceImplementation implements ISolicitudService {
 
         // 3. Validar y actualizar estudiante si viene en el DTO
         if (solicitudDTO.getEstudianteId() != null) {
-
             Estudiante estudiante = estudianteRepository.findById(solicitudDTO.getEstudianteId())
                     .orElseThrow(() -> new EstudianteNotFoundException(
                             String.format(IS_NOT_FOUND, "Estudiante con ID: " + solicitudDTO.getEstudianteId())));
@@ -144,6 +156,25 @@ public class SolicitudServiceImplementation implements ISolicitudService {
             // Validar que el nuevo estudiante cumpla con los requisitos del tipo de
             // solicitud
             validarEstudianteParaTipoSolicitud(estudiante, solicitud.getTipoSolicitudId());
+
+            // Si es reintegro, verificar que el nuevo estudiante tenga un aplazamiento
+            // aprobado
+            if (solicitud.getTipoSolicitudId().getId() == 3) { // Reintegro
+                if (!solicitudRepository.existsAplazamientoAprobadoByEstudiante(estudiante)) {
+                    throw new SolicitudException("El nuevo estudiante no tiene un aplazamiento aprobado previo.");
+                }
+
+                // Actualizar el vínculo con el último aplazamiento aprobado del nuevo
+                // estudiante
+                Optional<Solicitud> ultimoAplazamiento = solicitudRepository
+                        .findLastAplazamientoAprobadoByEstudiante(estudiante);
+
+                if (ultimoAplazamiento.isPresent()) {
+                    solicitud.setSolicitudAplazamientoId(ultimoAplazamiento.get());
+                } else {
+                    throw new SolicitudException("No se encontró un aplazamiento aprobado para el nuevo estudiante.");
+                }
+            }
 
             solicitud.setEstudianteId(estudiante);
         }
@@ -177,7 +208,6 @@ public class SolicitudServiceImplementation implements ISolicitudService {
 
         SolicitudResponse solicitudResponse = new SolicitudResponse();
         BeanUtils.copyProperties(solicitud, solicitudResponse);
-
         if (solicitud.getTipoSolicitudId().getId() == 1) {
 
             solicitudResponse.setGrupoCohorteId(solicitud.getMatriculaId().getGrupoCohorteId().getId());
@@ -195,9 +225,21 @@ public class SolicitudServiceImplementation implements ISolicitudService {
         solicitudResponse.setTipoSolicitudId(solicitud.getTipoSolicitudId().getId());
         solicitudResponse.setTipoSolicitudNombre(solicitud.getTipoSolicitudId().getNombre());
         solicitudResponse.setSemestre(calcularSemestre(solicitud.getFechaCreacion()));
+        if (solicitud.getTipoSolicitudId().getId() == 3) {
+            solicitudResponse.setSemestreAplazamiento(
+                    calcularSemestre(solicitud.getSolicitudAplazamientoId().getFechaAprobacion()));
+
+            if (solicitud.getFechaAprobacion() != null) {
+                solicitudResponse.setSemestre(calcularSemestre(solicitud.getFechaAprobacion()));
+            } else {
+                solicitudResponse.setSemestre(null);
+            }
+
+        }
         solicitudResponse.setEstaAprobado(solicitud.getEstaAprobada());
         solicitudResponse.setEstudianteCodigo(solicitud.getEstudianteId().getCodigo());
         solicitudResponse.setSoporte(solicitud.getSoporteId());
+
         return solicitudResponse;
 
     }
@@ -225,9 +267,21 @@ public class SolicitudServiceImplementation implements ISolicitudService {
             solicitudResponse.setTipoSolicitudId(solicitud.getTipoSolicitudId().getId());
             solicitudResponse.setTipoSolicitudNombre(solicitud.getTipoSolicitudId().getNombre());
             solicitudResponse.setSemestre(calcularSemestre(solicitud.getFechaCreacion()));
+            if (solicitud.getTipoSolicitudId().getId() == 3) {
+                solicitudResponse.setSemestreAplazamiento(
+                        calcularSemestre(solicitud.getSolicitudAplazamientoId().getFechaAprobacion()));
+
+                if (solicitud.getFechaAprobacion() != null) {
+                    solicitudResponse.setSemestreReintegro(calcularSemestre(solicitud.getFechaAprobacion()));
+                } else {
+                    solicitudResponse.setSemestreReintegro(null);
+                }
+
+            }
             solicitudResponse.setEstaAprobado(solicitud.getEstaAprobada());
             solicitudResponse.setEstudianteCodigo(solicitud.getEstudianteId().getCodigo());
             solicitudResponse.setSoporte(solicitud.getSoporteId());
+
             return solicitudResponse;
         }).toList();
     }
@@ -395,7 +449,12 @@ public class SolicitudServiceImplementation implements ISolicitudService {
         // Validar que el estudiante esté inactivo
         if (estudiante.getEstadoEstudianteId() == null ||
                 estudiante.getEstadoEstudianteId().getId() != 2) { // 2 = Inactivo
-            throw new SolicitudException("Solo estudiantes inactivos pueden solicitar reintegro");
+            throw new SolicitudException("Solo estudiantes inactivos pueden solicitar reintegro.");
+        }
+
+        // Validar que tenga al menos un aplazamiento aprobado
+        if (!solicitudRepository.existsAplazamientoAprobadoByEstudiante(estudiante)) {
+            throw new SolicitudException("El estudiante no tiene un aplazamiento aprobado previo.");
         }
     }
 
