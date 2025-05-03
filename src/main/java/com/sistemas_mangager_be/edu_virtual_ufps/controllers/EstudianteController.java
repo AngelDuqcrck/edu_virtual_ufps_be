@@ -2,6 +2,7 @@ package com.sistemas_mangager_be.edu_virtual_ufps.controllers;
 
 import java.util.List;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,14 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.CohorteNotFoundException;
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EmailExistException;
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EstadoEstudianteNotFoundException;
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EstudianteNotFoundException;
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.PensumNotFoundException;
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundException;
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.implementations.MigracionEstudiantesService;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IEstudianteService;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IGrupoService;
@@ -45,7 +38,7 @@ public class EstudianteController {
     @PostMapping("/crear")
     public ResponseEntity<HttpResponse> crearEstudiante(@RequestBody EstudianteDTO estudianteDTO)
             throws PensumNotFoundException, CohorteNotFoundException, EstadoEstudianteNotFoundException,
-            RoleNotFoundException {
+            RoleNotFoundException, UserExistException {
 
         estudianteService.crearEstudiante(estudianteDTO);
         return new ResponseEntity<>(
@@ -58,7 +51,7 @@ public class EstudianteController {
     public ResponseEntity<HttpResponse> actualizarEstudiante(@RequestBody EstudianteDTO estudianteDTO,
             @PathVariable Integer id)
             throws UserNotFoundException, PensumNotFoundException, CohorteNotFoundException,
-            EstadoEstudianteNotFoundException, EstudianteNotFoundException, EmailExistException {
+            EstadoEstudianteNotFoundException, EstudianteNotFoundException, EmailExistException, UserExistException {
         estudianteService.actualizarEstudiante(id, estudianteDTO);
         return new ResponseEntity<>(
                 new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),

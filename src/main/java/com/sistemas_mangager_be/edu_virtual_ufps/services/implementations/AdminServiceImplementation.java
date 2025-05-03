@@ -35,6 +35,10 @@ public class AdminServiceImplementation implements IAdminService {
     @Override
     public AdminDTO registrarAdmin(AdminDTO adminDTO) {
         Admin admin = new Admin();
+        boolean existeAdmin = adminRepository.existsByEmail(adminDTO.getEmail());
+        if(existeAdmin){
+            throw new IllegalArgumentException(String.format(IS_ALREADY_USE, "El correo"));
+        }
         BeanUtils.copyProperties(adminDTO, admin);
         admin.setPassword( passwordEncoder.encode(adminDTO.getPassword()));
         admin.setActivo(true);
@@ -52,6 +56,10 @@ public class AdminServiceImplementation implements IAdminService {
             throw new UserNotFoundException("El administrador no fue encontrado");
         }
 
+        boolean existeAdmin = adminRepository.existsByEmail(adminDTO.getEmail());
+        if(existeAdmin && !admin.getEmail().equals(adminDTO.getEmail())){
+            throw new IllegalArgumentException(String.format(IS_ALREADY_USE, "El correo"));
+        }
         BeanUtils.copyProperties(adminDTO, admin, "id", "activo");
         admin.setPassword( passwordEncoder.encode(adminDTO.getPassword()));
         adminRepository.save(admin);

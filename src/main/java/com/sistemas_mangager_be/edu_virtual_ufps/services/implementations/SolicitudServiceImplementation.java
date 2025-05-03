@@ -306,7 +306,7 @@ public class SolicitudServiceImplementation implements ISolicitudService {
         // 3. Procesar según el tipo de solicitud
         switch (solicitud.getTipoSolicitudId().getId()) {
             case 1: // Cancelación de materias
-                aprobarCancelacionMaterias(solicitud);
+                aprobarCancelacionMaterias(solicitud, documento);
                 break;
 
             case 2: // Aplazamiento de semestre
@@ -331,13 +331,15 @@ public class SolicitudServiceImplementation implements ISolicitudService {
     // ------------------------------------------------------- MÉTODOS AUXILIARES
     // -------------------------------------------------------------------
 
-    private void aprobarCancelacionMaterias(Solicitud solicitud) throws SolicitudException {
+    private void aprobarCancelacionMaterias(Solicitud solicitud, MultipartFile documento) throws SolicitudException, IOException {
         // 1. Validar que tenga matrícula asociada
         if (solicitud.getMatriculaId() == null) {
             throw new SolicitudException("La solicitud de cancelación no tiene matrícula asociada");
         }
-
-        // 2. Cambiar estado de la matrícula a "Cancelada" (ID 3)
+        //2. Subir documento a S3
+        Soporte soporte = s3Service.uploadFile(documento, "cancelaciones");
+        solicitud.setSoporteId(soporte);
+        // 3. Cambiar estado de la matrícula a "Cancelada" (ID 3)
         EstadoMatricula estadoCancelada = estadoMatriculaRepository.findById(3)
                 .orElseThrow(() -> new SolicitudException("Estado 'Cancelada' no configurado"));
 

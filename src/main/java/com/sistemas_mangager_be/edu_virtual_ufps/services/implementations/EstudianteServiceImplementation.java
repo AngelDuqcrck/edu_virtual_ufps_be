@@ -21,6 +21,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EstudianteNotFoundEx
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.PensumNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserExistException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.oracle.repositories.EstudianteOracleRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.CohorteGrupoRepository;
@@ -37,15 +38,13 @@ import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.EstudianteResp
 @Service
 public class EstudianteServiceImplementation implements IEstudianteService {
 
-        public static final String IS_ALREADY_USE = "%s ya esta en uso";
+        public static final String IS_ALREADY_USE = "%s ya existe en el sistema";
         public static final String IS_NOT_FOUND = "%s no fue encontrado";
         public static final String IS_NOT_FOUND_F = "%s no fue encontrada";
         public static final String IS_NOT_ALLOWED = "no esta permitido %s ";
         public static final String IS_NOT_VALID = "%s no es valido";
         public static final String ARE_NOT_EQUALS = "%s no son iguales";
         public static final String IS_NOT_CORRECT = "%s no es correcta";
-
-       
 
         @Autowired
         private PensumRepository pensumRepository;
@@ -71,8 +70,29 @@ public class EstudianteServiceImplementation implements IEstudianteService {
         @Override
         public EstudianteDTO crearEstudiante(EstudianteDTO estudianteDTO)
                         throws PensumNotFoundException, CohorteNotFoundException, EstadoEstudianteNotFoundException,
-                        RoleNotFoundException {
+                        RoleNotFoundException, UserExistException {
 
+                // Validaciones de atributos únicos
+                if (estudianteRepository.existsByCodigo(estudianteDTO.getCodigo())) {
+                        throw new UserExistException(
+                                        String.format(IS_ALREADY_USE,
+                                                        "El código de estudiante " + estudianteDTO.getCodigo()));
+                }
+
+                if (estudianteRepository.existsByEmail(estudianteDTO.getEmail())) {
+                        throw new UserExistException(
+                                        String.format(IS_ALREADY_USE,
+                                                        "El correo electrónico " + estudianteDTO.getEmail()));
+                }
+
+                if (estudianteDTO.getMoodleId() != null && !estudianteDTO.getMoodleId().isEmpty() &&
+                                estudianteRepository.existsByMoodleId(estudianteDTO.getMoodleId())) {
+                        throw new UserExistException(
+                                        String.format(IS_ALREADY_USE,
+                                                        "El ID de Moodle " + estudianteDTO.getMoodleId()));
+                }
+
+                // Verificar si ya existe un usuario con ese email
                 Optional<Usuario> usuarioExistente = usuarioRepository.findByEmail(estudianteDTO.getEmail());
 
                 Usuario usuario;
@@ -81,7 +101,8 @@ public class EstudianteServiceImplementation implements IEstudianteService {
                 } else {
 
                         usuario = Usuario.builder()
-                                        .nombreCompleto(estudianteDTO.getNombre() + " " + estudianteDTO.getNombre2() + " "
+                                        .nombreCompleto(estudianteDTO.getNombre() + " " + estudianteDTO.getNombre2()
+                                                        + " "
                                                         + estudianteDTO.getApellido() + " "
                                                         + estudianteDTO.getApellido2())
                                         .primerNombre(estudianteDTO.getNombre())
@@ -153,7 +174,9 @@ public class EstudianteServiceImplementation implements IEstudianteService {
         @Override
         public EstudianteDTO actualizarEstudiante(Integer id, EstudianteDTO estudianteDTO)
                         throws UserNotFoundException, PensumNotFoundException, CohorteNotFoundException,
-                        EstadoEstudianteNotFoundException, EstudianteNotFoundException, EmailExistException {
+                        EstadoEstudianteNotFoundException, EstudianteNotFoundException, EmailExistException,
+                        UserExistException {
+
                 Estudiante estudiante = estudianteRepository.findById(id)
                                 .orElseThrow(() -> new EstudianteNotFoundException(
                                                 String.format(IS_NOT_FOUND, "EL ESTUDIANTE CON ID " + id)
@@ -164,11 +187,30 @@ public class EstudianteServiceImplementation implements IEstudianteService {
                                                 String.format(IS_NOT_FOUND, " EL USUARIO ASOCIADO AL ESTUDIANTE")
                                                                 .toLowerCase()));
 
+                // Validaciones de atributos únicos (solo si cambian)
+                // Validar email único
                 if (!estudiante.getEmail().equals(estudianteDTO.getEmail()) &&
-                                usuarioRepository.existsByEmail(estudianteDTO.getEmail())) {
-                        throw new UserNotFoundException(
-                                        String.format(IS_NOT_FOUND, "EL USUARIO CON EMAIL " + estudianteDTO.getEmail())
-                                                        .toLowerCase());
+                                estudianteRepository.existsByEmail(estudianteDTO.getEmail())) {
+                        throw new UserExistException(
+                                        String.format(IS_ALREADY_USE,
+                                                        "El correo electrónico " + estudianteDTO.getEmail()));
+                }
+
+                // Validar código único
+                if (!estudiante.getCodigo().equals(estudianteDTO.getCodigo()) &&
+                                estudianteRepository.existsByCodigo(estudianteDTO.getCodigo())) {
+                        throw new UserExistException(
+                                        String.format(IS_ALREADY_USE,
+                                                        "El código de estudiante " + estudianteDTO.getCodigo()));
+                }
+
+                // Validar moodleId único (solo si se proporciona)
+                if (estudianteDTO.getMoodleId() != null && !estudianteDTO.getMoodleId().isEmpty() &&
+                                !estudianteDTO.getMoodleId().equals(estudiante.getMoodleId()) &&
+                                estudianteRepository.existsByMoodleId(estudianteDTO.getMoodleId())) {
+                        throw new UserExistException(
+                                        String.format(IS_ALREADY_USE,
+                                                        "El ID de Moodle " + estudianteDTO.getMoodleId()));
                 }
 
                 BeanUtils.copyProperties(estudianteDTO, estudiante, "id", "usuarioId", "estadoEstudianteId");
@@ -184,7 +226,7 @@ public class EstudianteServiceImplementation implements IEstudianteService {
                                                 .format(IS_NOT_FOUND_F,
                                                                 "LA COHORTE CON ID " + estudianteDTO.getCohorteId())
                                                 .toLowerCase()));
-                
+
                 estudiante.setId(id);
                 estudiante.setPensumId(pensum);
                 estudiante.setProgramaId(pensum.getProgramaId());
