@@ -26,4 +26,12 @@ public interface EstudianteRepository extends JpaRepository <Estudiante, Integer
     List<Estudiante> findByEstadoEstudianteId_IdAndCohorteId(Integer estadoEstudianteId, CohorteGrupo cohorteId);
     Optional<Estudiante> findByCodigo(String codigo);
 
+    boolean existsByEmail(String email);
+
+    boolean existsByCodigo(String codigo);
+
+    boolean existsByMoodleId(String moodleId);
+
+
+
 }

@@ -118,8 +118,8 @@ public class SolicitudController {
     }
 
     @PostMapping("/cancelacion/aprobar/{id}")
-    public ResponseEntity<HttpResponse> aprobarCancelacion(@PathVariable Long id) throws SolicitudException, IOException {
-        solicitudService.aprobarSolicitud(id, 1, null);
+    public ResponseEntity<HttpResponse> aprobarCancelacion(@PathVariable Long id, @RequestParam("informe") MultipartFile file) throws SolicitudException, IOException {
+        solicitudService.aprobarSolicitud(id, 1, file);
         return new ResponseEntity<>(
                                 new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
                                                 " Solicitud de cancelación aprobada con exito"),

@@ -26,4 +26,6 @@ public class DocenteRequest {
     private String cedula;
 
     private String codigo;
+
+    private String googleId;
 }

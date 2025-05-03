@@ -35,7 +35,7 @@ public class UsuarioController {
     private UsuarioServiceImplementation iUsuarioService;
 
     @PostMapping("/google/login")
-    public ResponseEntity<HttpResponse> loginGoogle(@RequestBody LoginGoogleRequest loginGoogleRequest) {
+    public ResponseEntity<HttpResponse> loginGoogle(@RequestBody LoginGoogleRequest loginGoogleRequest) throws UserExistException {
         iUsuarioService.registraroActualizarUsuarioGoogle(loginGoogleRequest);
 
         return new ResponseEntity<>(

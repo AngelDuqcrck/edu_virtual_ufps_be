@@ -44,4 +44,6 @@ public class EstudianteDTO {
 
     private Integer usuarioId;
 
+    private String moodleId;
+
 }

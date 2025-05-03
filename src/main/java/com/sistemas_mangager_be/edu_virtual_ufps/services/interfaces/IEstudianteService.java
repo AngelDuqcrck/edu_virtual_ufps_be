@@ -11,11 +11,11 @@ public interface IEstudianteService {
 
     public EstudianteDTO crearEstudiante(EstudianteDTO estudianteDTO)
             throws PensumNotFoundException, CohorteNotFoundException, EstadoEstudianteNotFoundException,
-            RoleNotFoundException;
+            RoleNotFoundException, UserExistException;
 
     public EstudianteDTO actualizarEstudiante(Integer id, EstudianteDTO estudianteDTO)
             throws UserNotFoundException, PensumNotFoundException, CohorteNotFoundException,
-            EstadoEstudianteNotFoundException, EstudianteNotFoundException, EmailExistException;
+            EstadoEstudianteNotFoundException, EstudianteNotFoundException, EmailExistException, UserExistException;
 
     public EstudianteResponse listarEstudiante(Integer id) throws EstudianteNotFoundException;
 

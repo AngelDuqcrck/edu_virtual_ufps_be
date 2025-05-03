@@ -2,6 +2,7 @@ package com.sistemas_mangager_be.edu_virtual_ufps.controllers;
 
 import java.util.List;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +36,7 @@ public class ProgramaController {
      */
     //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
      @PostMapping("/crear")
-    public ResponseEntity<HttpResponse> crearPrograma(@RequestBody ProgramaDTO programaDTO) {
+    public ResponseEntity<HttpResponse> crearPrograma(@RequestBody ProgramaDTO programaDTO) throws ProgramaExistsException {
         programaService.crearPrograma(programaDTO);
 
         return new ResponseEntity<>(
@@ -80,7 +81,7 @@ public class ProgramaController {
      */
     //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<HttpResponse> actualizarPrograma(@PathVariable Integer id, @RequestBody ProgramaDTO programaDTO) throws ProgramaNotFoundException{
+    public ResponseEntity<HttpResponse> actualizarPrograma(@PathVariable Integer id, @RequestBody ProgramaDTO programaDTO) throws ProgramaNotFoundException, ProgramaExistsException{
         programaService.actualizarPrograma(programaDTO, id);
         return new ResponseEntity<>(
                                 new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),

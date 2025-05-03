@@ -29,7 +29,7 @@ import jakarta.transaction.Transactional;
 @Service
 public class UsuarioServiceImplementation implements IUsuarioService {
 
-    public static final String IS_ALREADY_USE = "%s ya esta en uso";
+    public static final String IS_ALREADY_USE = "%s ya esta registrado en el sistema";
     public static final String IS_NOT_FOUND = "%s no fue encontrado";
     public static final String IS_NOT_FOUND_F = "%s no fue encontrada";
     public static final String IS_NOT_ALLOWED = "no esta permitido %s ";
@@ -45,54 +45,80 @@ public class UsuarioServiceImplementation implements IUsuarioService {
 
     @Override
     public UsuarioDTO crearProfesor(DocenteRequest docenteRequest) throws RoleNotFoundException, UserExistException {
-        // 1. Verificar si el usuario ya existe por email
-        Optional<Usuario> usuarioExistente = usuarioRepository.findByEmail(docenteRequest.getEmail());
+        // Validar email único
+        if (usuarioRepository.existsByEmail(docenteRequest.getEmail())) {
+            throw new UserExistException(
+                    String.format(IS_ALREADY_USE, "El correo electrónico " + docenteRequest.getEmail()));
+        }
 
-        if (usuarioExistente.isPresent()) {
-            Usuario usuario = usuarioExistente.get();
+        // Validar código único (si no es nulo)
+        if (docenteRequest.getCodigo() != null && !docenteRequest.getCodigo().isEmpty() &&
+                usuarioRepository.existsByCodigo(docenteRequest.getCodigo())) {
+            throw new UserExistException(String.format(IS_ALREADY_USE, "El código " + docenteRequest.getCodigo()));
+        }
 
-            // 2. Si existe pero es un estudiante (rol por defecto), actualizarlo a docente
-            if (usuario.getRolId().getId() == 1) { // 1 es el ID del rol estudiante
-                return actualizarEstudianteADocente(usuario, docenteRequest);
-            }
-            // 3. Si ya es docente, lanzar excepción
-            throw new UserExistException(String.format(IS_ALREADY_USE, "ESTE CORREO DE DOCENTE").toLowerCase());
+        // Validar cédula única (si no es nula)
+        if (docenteRequest.getCedula() != null && !docenteRequest.getCedula().isEmpty() &&
+                usuarioRepository.existsByCedula(docenteRequest.getCedula())) {
+            throw new UserExistException(String.format(IS_ALREADY_USE, "La cédula " + docenteRequest.getCedula()));
+        }
+
+        // Validar googleId único (si no es nulo)
+        if (docenteRequest.getGoogleId() != null && !docenteRequest.getGoogleId().isEmpty() &&
+                usuarioRepository.existsByGoogleId(docenteRequest.getGoogleId())) {
+            throw new UserExistException(
+                    String.format(IS_ALREADY_USE, "El ID de Google " + docenteRequest.getGoogleId()));
         }
 
         Usuario docente = new Usuario();
         docente.setCodigo(docenteRequest.getCodigo());
-        docente.setNombreCompleto(docenteRequest.getPrimerNombre() + " " + docenteRequest.getSegundoNombre() + " " + docenteRequest.getPrimerApellido() + " " + docenteRequest.getSegundoApellido());
+        docente.setNombreCompleto(docenteRequest.getPrimerNombre() + " " + docenteRequest.getSegundoNombre() + " " +
+                docenteRequest.getPrimerApellido() + " " + docenteRequest.getSegundoApellido());
         BeanUtils.copyProperties(docenteRequest, docente);
 
-        // 5. Asignar rol docente (2 es el ID del rol docente)
+        // Asignar rol docente (2 es el ID del rol docente)
         Rol rolDocente = rolRepository.findById(2)
                 .orElseThrow(
                         () -> new RoleNotFoundException(String.format(IS_NOT_FOUND, "EL ROL DOCENTE").toLowerCase()));
         docente.setRolId(rolDocente);
 
-        // 6. Guardar el nuevo docente
+        // Guardar el nuevo docente
         usuarioRepository.save(docente);
 
         return convertirAUsuarioDTO(docente);
     }
 
-    public void registraroActualizarUsuarioGoogle(LoginGoogleRequest loginGoogleRequest) {
+    public void registraroActualizarUsuarioGoogle(LoginGoogleRequest loginGoogleRequest) throws UserExistException {
+        // Validar googleId único si el usuario no existe por email
+        if (!usuarioRepository.existsByEmail(loginGoogleRequest.getEmail()) && 
+                loginGoogleRequest.getGoogleId() != null && 
+                !loginGoogleRequest.getGoogleId().isEmpty() && 
+                usuarioRepository.existsByGoogleId(loginGoogleRequest.getGoogleId())) {
+            throw new UserExistException(String.format(IS_ALREADY_USE, "El ID de Google " + loginGoogleRequest.getGoogleId()));
+        }
+        
         usuarioRepository.findByEmail(loginGoogleRequest.getEmail()).ifPresentOrElse(
                 usuario -> {
                     // Actualización de usuario existente
+                    if (loginGoogleRequest.getGoogleId() != null && !loginGoogleRequest.getGoogleId().isEmpty() &&
+                            !loginGoogleRequest.getGoogleId().equals(usuario.getGoogleId()) && 
+                            usuarioRepository.existsByGoogleId(loginGoogleRequest.getGoogleId())) {
+                        throw new RuntimeException("El ID de Google ya está en uso por otro usuario");
+                    }
+                    
                     usuario.setGoogleId(loginGoogleRequest.getGoogleId());
                     usuario.setNombreCompleto(loginGoogleRequest.getNombre().isEmpty() ? usuario.getNombreCompleto()
                             : loginGoogleRequest.getNombre());
                     usuario.setFotoUrl(loginGoogleRequest.getFotoUrl() == null ? usuario.getFotoUrl()
                             : loginGoogleRequest.getFotoUrl());
-
+                    
                     // Si es un estudiante (rol por defecto) pero ya estaba registrado como docente,
                     // mantener rol
                     if (usuario.getRolId() == null || usuario.getRolId().getId() == 1) {
                         Rol rolEstudiante = rolRepository.findById(1).orElseThrow();
                         usuario.setRolId(rolEstudiante);
                     }
-
+                    
                     usuarioRepository.save(usuario);
                 },
                 () -> {
@@ -100,13 +126,12 @@ public class UsuarioServiceImplementation implements IUsuarioService {
                     Usuario nuevoUsuario = new Usuario();
                     nuevoUsuario.setEmail(loginGoogleRequest.getEmail());
                     nuevoUsuario.setGoogleId(loginGoogleRequest.getGoogleId());
-                    nuevoUsuario.setNombreCompleto(loginGoogleRequest.getNombre()); // si no se le pasa, se usa el
-                                                                                    // nombre del usuario
+                    nuevoUsuario.setNombreCompleto(loginGoogleRequest.getNombre());
                     nuevoUsuario.setFotoUrl(loginGoogleRequest.getFotoUrl());
-
+                    
                     Rol rolEstudiante = rolRepository.findById(1).orElseThrow();
                     nuevoUsuario.setRolId(rolEstudiante);
-
+                    
                     usuarioRepository.save(nuevoUsuario);
                 });
     }
@@ -161,12 +186,37 @@ public class UsuarioServiceImplementation implements IUsuarioService {
             throw new UserNotFoundException("El usuario no tiene rol de profesor");
         }
 
+        // Validar email único (si cambió)
         if (!profesor.getEmail().equals(docenteRequest.getEmail()) &&
                 usuarioRepository.existsByEmail(docenteRequest.getEmail())) {
-            throw new UserExistException(String.format(IS_ALREADY_USE, "ESTE CORREO").toLowerCase());
+            throw new UserExistException(
+                    String.format(IS_ALREADY_USE, "El correo electrónico " + docenteRequest.getEmail()));
         }
 
-        profesor.setNombreCompleto(docenteRequest.getPrimerNombre() + " " + docenteRequest.getSegundoNombre() + " " + docenteRequest.getPrimerApellido() + " " + docenteRequest.getSegundoApellido());
+        // Validar código único (si cambió y no es nulo)
+        if (docenteRequest.getCodigo() != null && !docenteRequest.getCodigo().isEmpty() &&
+                !docenteRequest.getCodigo().equals(profesor.getCodigo()) &&
+                usuarioRepository.existsByCodigo(docenteRequest.getCodigo())) {
+            throw new UserExistException(String.format(IS_ALREADY_USE, "El código " + docenteRequest.getCodigo()));
+        }
+
+        // Validar cédula única (si cambió y no es nula)
+        if (docenteRequest.getCedula() != null && !docenteRequest.getCedula().isEmpty() &&
+                !docenteRequest.getCedula().equals(profesor.getCedula()) &&
+                usuarioRepository.existsByCedula(docenteRequest.getCedula())) {
+            throw new UserExistException(String.format(IS_ALREADY_USE, "La cédula " + docenteRequest.getCedula()));
+        }
+
+        // Validar googleId único (si cambió y no es nulo)
+        if (docenteRequest.getGoogleId() != null && !docenteRequest.getGoogleId().isEmpty() &&
+                !docenteRequest.getGoogleId().equals(profesor.getGoogleId()) &&
+                usuarioRepository.existsByGoogleId(docenteRequest.getGoogleId())) {
+            throw new UserExistException(
+                    String.format(IS_ALREADY_USE, "El ID de Google " + docenteRequest.getGoogleId()));
+        }
+
+        profesor.setNombreCompleto(docenteRequest.getPrimerNombre() + " " + docenteRequest.getSegundoNombre() + " " +
+                docenteRequest.getPrimerApellido() + " " + docenteRequest.getSegundoApellido());
         profesor.setPrimerNombre(docenteRequest.getPrimerNombre());
         profesor.setSegundoNombre(docenteRequest.getSegundoNombre());
         profesor.setPrimerApellido(docenteRequest.getPrimerApellido());

@@ -23,7 +23,7 @@ public interface IUsuarioService {
 
     //public UsuarioDTO registrarUsuario(UsuarioDTO usuarioDTO) throws RoleNotFoundException, UserNotFoundException;
 
-    public void registraroActualizarUsuarioGoogle(LoginGoogleRequest loginGoogleRequest);
+    public void registraroActualizarUsuarioGoogle(LoginGoogleRequest loginGoogleRequest) throws UserExistException;
 
     public void guardarOActualizarUsuario(OAuth2User oAuth2User);
 
