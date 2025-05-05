@@ -1,6 +1,7 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MateriaExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +32,12 @@ public class MateriaController {
 
     //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PostMapping("/crear")
-    public ResponseEntity<HttpResponse> crearMateria(@RequestBody MateriaDTO materiaDTO) throws PensumNotFoundException, MateriaExistsException {
-        materiaService.crearMateria(materiaDTO);
+    public ResponseEntity<Map<HttpResponse, MateriaDTO>> crearMateria(@RequestBody MateriaDTO materiaDTO) throws PensumNotFoundException, MateriaExistsException {
+        MateriaDTO materia = materiaService.crearMateria(materiaDTO);
          return new ResponseEntity<>(
-                                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                                                " Materia creada con exito"),
-                                HttpStatus.OK);
+                                Map.of(new HttpResponse(HttpStatus.CREATED.value(), HttpStatus.CREATED, HttpStatus.CREATED.getReasonPhrase(),
+                                                " Materia creada con exito"), materia),
+                                HttpStatus.CREATED);
     }
 
     @PostMapping("/moodle")

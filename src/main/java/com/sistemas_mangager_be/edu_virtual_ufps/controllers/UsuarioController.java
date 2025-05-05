@@ -1,6 +1,7 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
@@ -20,6 +21,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserExistException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.implementations.UsuarioServiceImplementation;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IUsuarioService;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.UsuarioDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.DocenteRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.LoginGoogleRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
@@ -48,13 +50,13 @@ public class UsuarioController {
         }
 
         @PostMapping("/profesores/crear")
-        public ResponseEntity<HttpResponse> crearProfesor(@RequestBody DocenteRequest docenteRequest)
+        public ResponseEntity<Map<HttpResponse,UsuarioDTO>> crearProfesor(@RequestBody DocenteRequest docenteRequest)
                         throws UserExistException, RoleNotFoundException {
-                iUsuarioService.crearProfesor(docenteRequest);
+                UsuarioDTO usuario = iUsuarioService.crearProfesor(docenteRequest);
 
                 return new ResponseEntity<>(
-                                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                                                " Docente registrado con exito"),
+                                Map.of(new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                                                " Usuario registrado con exito"), usuario),
                                 HttpStatus.OK);
         }
 

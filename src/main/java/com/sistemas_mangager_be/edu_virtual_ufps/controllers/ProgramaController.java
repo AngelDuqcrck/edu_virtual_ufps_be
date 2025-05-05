@@ -1,6 +1,7 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,12 +38,12 @@ public class ProgramaController {
      */
     //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
      @PostMapping("/crear")
-    public ResponseEntity<HttpResponse> crearPrograma(@RequestBody ProgramaDTO programaDTO) throws ProgramaExistsException {
-        programaService.crearPrograma(programaDTO);
+    public ResponseEntity<Map<HttpResponse, ProgramaDTO>> crearPrograma(@RequestBody ProgramaDTO programaDTO) throws ProgramaExistsException {
+        ProgramaDTO programa =programaService.crearPrograma(programaDTO);
 
         return new ResponseEntity<>(
-                                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                                                " Programa registrado con exito"),
+                                Map.of(new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                                                " Programa creado con exito"), programa),
                                 HttpStatus.OK);
 
     }

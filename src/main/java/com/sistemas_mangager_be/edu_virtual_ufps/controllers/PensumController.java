@@ -1,6 +1,7 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,12 +30,12 @@ public class PensumController {
     private IPensumService pensumService;
     
     @PostMapping("/crear")
-    public ResponseEntity<HttpResponse> crearPensum( @RequestBody PensumDTO pensumDTO) throws ProgramaNotFoundException {
-        pensumService.crearPensum(pensumDTO);
+    public ResponseEntity<Map<HttpResponse, PensumDTO>> crearPensum( @RequestBody PensumDTO pensumDTO) throws ProgramaNotFoundException {
+        PensumDTO  pensum = pensumService.crearPensum(pensumDTO);
 
         return new ResponseEntity<>(
-                                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                                                " Pensum creado con exito"),
+                                Map.of(new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                                                " Pensum creado con exito"), pensum),
                                 HttpStatus.OK);
     }
     
