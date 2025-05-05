@@ -18,7 +18,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MateriaSemestre
 @Service
 public class MateriaServiceImplementation implements IMateriaService {
     
-    public static final String IS_ALREADY_USE = "%s ya esta en uso";
+    public static final String IS_ALREADY_USE = "%s ya esta en registrada en el sistema";
     public static final String IS_NOT_FOUND = "%s no fue encontrado";
     public static final String IS_NOT_FOUND_F = "%s no fue encontrada";
     public static final String IS_NOT_ALLOWED = "no esta permitido %s ";
@@ -33,7 +33,11 @@ public class MateriaServiceImplementation implements IMateriaService {
     private PensumRepository pensumRepository;
     
     @Override
-    public MateriaDTO crearMateria(MateriaDTO materiaDTO) throws PensumNotFoundException {
+    public MateriaDTO crearMateria(MateriaDTO materiaDTO) throws PensumNotFoundException, MateriaExistsException {
+        if(materiaRepository.existsByCodigo(materiaDTO.getCodigo())) {
+            throw new MateriaExistsException(String.format(IS_ALREADY_USE, "LA MATERIA CON EL CODIGO " + materiaDTO.getCodigo()).toLowerCase());
+        }
+
         Materia materia = new Materia();
         BeanUtils.copyProperties(materiaDTO, materia);
 
@@ -55,13 +59,17 @@ public class MateriaServiceImplementation implements IMateriaService {
     }
 
     @Override
-    public MateriaDTO actualizarMateria(Integer id,MateriaDTO materiaDTO) throws PensumNotFoundException, MateriaNotFoundException {
+    public MateriaDTO actualizarMateria(Integer id,MateriaDTO materiaDTO) throws MateriaExistsException, PensumNotFoundException, MateriaNotFoundException {
         
         Materia materia = materiaRepository.findById(id).orElse(null);
         if (materia == null) {
             throw new MateriaNotFoundException(String.format(IS_NOT_FOUND_F, "EL MATERIA CON EL ID " + materiaDTO.getId()).toLowerCase());
         }
 
+        if(!materia.getCodigo().equals(materiaDTO.getCodigo()) && materiaRepository.existsByCodigo(materiaDTO.getCodigo())) {
+            throw new MateriaExistsException(String.format(IS_ALREADY_USE, "LA MATERIA CON EL CODIGO " + materiaDTO.getCodigo()).toLowerCase());
+        }
+        
         Pensum pensum = pensumRepository.findById(materiaDTO.getPensumId()).orElse(null);
         if (pensum == null) {
             throw new PensumNotFoundException(String.format(IS_NOT_FOUND, "EL PENSUM CON EL ID " + materiaDTO.getPensumId()).toLowerCase());

@@ -62,6 +62,11 @@ public class ExceptionHandling {
         return createHttpResponse(HttpStatus.CONFLICT, exception.getMessage());
     }
 
+    @ExceptionHandler(MateriaExistsException.class)
+    public ResponseEntity<HttpResponse> materiaExistException(MateriaExistsException exception) {
+        return createHttpResponse(HttpStatus.CONFLICT, exception.getMessage());
+    }
+    
     @ExceptionHandler(ProgramaExistsException.class)
     public ResponseEntity<HttpResponse> programaExistException(ProgramaExistsException exception) {
         return createHttpResponse(HttpStatus.CONFLICT, exception.getMessage());

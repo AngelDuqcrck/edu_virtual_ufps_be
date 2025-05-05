@@ -2,6 +2,7 @@ package com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces;
 
 import java.util.List;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MateriaExistsException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MateriaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.PensumNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MateriaDTO;
@@ -9,9 +10,9 @@ import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MateriaSemestre
 
 public interface IMateriaService {
     
-    MateriaDTO crearMateria(MateriaDTO materiaDTO) throws PensumNotFoundException;
+    MateriaDTO crearMateria(MateriaDTO materiaDTO) throws PensumNotFoundException, MateriaExistsException;
 
-    MateriaDTO actualizarMateria(Integer id, MateriaDTO materiaDTO) throws PensumNotFoundException, MateriaNotFoundException;
+    MateriaDTO actualizarMateria(Integer id, MateriaDTO materiaDTO) throws PensumNotFoundException, MateriaNotFoundException, MateriaExistsException;
 
     MateriaDTO listarMateria( Integer materiaId) throws MateriaNotFoundException;
 
