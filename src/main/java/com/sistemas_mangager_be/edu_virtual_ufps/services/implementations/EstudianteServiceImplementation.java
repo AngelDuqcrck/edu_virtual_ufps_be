@@ -33,6 +33,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.repositories.RolRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.UsuarioRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IEstudianteService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.EstudianteDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.EstudianteResponse;
 
 @Service
@@ -171,6 +172,36 @@ public class EstudianteServiceImplementation implements IEstudianteService {
                 return estudianteCreado;
         }
 
+        public void vincularMoodleId(MoodleRequest moodleRequest) throws EstudianteNotFoundException, UserExistException{
+                Estudiante estudiante  = estudianteRepository.findById(moodleRequest.getBackendId())
+                                .orElseThrow(() -> new EstudianteNotFoundException(
+                                                String.format(IS_NOT_FOUND, "EL ESTUDIANTE CON ID " + moodleRequest.getBackendId())
+                                                                .toLowerCase()));
+                Usuario usuario = usuarioRepository.findById(estudiante.getUsuarioId().getId())
+                                .orElseThrow(() -> new EstudianteNotFoundException(
+                                                String.format(IS_NOT_FOUND, " EL USUARIO ASOCIADO AL ESTUDIANTE")
+                                                                .toLowerCase()));
+                
+                if(estudianteRepository.existsByCodigo(moodleRequest.getMoodleId())){
+                        throw new UserExistException(
+                                        String.format(IS_ALREADY_USE,
+                                                        "El ID de Moodle " + moodleRequest.getMoodleId()));
+                }
+
+                if(usuarioRepository.existsByMoodleId(moodleRequest.getMoodleId())){
+                        throw new UserExistException(
+                                        String.format(IS_ALREADY_USE,
+                                                        "El ID de Moodle " + moodleRequest.getMoodleId()));
+                }
+
+
+                estudiante.setMoodleId(moodleRequest.getMoodleId());
+                estudianteRepository.save(estudiante);
+
+                usuario.setMoodleId(moodleRequest.getMoodleId());
+                usuarioRepository.save(usuario);
+
+        }
         @Override
         public EstudianteDTO actualizarEstudiante(Integer id, EstudianteDTO estudianteDTO)
                         throws UserNotFoundException, PensumNotFoundException, CohorteNotFoundException,

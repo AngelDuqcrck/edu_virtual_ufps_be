@@ -7,6 +7,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MateriaNotFoundExcep
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.PensumNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MateriaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MateriaSemestreRequest;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
 
 public interface IMateriaService {
     
@@ -23,4 +24,5 @@ public interface IMateriaService {
     List<MateriaDTO> listarMateriasPorPensumPorSemestre(MateriaSemestreRequest materiaSemestreRequest) throws PensumNotFoundException;
 
 
+     void vincularMoodleId(MoodleRequest moodleRequest) throws MateriaNotFoundException, MateriaExistsException;
 }

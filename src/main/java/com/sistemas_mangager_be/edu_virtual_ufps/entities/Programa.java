@@ -23,4 +23,8 @@ public class Programa {
 
     @Column(name="es_posgrado", nullable = false)
     private Boolean esPosgrado;
+
+    @Column(unique = true)
+    private String moodleId;
+
 }

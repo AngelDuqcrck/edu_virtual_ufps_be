@@ -4,6 +4,7 @@ package com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces;
 import java.util.List;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.LoginGoogleRequest;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
@@ -29,6 +30,7 @@ public interface IUsuarioService {
 
     public UsuarioDTO crearProfesor(DocenteRequest docenteRequest) throws RoleNotFoundException, UserExistException;
 
+    public void vincularMoodleId(MoodleRequest moodleRequest) throws UserNotFoundException, UserExistException;
     public UsuarioDTO actualizarProfesor(DocenteRequest docenteRequest, Integer id)
             throws RoleNotFoundException, UserExistException, UserNotFoundException;
 

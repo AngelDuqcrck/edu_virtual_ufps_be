@@ -22,6 +22,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IUsuarioSer
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.UsuarioDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.DocenteRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.LoginGoogleRequest;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.UsuarioResponse;
 
 import jakarta.transaction.Transactional;
@@ -86,6 +87,24 @@ public class UsuarioServiceImplementation implements IUsuarioService {
         usuarioRepository.save(docente);
 
         return convertirAUsuarioDTO(docente);
+    }
+
+    public void vincularMoodleId(MoodleRequest moodleRequest) throws UserNotFoundException, UserExistException {
+        Usuario usuario = usuarioRepository.findById(moodleRequest.getBackendId())
+                .orElseThrow(() -> new UserNotFoundException(
+                        String.format(IS_NOT_FOUND, "EL USUARIO CON ID " + moodleRequest.getBackendId()).toLowerCase()));
+        
+        if(usuario.getRolId().getId() != 2) {
+            throw new UserNotFoundException("El usuario no tiene rol de profesor");
+        }
+        
+        if(usuarioRepository.existsByMoodleId(moodleRequest.getMoodleId())) {
+            throw new UserExistException(String.format(IS_ALREADY_USE, "El ID de Moodle " + moodleRequest.getMoodleId()));
+        }
+
+        // Actualizar el Moodle ID del usuario
+        usuario.setMoodleId(moodleRequest.getMoodleId());
+        usuarioRepository.save(usuario);
     }
 
     public void registraroActualizarUsuarioGoogle(LoginGoogleRequest loginGoogleRequest) throws UserExistException {

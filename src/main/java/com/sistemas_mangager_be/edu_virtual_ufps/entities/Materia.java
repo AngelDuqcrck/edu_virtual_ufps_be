@@ -27,4 +27,7 @@ public class Materia {
     private Pensum pensumId;
 
     private String semestre;
+
+    
+    private String moodleId;
 }

@@ -12,12 +12,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.services.implementations.MigracionEstudiantesService;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IEstudianteService;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IGrupoService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.EstudianteDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.EstudianteGrupoResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.EstudianteResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.HttpResponse;
@@ -46,6 +48,16 @@ public class EstudianteController {
                         " Estudiante registrado con exito"),
                 HttpStatus.OK);
     }
+
+    @PostMapping("/moodle")
+    public ResponseEntity<HttpResponse> vincularEstudianteMoodle(@RequestBody MoodleRequest moodleRequest) throws EstudianteNotFoundException, UserExistException {
+        estudianteService.vincularMoodleId(moodleRequest);
+        return new ResponseEntity<>(
+                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                        " Vinculacion con moodle realizada con exito"),
+                HttpStatus.OK);
+    }
+
 
     @PutMapping("{id}")
     public ResponseEntity<HttpResponse> actualizarEstudiante(@RequestBody EstudianteDTO estudianteDTO,
