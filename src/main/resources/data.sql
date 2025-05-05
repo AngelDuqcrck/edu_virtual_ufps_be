@@ -226,7 +226,8 @@ INSERT IGNORE INTO estados_matriculas (id, nombre) VALUES
 (2, 'En curso'),
 (3, 'Cancelada'),
 (4, 'Reprobada'),
-(5, 'Anulada');
+(5, 'Anulada'),
+(6, 'Correo enviado');
 
 CREATE TABLE IF NOT EXISTS tipos_solicitudes (
     id INTEGER NOT NULL AUTO_INCREMENT,

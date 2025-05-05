@@ -16,6 +16,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.CambioEstadoMatricula;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.EstadoMatricula;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Estudiante;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.GrupoCohorte;
@@ -26,6 +27,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EstudianteNotFoundEx
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.GrupoNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MateriaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MatriculaException;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.CambioEstadoMatriculaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.EstadoMatriculaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.EstudianteRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.GrupoCohorteRepository;
@@ -50,6 +52,9 @@ public class MatriculaServiceImplementation implements IMatriculaService {
         public static final String IS_NOT_VALID = "%s no es valido";
         public static final String ARE_NOT_EQUALS = "%s no son iguales";
         public static final String IS_NOT_CORRECT = "%s no es correcta";
+
+        @Autowired
+        private CambioEstadoMatriculaRepository cambioEstadoMatriculaRepository;
 
         @Autowired
         private EstadoMatriculaRepository estadoMatriculaRepository;
@@ -120,6 +125,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                 // Guardar la matrícula
                 matricula = matriculaRepository.save(matricula);
 
+                crearCambioEstadoMatricula(matricula, estadoMatricula, matriculaDTO.getUsuarioMatricula());
                 // Convertir a DTO para retornar
                 return convertirAmatriculaDTO(matricula);
         }
@@ -172,7 +178,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                                                                                 .getEstadoMatriculaId().getId())
                                                 .toLowerCase()));
                 matricula.setEstadoMatriculaId(estadoMatricula);
-
+                //crearCambioEstadoMatricula(matricula, estadoMatricula, matriculaDTO.getUsuarioMatricula());
                 matriculaRepository.save(matricula);
 
         }
@@ -487,4 +493,15 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                                 .build();
         }
 
+        private void crearCambioEstadoMatricula(Matricula matricula, EstadoMatricula estadoMatricula, String usuario) {
+               CambioEstadoMatricula cambioEstado = new CambioEstadoMatricula();
+                cambioEstado.setMatriculaId(matricula);
+                cambioEstado.setEstadoMatriculaId(estadoMatricula);
+                cambioEstado.setFechaCambioEstado(new Date());
+                cambioEstado.setUsuarioCambioEstado(usuario);
+                cambioEstado.setSemestre(calcularSemestre(new Date()));
+
+                cambioEstadoMatriculaRepository.save(cambioEstado);
+
+        }
 }
