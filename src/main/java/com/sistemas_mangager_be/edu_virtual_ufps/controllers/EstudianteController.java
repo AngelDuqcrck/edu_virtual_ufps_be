@@ -1,6 +1,7 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,15 +39,15 @@ public class EstudianteController {
     private MigracionEstudiantesService migracionEstudiantesService;
 
     @PostMapping("/crear")
-    public ResponseEntity<HttpResponse> crearEstudiante(@RequestBody EstudianteDTO estudianteDTO)
+    public ResponseEntity<Map<HttpResponse, EstudianteDTO>> crearEstudiante(@RequestBody EstudianteDTO estudianteDTO)
             throws PensumNotFoundException, CohorteNotFoundException, EstadoEstudianteNotFoundException,
             RoleNotFoundException, UserExistException {
 
-        estudianteService.crearEstudiante(estudianteDTO);
+        EstudianteDTO estudiante = estudianteService.crearEstudiante(estudianteDTO);
         return new ResponseEntity<>(
-                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                        " Estudiante registrado con exito"),
-                HttpStatus.OK);
+                Map.of(new HttpResponse(HttpStatus.CREATED.value(), HttpStatus.CREATED, HttpStatus.CREATED.getReasonPhrase(),
+                        " Estudiante creado con exito"), estudiante),
+                HttpStatus.CREATED);
     }
 
     @PostMapping("/moodle")
