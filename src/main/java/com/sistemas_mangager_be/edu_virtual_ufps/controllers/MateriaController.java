@@ -2,6 +2,7 @@ package com.sistemas_mangager_be.edu_virtual_ufps.controllers;
 
 import java.util.List;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MateriaExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class MateriaController {
 
     //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PostMapping("/crear")
-    public ResponseEntity<HttpResponse> crearMateria(@RequestBody MateriaDTO materiaDTO) throws PensumNotFoundException {
+    public ResponseEntity<HttpResponse> crearMateria(@RequestBody MateriaDTO materiaDTO) throws PensumNotFoundException, MateriaExistsException {
         materiaService.crearMateria(materiaDTO);
          return new ResponseEntity<>(
                                 new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
@@ -39,7 +40,7 @@ public class MateriaController {
 
     //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<HttpResponse> actualizarMateria(@PathVariable Integer id, @RequestBody MateriaDTO materiaDTO) throws PensumNotFoundException, MateriaNotFoundException {
+    public ResponseEntity<HttpResponse> actualizarMateria(@PathVariable Integer id, @RequestBody MateriaDTO materiaDTO) throws MateriaExistsException,PensumNotFoundException, MateriaNotFoundException {
         materiaService.actualizarMateria(id, materiaDTO);
 
         return new ResponseEntity<>(

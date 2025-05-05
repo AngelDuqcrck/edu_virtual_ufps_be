@@ -14,6 +14,8 @@ public interface MateriaRepository extends JpaRepository<Materia, Integer> {
 
     List<Materia> findByPensumIdIn(List<Pensum> pensums);
 
+    boolean existsByCodigo(String codigo);
+
     List<Materia> findByPensumId(Pensum pensumId);
 
     Optional<Materia> findByCodigo(String codigo);
