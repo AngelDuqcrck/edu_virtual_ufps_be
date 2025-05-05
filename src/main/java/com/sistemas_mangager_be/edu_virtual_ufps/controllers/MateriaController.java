@@ -19,6 +19,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.PensumNotFoundExcept
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IMateriaService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MateriaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MateriaSemestreRequest;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.HttpResponse;
 
 @RestController
@@ -36,6 +37,17 @@ public class MateriaController {
                                 new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
                                                 " Materia creada con exito"),
                                 HttpStatus.OK);
+    }
+
+    @PostMapping("/moodle")
+    public ResponseEntity<HttpResponse> vincularMateriaMoodle(@RequestBody MoodleRequest moodleRequest) throws MateriaNotFoundException, MateriaExistsException {
+        materiaService.vincularMoodleId(moodleRequest);
+        return  new ResponseEntity<>(
+                                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                                                " Vinculacion con moodle realizada con exito"),
+                                HttpStatus.OK);
+        
+
     }
 
     //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")

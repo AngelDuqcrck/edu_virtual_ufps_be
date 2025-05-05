@@ -19,4 +19,10 @@ public class Pensum {
     @ManyToOne
     @JoinColumn(name = "programa_id")
     private Programa programaId;
+
+    private Integer cantidadSemestres;
+
+    
+    private String moodleId;
+
 }

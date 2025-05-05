@@ -60,4 +60,7 @@ public class Usuario {
 
     @Column(name = "foto_url")
     private String fotoUrl; // URL de la foto de perfil de Google
+
+    
+    private String moodleId;
 }

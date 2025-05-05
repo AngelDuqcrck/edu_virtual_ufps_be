@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IProgramaService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.ProgramaDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.HttpResponse;
 
 @RestController
@@ -45,7 +46,14 @@ public class ProgramaController {
                                 HttpStatus.OK);
 
     }
-
+    @PostMapping("/moodle")
+    public ResponseEntity<HttpResponse> vincularMoodle(@RequestBody MoodleRequest moodleRequest) throws ProgramaNotFoundException, ProgramaExistsException {
+        programaService.vincularMoodleId(moodleRequest);
+        return new ResponseEntity<>(
+                                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                                                "Vinculacion con moodle realizada con exito"),
+                                HttpStatus.OK);
+    }
     /*
      * Lista todos los programas
      * 

@@ -12,6 +12,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundExce
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.ProgramaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IProgramaService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.ProgramaDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
 
 @Service
 public class ProgramaServiceImplementation implements IProgramaService {
@@ -57,6 +58,20 @@ public class ProgramaServiceImplementation implements IProgramaService {
         ProgramaDTO programaCreado = new ProgramaDTO();
         BeanUtils.copyProperties(programa, programaCreado);
         return programaCreado;
+    }
+
+    
+    public void vincularMoodleId(MoodleRequest moodleRequest) throws ProgramaNotFoundException, ProgramaExistsException {
+        Programa programa = programaRepository.findById(moodleRequest.getBackendId())
+                .orElseThrow(() -> new ProgramaNotFoundException(
+                        String.format(IS_NOT_FOUND, "EL PROGRAMA CON EL ID " + moodleRequest.getBackendId()).toLowerCase()));
+        
+        if(programaRepository.existsByMoodleId(moodleRequest.getMoodleId())) {
+            throw new ProgramaExistsException(
+                    String.format(IS_ALREADY_USE, "El moodleId de programa " + moodleRequest.getMoodleId()));
+        }
+        programa.setMoodleId(moodleRequest.getMoodleId());
+        programaRepository.save(programa);
     }
 
     @Override

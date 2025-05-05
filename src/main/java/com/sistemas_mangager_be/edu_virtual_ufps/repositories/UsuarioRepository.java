@@ -23,4 +23,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
 
      Boolean existsByCedula(String cedula);
 
+     boolean existsByMoodleId(String moodleId);
+
 }

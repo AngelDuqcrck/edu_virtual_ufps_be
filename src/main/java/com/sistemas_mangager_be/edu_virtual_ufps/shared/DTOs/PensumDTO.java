@@ -10,4 +10,5 @@ public class PensumDTO {
     private Integer id;
     private String nombre;
     private Integer programaId;
+    private Integer cantidadSemestres;
 }
