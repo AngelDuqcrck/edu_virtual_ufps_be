@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.sistemas_mangager_be.edu_virtual_ufps.entities.CohorteGrupo;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.CambioEstadoMatricula;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.EstadoEstudiante;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.EstadoMatricula;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Estudiante;
@@ -21,6 +21,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.entities.Soporte;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.TipoSolicitud;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EstudianteNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.SolicitudException;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.CambioEstadoMatriculaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.CohorteGrupoRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.EstadoEstudianteRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.EstadoMatriculaRepository;
@@ -43,6 +44,9 @@ public class SolicitudServiceImplementation implements ISolicitudService {
     public static final String IS_NOT_VALID = "%s no es valida";
     public static final String ARE_NOT_EQUALS = "%s no son iguales";
     public static final String IS_NOT_CORRECT = "%s no es correcta";
+
+    @Autowired
+    private CambioEstadoMatriculaRepository cambioEstadoMatriculaRepository;
 
     @Autowired
     private SolicitudRepository solicitudRepository;
@@ -214,7 +218,8 @@ public class SolicitudServiceImplementation implements ISolicitudService {
             solicitudResponse.setGrupoId(solicitud.getMatriculaId().getGrupoCohorteId().getGrupoId().getId());
             solicitudResponse.setGrupoNombre(solicitud.getMatriculaId().getGrupoCohorteId().getGrupoId().getNombre());
             solicitudResponse.setGrupoCodigo(solicitud.getMatriculaId().getGrupoCohorteId().getGrupoId().getCodigo());
-
+            solicitudResponse.setMateriaNombre(solicitud.getMatriculaId().getGrupoCohorteId().getGrupoId().getMateriaId().getNombre());
+            solicitudResponse.setMateriaCodigo(solicitud.getMatriculaId().getGrupoCohorteId().getGrupoId().getMateriaId().getCodigo());
         }
 
         solicitudResponse.setEstudianteId(solicitud.getEstudianteId().getId());
@@ -257,6 +262,8 @@ public class SolicitudServiceImplementation implements ISolicitudService {
                         .setGrupoNombre(solicitud.getMatriculaId().getGrupoCohorteId().getGrupoId().getNombre());
                 solicitudResponse
                         .setGrupoCodigo(solicitud.getMatriculaId().getGrupoCohorteId().getGrupoId().getCodigo());
+                solicitudResponse.setMateriaNombre(solicitud.getMatriculaId().getGrupoCohorteId().getGrupoId().getMateriaId().getNombre());
+                solicitudResponse.setMateriaCodigo(solicitud.getMatriculaId().getGrupoCohorteId().getGrupoId().getMateriaId().getCodigo());
             }
 
             solicitudResponse.setEstudianteId(solicitud.getEstudianteId().getId());
@@ -286,7 +293,7 @@ public class SolicitudServiceImplementation implements ISolicitudService {
         }).toList();
     }
 
-    public void aprobarSolicitud(Long solicitudId, Integer tiposolicitudId, MultipartFile documento)
+    public void aprobarSolicitud(Long solicitudId, Integer tiposolicitudId, MultipartFile documento, String usuario)
             throws SolicitudException, IOException {
 
         // 1. Obtener la solicitud
@@ -306,11 +313,11 @@ public class SolicitudServiceImplementation implements ISolicitudService {
         // 3. Procesar según el tipo de solicitud
         switch (solicitud.getTipoSolicitudId().getId()) {
             case 1: // Cancelación de materias
-                aprobarCancelacionMaterias(solicitud, documento);
+                aprobarCancelacionMaterias(solicitud, documento, usuario);
                 break;
 
             case 2: // Aplazamiento de semestre
-                aprobarAplazamientoSemestre(solicitud, documento);
+                aprobarAplazamientoSemestre(solicitud, documento, usuario);
                 break;
 
             case 3: // Reintegro
@@ -331,7 +338,7 @@ public class SolicitudServiceImplementation implements ISolicitudService {
     // ------------------------------------------------------- MÉTODOS AUXILIARES
     // -------------------------------------------------------------------
 
-    private void aprobarCancelacionMaterias(Solicitud solicitud, MultipartFile documento) throws SolicitudException, IOException {
+    private void aprobarCancelacionMaterias(Solicitud solicitud, MultipartFile documento, String usuario) throws SolicitudException, IOException {
         // 1. Validar que tenga matrícula asociada
         if (solicitud.getMatriculaId() == null) {
             throw new SolicitudException("La solicitud de cancelación no tiene matrícula asociada");
@@ -344,10 +351,11 @@ public class SolicitudServiceImplementation implements ISolicitudService {
                 .orElseThrow(() -> new SolicitudException("Estado 'Cancelada' no configurado"));
 
         solicitud.getMatriculaId().setEstadoMatriculaId(estadoCancelada);
+        crearCambioEstadoMatricula(solicitud.getMatriculaId(), estadoCancelada, usuario );
         matriculaRepository.save(solicitud.getMatriculaId());
     }
 
-    private void aprobarAplazamientoSemestre(Solicitud solicitud, MultipartFile documento)
+    private void aprobarAplazamientoSemestre(Solicitud solicitud, MultipartFile documento, String usuario)
             throws SolicitudException, IOException {
         // 1. Validar documento de soporte
         if (documento == null || documento.isEmpty()) {
@@ -373,6 +381,7 @@ public class SolicitudServiceImplementation implements ISolicitudService {
 
             for (Matricula matricula : matriculasEnCurso) {
                 matricula.setEstadoMatriculaId(estadoCancelada);
+                crearCambioEstadoMatricula(matricula, estadoCancelada, usuario);
                 matriculaRepository.save(matricula);
             }
         }
@@ -498,4 +507,15 @@ public class SolicitudServiceImplementation implements ISolicitudService {
         return anio + "-" + (mes <= 6 ? "I" : "II");
     }
 
+    private void crearCambioEstadoMatricula(Matricula matricula, EstadoMatricula estadoMatricula, String usuario) {
+               CambioEstadoMatricula cambioEstado = new CambioEstadoMatricula();
+                cambioEstado.setMatriculaId(matricula);
+                cambioEstado.setEstadoMatriculaId(estadoMatricula);
+                cambioEstado.setFechaCambioEstado(new Date());
+                cambioEstado.setUsuarioCambioEstado(usuario);
+                cambioEstado.setSemestre(calcularSemestre(new Date()));
+
+                cambioEstadoMatriculaRepository.save(cambioEstado);
+
+        }
 }

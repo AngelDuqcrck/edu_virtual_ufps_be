@@ -36,6 +36,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.repositories.MatriculaRepositor
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IMatriculaService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MateriaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MatriculaDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.CambioEstadoMatriculaResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.CorreoResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.GrupoCohorteDocenteResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.MateriaPensumResponse;
@@ -74,7 +75,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
         @Autowired
         private EmailService emailService;
 
-        public MatriculaDTO crearMatricula(MatriculaDTO matriculaDTO)
+        public MatriculaDTO crearMatricula(MatriculaDTO matriculaDTO, String usuario)
                         throws EstudianteNotFoundException, GrupoNotFoundException, MatriculaException {
 
                 // Validar que el estudiante existe
@@ -125,7 +126,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                 // Guardar la matrícula
                 matricula = matriculaRepository.save(matricula);
 
-                crearCambioEstadoMatricula(matricula, estadoMatricula, matriculaDTO.getUsuarioMatricula());
+                crearCambioEstadoMatricula(matricula, estadoMatricula, usuario);
                 // Convertir a DTO para retornar
                 return convertirAmatriculaDTO(matricula);
         }
@@ -160,7 +161,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                 }
         }
 
-        public void anularMatricula(Long idMatricula) throws MatriculaException {
+        public void anularMatricula(Long idMatricula, String usuario) throws MatriculaException {
 
                 // Obtener la matrícula
                 Matricula matricula = matriculaRepository.findById(idMatricula)
@@ -178,7 +179,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                                                                                 .getEstadoMatriculaId().getId())
                                                 .toLowerCase()));
                 matricula.setEstadoMatriculaId(estadoMatricula);
-                //crearCambioEstadoMatricula(matricula, estadoMatricula, matriculaDTO.getUsuarioMatricula());
+                crearCambioEstadoMatricula(matricula, estadoMatricula, usuario);
                 matriculaRepository.save(matricula);
 
         }
@@ -293,59 +294,102 @@ public class MatriculaServiceImplementation implements IMatriculaService {
         }
 
         @Override
-        public CorreoResponse enviarCorreo(Integer estudianteId) throws EstudianteNotFoundException, MatriculaException {
+        public CorreoResponse enviarCorreo(Integer estudianteId, String usuario)
+                        throws EstudianteNotFoundException, MatriculaException {
                 // 1. Obtener el estudiante
                 Estudiante estudiante = estudianteRepository.findById(estudianteId)
-                        .orElseThrow(() -> new EstudianteNotFoundException("Estudiante no encontrado"));
-            
+                                .orElseThrow(() -> new EstudianteNotFoundException("Estudiante no encontrado"));
+
                 // 2. Obtener las matrículas en curso del estudiante
                 List<Matricula> matriculas = matriculaRepository.findByEstudianteIdAndEstadoMatriculaId_Id(
-                        estudiante, 2); // 2 = En curso
-            
+                                estudiante, 2); // 2 = En curso
+
                 // Verificar si hay matrículas para notificar
-                if(matriculas.isEmpty()) {
-                    throw new MatriculaException("El estudiante no tiene matrículas en curso");
+                if (matriculas.isEmpty()) {
+                        throw new MatriculaException("El estudiante no tiene matrículas en curso");
                 }
-            
+
                 // 3. Mapear a MatriculaResponse
                 List<MatriculaResponse> matriculasResponse = matriculas.stream()
-                        .map(this::convertirAMatriculaResponse)
-                        .collect(Collectors.toList());
-            
+                                .map(this::convertirAMatriculaResponse)
+                                .collect(Collectors.toList());
+
                 // 4. Construir el CorreoResponse
                 CorreoResponse correoResponse = CorreoResponse.builder()
-                        .nombreEstudiante(estudiante.getNombre() + " " + estudiante.getApellido())
-                        .correo(estudiante.getEmail())
-                        .semestre(calcularSemestre(new Date()))
-                        .fecha(new Date())
-                        .matriculas(matriculasResponse)
-                        .build();
-            
+                                .nombreEstudiante(estudiante.getNombre() + " " + estudiante.getApellido())
+                                .correo(estudiante.getEmail())
+                                .semestre(calcularSemestre(new Date()))
+                                .fecha(new Date())
+                                .matriculas(matriculasResponse)
+                                .build();
+
                 // 5. Enviar el correo
                 emailService.sendEmail(
-                        estudiante.getEmail(),
-                        "Matricula Académica - " + correoResponse.getSemestre(),
-                        correoResponse);
-            
+                                estudiante.getEmail(),
+                                "Matricula Académica - " + correoResponse.getSemestre(),
+                                correoResponse);
+
                 // 6. Actualizar las matrículas para indicar que se envió el correo
+                EstadoMatricula estadoCorreoEnviado = estadoMatriculaRepository.findById(6)
+                                .orElseThrow(() -> new MatriculaException("Estado 'Correo enviado' no configurado"));
+                crearCambioEstadoMatricula(null, estadoCorreoEnviado, usuario);
                 Date ahora = new Date();
                 matriculas.forEach(matricula -> {
-                    matricula.setCorreoEnviado(true);
-                    matricula.setFechaCorreoEnviado(ahora);
-                    matriculaRepository.save(matricula);
+                        matricula.setCorreoEnviado(true);
+                        matricula.setFechaCorreoEnviado(ahora);
+                        matriculaRepository.save(matricula);
+                        crearCambioEstadoMatricula(matricula, estadoCorreoEnviado, usuario);
                 });
-            
-                return correoResponse;
-            }
 
-            public boolean verificarCorreoEnviado(Integer estudianteId) throws EstudianteNotFoundException {
+                return correoResponse;
+        }
+
+        public boolean verificarCorreoEnviado(Integer estudianteId) throws EstudianteNotFoundException {
                 Estudiante estudiante = estudianteRepository.findById(estudianteId)
-                        .orElseThrow(() -> new EstudianteNotFoundException("Estudiante no encontrado"));
-                
+                                .orElseThrow(() -> new EstudianteNotFoundException("Estudiante no encontrado"));
+
                 // Buscar al menos una matrícula en curso que tenga el correo enviado
                 return matriculaRepository.existsByEstudianteIdAndEstadoMatriculaId_IdAndCorreoEnviado(
-                        estudiante, 2, true);
-            }
+                                estudiante, 2, true);
+        }
+
+        public List<CambioEstadoMatriculaResponse> listarCambiosdeEstadoMatriculaPorEstudiante(Integer estudianteId)
+                        throws EstudianteNotFoundException, MatriculaException {
+                Estudiante estudiante = estudianteRepository.findById(estudianteId)
+                                .orElseThrow(() -> new EstudianteNotFoundException("Estudiante no encontrado"));
+
+                List<CambioEstadoMatricula> cambiosEstado = cambioEstadoMatriculaRepository
+                                .findByMatriculaId_EstudianteIdAndSemestre(estudiante, calcularSemestre(new Date()));
+                if (cambiosEstado.isEmpty()) {
+                        throw new MatriculaException("No se encontraron cambios de estado para el estudiante");
+                }
+
+                return cambiosEstado.stream()
+                                .map(cambio -> {
+                                        CambioEstadoMatriculaResponse response = new CambioEstadoMatriculaResponse();
+                                        BeanUtils.copyProperties(cambio, response);
+                                        response.setEstadoMatriculaId(cambio.getEstadoMatriculaId().getId());
+                                        response.setEstadoMatriculaNombre(cambio.getEstadoMatriculaId().getNombre());
+                                        response.setMateriaId(cambio.getMatriculaId().getGrupoCohorteId().getGrupoId()
+                                                        .getMateriaId().getId());
+                                        response.setMateriaNombre(
+                                                        cambio.getMatriculaId().getGrupoCohorteId().getGrupoId()
+                                                                        .getMateriaId().getNombre());
+                                        response.setMateriaCodigo(cambio.getMatriculaId().getGrupoCohorteId()
+                                                        .getGrupoId().getMateriaId()
+                                                        .getCodigo());
+                                        response.setGrupoId(cambio.getMatriculaId().getGrupoCohorteId().getGrupoId()
+                                                        .getId());
+                                        response.setGrupoNombre(cambio.getMatriculaId().getGrupoCohorteId().getGrupoId()
+                                                        .getNombre());
+                                        response.setGrupoCodigo(cambio.getMatriculaId().getGrupoCohorteId().getGrupoId()
+                                                        .getCodigo());
+                                        response.setFechaCambioEstadoMatricula(cambio.getFechaCambioEstado());
+                                        response.setUsuarioCambioEstadoMatricula(cambio.getUsuarioCambioEstado());
+                                        return response;
+                                })
+                                .collect(Collectors.toList());
+        }
         // <-----------------------------------------------METODOS
         // AUXILIARES------------------------------------------------>
 
@@ -494,7 +538,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
         }
 
         private void crearCambioEstadoMatricula(Matricula matricula, EstadoMatricula estadoMatricula, String usuario) {
-               CambioEstadoMatricula cambioEstado = new CambioEstadoMatricula();
+                CambioEstadoMatricula cambioEstado = new CambioEstadoMatricula();
                 cambioEstado.setMatriculaId(matricula);
                 cambioEstado.setEstadoMatriculaId(estadoMatricula);
                 cambioEstado.setFechaCambioEstado(new Date());

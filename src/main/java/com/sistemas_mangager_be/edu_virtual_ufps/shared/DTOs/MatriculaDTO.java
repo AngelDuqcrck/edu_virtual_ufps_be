@@ -15,5 +15,5 @@ public class MatriculaDTO {
     private Long grupoCohorteId;
     private boolean nuevaMatricula;
     private Date fechaMatriculacion;
-    private String usuarioMatricula;
+
 }

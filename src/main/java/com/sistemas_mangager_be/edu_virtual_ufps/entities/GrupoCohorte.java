@@ -41,5 +41,7 @@ public class GrupoCohorte {
     @JoinColumn(name = "docente_id")
     private Usuario docenteId;
 
+    private String moodleId;
+
     
 }

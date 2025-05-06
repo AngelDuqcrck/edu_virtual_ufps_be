@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.CohorteNotFoundException;
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.GrupoExistException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.GrupoNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MateriaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
@@ -106,6 +108,16 @@ public class GrupoController {
         return new ResponseEntity<>(
                 new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
                         " Grupo vinculado con exito"),
+                HttpStatus.OK);
+    }
+
+    @PostMapping("/moodle/{grupoId}")
+    public ResponseEntity<HttpResponse> vincularGrupoMoodle(@PathVariable Long grupoId,
+            @RequestParam String moodleId) throws GrupoNotFoundException, GrupoExistException{
+        iGrupoService.vincularGrupoMoodle(grupoId, moodleId);
+        return new ResponseEntity<>(
+                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                        " Vinculacion con moodle realizada con exito"),
                 HttpStatus.OK);
     }
 

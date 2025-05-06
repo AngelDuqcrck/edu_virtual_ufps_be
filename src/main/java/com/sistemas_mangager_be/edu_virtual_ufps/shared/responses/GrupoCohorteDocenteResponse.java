@@ -23,4 +23,5 @@ public class GrupoCohorteDocenteResponse {
     private String materia;
     private String codigoMateria;
     private String semestreMateria;
+    private String moodleId;
 }
