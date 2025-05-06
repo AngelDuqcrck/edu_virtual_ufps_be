@@ -32,4 +32,6 @@ public interface GrupoCohorteRepository extends JpaRepository<GrupoCohorte, Long
 
     List<GrupoCohorte> findByCohorteGrupoId(CohorteGrupo cohorteGrupoId);
 
+    boolean existsByMoodleId(String moodleId);
+
 }

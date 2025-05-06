@@ -16,5 +16,7 @@ public class ProgramaDTO {
 
     private Boolean esPosgrado;
 
+    private String moodleId;
+
 
 }

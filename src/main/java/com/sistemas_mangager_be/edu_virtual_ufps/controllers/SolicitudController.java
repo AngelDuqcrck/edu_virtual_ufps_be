@@ -6,14 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EstudianteNotFoundException;
@@ -118,8 +111,8 @@ public class SolicitudController {
     }
 
     @PostMapping("/cancelacion/aprobar/{id}")
-    public ResponseEntity<HttpResponse> aprobarCancelacion(@PathVariable Long id, @RequestParam("informe") MultipartFile file) throws SolicitudException, IOException {
-        solicitudService.aprobarSolicitud(id, 1, file);
+    public ResponseEntity<HttpResponse> aprobarCancelacion(@PathVariable Long id, @RequestParam("informe") MultipartFile file,@RequestHeader(value = "X-Usuario") String usuario) throws SolicitudException, IOException {
+        solicitudService.aprobarSolicitud(id, 1, file, usuario);
         return new ResponseEntity<>(
                                 new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
                                                 " Solicitud de cancelación aprobada con exito"),
@@ -127,8 +120,8 @@ public class SolicitudController {
     }
 
     @PostMapping("/aplazamiento/aprobar/{id}")
-    public ResponseEntity<HttpResponse> aprobarAplazamiento(@PathVariable Long id, @RequestParam("informe") MultipartFile file) throws SolicitudException, IOException {
-        solicitudService.aprobarSolicitud(id, 2, file);
+    public ResponseEntity<HttpResponse> aprobarAplazamiento(@PathVariable Long id, @RequestParam("informe") MultipartFile file, @RequestHeader(value = "X-Usuario") String usuario) throws SolicitudException, IOException {
+        solicitudService.aprobarSolicitud(id, 2, file, usuario);
         return new ResponseEntity<>(
                                 new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
                                                 " Solicitud de aplazamiento aprobada con exito"),
@@ -137,7 +130,7 @@ public class SolicitudController {
 
     @PostMapping("/reintegro/aprobar/{id}")
     public ResponseEntity<HttpResponse> aprobarReintegro(@PathVariable Long id, @RequestParam("informe") MultipartFile file) throws SolicitudException, IOException {
-        solicitudService.aprobarSolicitud(id, 3, file);
+        solicitudService.aprobarSolicitud(id, 3, file, null);
         return new ResponseEntity<>(
                                 new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
                                                 " Solicitud de reintegro aprobada con exito"),

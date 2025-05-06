@@ -19,4 +19,5 @@ public class UsuarioResponse {
     private String telefono;
     private String codigo;
     private String rol;
+    private String moodleId;
 }

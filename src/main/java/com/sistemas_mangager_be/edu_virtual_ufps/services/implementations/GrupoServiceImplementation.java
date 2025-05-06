@@ -19,6 +19,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.entities.Matricula;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Rol;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Usuario;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.CohorteNotFoundException;
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.GrupoExistException;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.GrupoCohorteRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.GrupoNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MateriaNotFoundException;
@@ -36,6 +37,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.repositories.UsuarioRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IGrupoService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.GrupoDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.GrupoRequest;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.EstudianteGrupoResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.GrupoCohorteDocenteResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.GrupoCohorteResponse;
@@ -256,6 +258,22 @@ public class GrupoServiceImplementation implements IGrupoService {
         grupoCohorteRepository.save(grupoCohorte);
     }
 
+    public void vincularGrupoMoodle(Long id, String moodleId) throws GrupoNotFoundException, GrupoExistException {
+
+        GrupoCohorte grupoCohorte = grupoCohorteRepository.findById(id).orElse(null);
+        if (grupoCohorte == null) {
+            throw new GrupoNotFoundException(
+                    String.format(IS_NOT_FOUND, "EL GRUPO COHORTE CON EL ID " + id).toLowerCase());
+        }
+        if(grupoCohorteRepository.existsByMoodleId(moodleId)){
+            throw new GrupoExistException(
+                    String.format(IS_ALREADY_USE, "EL ID MOODLE " + moodleId).toLowerCase());
+        }
+        grupoCohorte.setMoodleId(moodleId);
+        grupoCohorteRepository.save(grupoCohorte);
+        
+    }
+
     public void actualizarVinculacionCohorteDocente(Long vinculacionId, GrupoRequest grupoRequest)
             throws CohorteNotFoundException, GrupoNotFoundException, UserNotFoundException,
             VinculacionNotFoundException {
@@ -328,6 +346,7 @@ public class GrupoServiceImplementation implements IGrupoService {
                 .materia(grupoCohorteDocente.getGrupoId().getMateriaId().getNombre())
                 .codigoMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getCodigo())
                 .semestreMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getSemestre())
+                .moodleId(grupoCohorteDocente.getMoodleId())
                 .build();
 
         return grupoCohorteDocenteResponse;
@@ -352,6 +371,7 @@ public class GrupoServiceImplementation implements IGrupoService {
                     .materia(grupoCohorteDocente.getGrupoId().getMateriaId().getNombre())
                     .codigoMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getCodigo())
                     .semestreMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getSemestre())
+                    .moodleId(grupoCohorteDocente.getMoodleId())
                     .build();
             return grupoCohorteDocenteResponse;
         }).toList();
@@ -376,9 +396,11 @@ public class GrupoServiceImplementation implements IGrupoService {
                     .cohorteNombre(grupoCohorteDocente.getCohorteId().getNombre())
                     .fechaCreacion(grupoCohorteDocente.getFechaCreacion().toString())
                     .grupoNombre(grupoCohorteDocente.getGrupoId().getNombre())
+                    .codigoGrupo(grupoCohorteDocente.getGrupoId().getCodigo())
                     .materia(grupoCohorteDocente.getGrupoId().getMateriaId().getNombre())
                     .codigoMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getCodigo())
                     .semestreMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getSemestre())
+                    .moodleId(grupoCohorteDocente.getMoodleId())
                     .build();
             return grupoCohorteDocenteResponse;
         }).toList();
@@ -407,6 +429,7 @@ public class GrupoServiceImplementation implements IGrupoService {
                     .materia(grupoCohorteDocente.getGrupoId().getMateriaId().getNombre())
                     .codigoMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getCodigo())
                     .semestreMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getSemestre())
+                    .moodleId(grupoCohorteDocente.getMoodleId())
                     .build();
             return grupoCohorteDocenteResponse;
         }).toList();
@@ -422,6 +445,7 @@ public class GrupoServiceImplementation implements IGrupoService {
         return grupoCohorteDocentes.stream().map(grupoCohorteDocente -> {
             GrupoCohorteDocenteResponse grupoCohorteDocenteResponse = new GrupoCohorteDocenteResponse().builder()
                     .id(grupoCohorteDocente.getId())
+                    .grupoCohorteId(grupoCohorteDocente.getId())
                     .grupoId(grupoCohorteDocente.getGrupoId().getId())
                     .cohorteGrupoId(grupoCohorteDocente.getCohorteGrupoId().getId())
                     .docenteId(grupoCohorteDocente.getDocenteId().getId())
@@ -434,6 +458,8 @@ public class GrupoServiceImplementation implements IGrupoService {
                     .codigoGrupo(grupoCohorteDocente.getGrupoId().getCodigo())
                     .materia(grupoCohorteDocente.getGrupoId().getMateriaId().getNombre())
                     .codigoMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getCodigo())
+                    .semestreMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getSemestre())
+                    .moodleId(grupoCohorteDocente.getMoodleId())
                     .build();
             return grupoCohorteDocenteResponse;
         }).toList();
