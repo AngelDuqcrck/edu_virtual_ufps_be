@@ -108,7 +108,7 @@ public class SecurityConfig {
                                 List.of("http://localhost:4200", "http://localhost:5173", "http://localhost:4173"));
                 configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                 configuration.setAllowedHeaders(
-                                Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
+                                Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin","X-Usuario"));
                 configuration
                                 .setExposedHeaders(Arrays.asList("Access-Control-Allow-Origin",
                                                 "Access-Control-Allow-Credentials"));
