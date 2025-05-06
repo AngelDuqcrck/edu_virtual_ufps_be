@@ -330,16 +330,17 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                                 correoResponse);
 
                 // 6. Actualizar las matrículas para indicar que se envió el correo
+                EstadoMatricula estadoCorreoEnviado = estadoMatriculaRepository.findById(6)
+                                .orElseThrow(() -> new MatriculaException("Estado 'Correo enviado' no configurado"));
+                crearCambioEstadoMatricula(null, estadoCorreoEnviado, usuario);
                 Date ahora = new Date();
                 matriculas.forEach(matricula -> {
                         matricula.setCorreoEnviado(true);
                         matricula.setFechaCorreoEnviado(ahora);
                         matriculaRepository.save(matricula);
+                        crearCambioEstadoMatricula(matricula, estadoCorreoEnviado, usuario);
                 });
 
-                EstadoMatricula estadoCorreoEnviado = estadoMatriculaRepository.findById(6)
-                                .orElseThrow(() -> new MatriculaException("Estado 'Correo enviado' no configurado"));
-                crearCambioEstadoMatricula(null, estadoCorreoEnviado, usuario);
                 return correoResponse;
         }
 
@@ -352,8 +353,8 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                                 estudiante, 2, true);
         }
 
-
-        public List<CambioEstadoMatriculaResponse> listarCambiosdeEstadoMatriculaPorEstudiante(Integer estudianteId) throws EstudianteNotFoundException, MatriculaException{
+        public List<CambioEstadoMatriculaResponse> listarCambiosdeEstadoMatriculaPorEstudiante(Integer estudianteId)
+                        throws EstudianteNotFoundException, MatriculaException {
                 Estudiante estudiante = estudianteRepository.findById(estudianteId)
                                 .orElseThrow(() -> new EstudianteNotFoundException("Estudiante no encontrado"));
 
@@ -363,8 +364,6 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                         throw new MatriculaException("No se encontraron cambios de estado para el estudiante");
                 }
 
-                
-
                 return cambiosEstado.stream()
                                 .map(cambio -> {
                                         CambioEstadoMatriculaResponse response = new CambioEstadoMatriculaResponse();
@@ -373,14 +372,18 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                                         response.setEstadoMatriculaNombre(cambio.getEstadoMatriculaId().getNombre());
                                         response.setMateriaId(cambio.getMatriculaId().getGrupoCohorteId().getGrupoId()
                                                         .getMateriaId().getId());
-                                        response.setMateriaNombre(cambio.getMatriculaId().getGrupoCohorteId().getGrupoId()
-                                                        .getMateriaId().getNombre());
-                                        response.setMateriaCodigo(cambio.getMatriculaId().getGrupoCohorteId().getGrupoId().getMateriaId()
+                                        response.setMateriaNombre(
+                                                        cambio.getMatriculaId().getGrupoCohorteId().getGrupoId()
+                                                                        .getMateriaId().getNombre());
+                                        response.setMateriaCodigo(cambio.getMatriculaId().getGrupoCohorteId()
+                                                        .getGrupoId().getMateriaId()
                                                         .getCodigo());
-                                        response.setGrupoId(cambio.getMatriculaId().getGrupoCohorteId().getGrupoId().getId());
+                                        response.setGrupoId(cambio.getMatriculaId().getGrupoCohorteId().getGrupoId()
+                                                        .getId());
                                         response.setGrupoNombre(cambio.getMatriculaId().getGrupoCohorteId().getGrupoId()
                                                         .getNombre());
-                                        response.setGrupoCodigo(cambio.getMatriculaId().getGrupoCohorteId().getGrupoId().getCodigo());
+                                        response.setGrupoCodigo(cambio.getMatriculaId().getGrupoCohorteId().getGrupoId()
+                                                        .getCodigo());
                                         response.setFechaCambioEstadoMatricula(cambio.getFechaCambioEstado());
                                         response.setUsuarioCambioEstadoMatricula(cambio.getUsuarioCambioEstado());
                                         return response;
