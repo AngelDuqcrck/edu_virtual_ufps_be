@@ -31,7 +31,7 @@ public interface IGrupoService {
 
       public void vincularCohorteDocente(GrupoRequest grupoRequest)
                   throws CohorteNotFoundException, GrupoNotFoundException, UserNotFoundException;
-
+      public void vincularGrupoMoodle(Long id, String moodleId) throws GrupoNotFoundException, GrupoExistException;
       public void actualizarVinculacionCohorteDocente(Long vinculacionId, GrupoRequest grupoRequest)
                   throws CohorteNotFoundException, GrupoNotFoundException, UserNotFoundException,
                   VinculacionNotFoundException;

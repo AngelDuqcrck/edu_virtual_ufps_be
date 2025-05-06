@@ -22,6 +22,6 @@ public interface ISolicitudService {
 
     public List<SolicitudResponse> listarSolicitudesPorTipo(Integer tipoSolicitudId) throws SolicitudException;
 
-    public void aprobarSolicitud(Long solicitudId, Integer tiposolicitudId, MultipartFile documento)
+    public void aprobarSolicitud(Long solicitudId, Integer tiposolicitudId, MultipartFile file, String usuario)
             throws SolicitudException, IOException;
 }

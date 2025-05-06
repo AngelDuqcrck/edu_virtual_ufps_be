@@ -40,6 +40,8 @@ public class ProgramaServiceImplementation implements IProgramaService {
                 .id(programa.getId())
                 .nombre(programa.getNombre())
                 .codigo(programa.getCodigo())
+                .moodleId(programa.getMoodleId())
+                .esPosgrado(programa.getEsPosgrado())
                 .build();
     }
 

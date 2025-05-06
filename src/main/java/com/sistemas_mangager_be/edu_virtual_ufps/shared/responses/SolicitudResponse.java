@@ -44,4 +44,8 @@ public class SolicitudResponse {
     private String SemestreAplazamiento;
 
     private String semestreReintegro;
+
+    private String materiaNombre;
+
+    private String materiaCodigo;
 }

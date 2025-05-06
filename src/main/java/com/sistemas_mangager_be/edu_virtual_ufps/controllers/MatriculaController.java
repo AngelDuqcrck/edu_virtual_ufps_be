@@ -5,13 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EstudianteNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.GrupoNotFoundException;
@@ -20,6 +14,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MatriculaException;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IMatriculaService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MateriaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MatriculaDTO;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.CambioEstadoMatriculaResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.GrupoCohorteDocenteResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.HttpResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.MatriculaResponse;
@@ -33,9 +28,9 @@ public class MatriculaController {
     private IMatriculaService matriculaService;
 
     @PostMapping("/crear")
-    public ResponseEntity<HttpResponse> crearMatricula(@RequestBody MatriculaDTO matriculaDTO)
+    public ResponseEntity<HttpResponse> crearMatricula(@RequestBody MatriculaDTO matriculaDTO, @RequestHeader(value = "X-Usuario") String usuario)
             throws MatriculaException, EstudianteNotFoundException, GrupoNotFoundException {
-        matriculaService.crearMatricula(matriculaDTO);
+        matriculaService.crearMatricula(matriculaDTO, usuario);
         return new ResponseEntity<>(
                 new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
                         " Matricula registrada con exito"),
@@ -43,8 +38,8 @@ public class MatriculaController {
     }
 
     @DeleteMapping("/{idMatricula}")
-    public ResponseEntity<HttpResponse> anularMatricula(@PathVariable Long idMatricula) throws MatriculaException {
-        matriculaService.anularMatricula(idMatricula);
+    public ResponseEntity<HttpResponse> anularMatricula(@PathVariable Long idMatricula, @RequestHeader(value = "X-Usuario") String usuario) throws MatriculaException {
+        matriculaService.anularMatricula(idMatricula, usuario);
         return new ResponseEntity<>(
                 new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
                         " Matricula anulada con exito"),
@@ -73,9 +68,9 @@ public class MatriculaController {
     }
 
     @PostMapping("/correo/estudiante/{estudianteId}")
-    public ResponseEntity<HttpResponse> enviarCorreo(@PathVariable Integer estudianteId)
+    public ResponseEntity<HttpResponse> enviarCorreo(@PathVariable Integer estudianteId, @RequestHeader(value = "X-Usuario", defaultValue = "sistema") String usuario)
             throws EstudianteNotFoundException, MatriculaException {
-        matriculaService.enviarCorreo(estudianteId);
+        matriculaService.enviarCorreo(estudianteId, usuario);
         return new ResponseEntity<>(
                 new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
                         " Correo enviado con exito"),
@@ -95,5 +90,11 @@ public class MatriculaController {
         List<GrupoCohorteDocenteResponse> grupoCohorteDocenteResponses = matriculaService
                 .listarGrupoCohorteDocentePorMateria(materiaId);
         return new ResponseEntity<>(grupoCohorteDocenteResponses, HttpStatus.OK);
+    }
+
+    @GetMapping("/cambio/estudiante/{estudianteId}")
+    public ResponseEntity<List<CambioEstadoMatriculaResponse>> listarCambioEstadoMatriculaPorEstudiante(@PathVariable Integer estudianteId) throws EstudianteNotFoundException, MatriculaException {
+        List<CambioEstadoMatriculaResponse> cambios = matriculaService.listarCambiosdeEstadoMatriculaPorEstudiante(estudianteId);
+        return new ResponseEntity<>(cambios, HttpStatus.OK);
     }
 }

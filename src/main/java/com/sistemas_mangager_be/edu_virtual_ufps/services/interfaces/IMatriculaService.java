@@ -8,19 +8,16 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MateriaNotFoundExcep
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MatriculaException;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MateriaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MatriculaDTO;
-import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.CorreoResponse;
-import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.GrupoCohorteDocenteResponse;
-import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.MatriculaResponse;
-import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.PensumResponse;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.*;
 
 public interface IMatriculaService {
 
-    public MatriculaDTO crearMatricula(MatriculaDTO matriculaDTO)
+    public MatriculaDTO crearMatricula(MatriculaDTO matriculaDTO, String usuario)
             throws EstudianteNotFoundException, GrupoNotFoundException, MatriculaException;
 
-    public void anularMatricula(Long idMatricula) throws MatriculaException;
+    public void anularMatricula(Long idMatricula, String usuario) throws MatriculaException;
 
-    public CorreoResponse enviarCorreo(Integer estudianteId) throws EstudianteNotFoundException, MatriculaException;
+    public CorreoResponse enviarCorreo(Integer estudianteId, String usuario) throws EstudianteNotFoundException, MatriculaException;
 
     public boolean verificarCorreoEnviado(Integer estudianteId) throws EstudianteNotFoundException;
 
@@ -33,5 +30,6 @@ public interface IMatriculaService {
     public List<GrupoCohorteDocenteResponse> listarGrupoCohorteDocentePorMateria(String codigoMateria)
                         throws MateriaNotFoundException;
 
+    public List<CambioEstadoMatriculaResponse> listarCambiosdeEstadoMatriculaPorEstudiante(Integer estudianteId) throws EstudianteNotFoundException, MatriculaException;
 
 }

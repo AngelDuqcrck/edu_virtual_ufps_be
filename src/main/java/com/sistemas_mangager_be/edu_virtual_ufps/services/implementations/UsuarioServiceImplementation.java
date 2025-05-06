@@ -273,6 +273,7 @@ public class UsuarioServiceImplementation implements IUsuarioService {
             UsuarioResponse usuarioResponse = new UsuarioResponse();
             BeanUtils.copyProperties(usuario, usuarioResponse);
             usuarioResponse.setRol(usuario.getRolId().getNombre());
+            usuarioResponse.setMoodleId(usuario.getMoodleId());
             return usuarioResponse;
         }).collect(Collectors.toList());
     }
@@ -288,6 +289,7 @@ public class UsuarioServiceImplementation implements IUsuarioService {
                     UsuarioResponse usuarioResponse = new UsuarioResponse();
                     BeanUtils.copyProperties(usuario, usuarioResponse);
                     usuarioResponse.setRol(usuario.getRolId().getNombre());
+                    usuarioResponse.setMoodleId(usuario.getMoodleId());
                     return usuarioResponse;
                 }).collect(Collectors.toList());
     }
