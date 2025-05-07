@@ -50,14 +50,11 @@ public class UsuarioController {
         }
 
         @PostMapping("/profesores/crear")
-        public ResponseEntity<Map<HttpResponse,UsuarioDTO>> crearProfesor(@RequestBody DocenteRequest docenteRequest)
+        public ResponseEntity<UsuarioDTO> crearProfesor(@RequestBody DocenteRequest docenteRequest)
                         throws UserExistException, RoleNotFoundException {
                 UsuarioDTO usuario = iUsuarioService.crearProfesor(docenteRequest);
 
-                return new ResponseEntity<>(
-                                Map.of(new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                                                " Usuario registrado con exito"), usuario),
-                                HttpStatus.OK);
+                return new ResponseEntity<>(usuario, HttpStatus.OK);
         }
 
         @PostMapping("/profesores/moodle")
