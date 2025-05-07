@@ -163,13 +163,27 @@ public class CohorteServiceImplementation implements ICohorteService {
     
 
     @Override
-    public List<CohorteDTO> listarCohortes() {
+    public List<CohorteResponse> listarCohortes() {
         List<Cohorte> cohortes = cohorteRepository.findAll();
-        return cohortes.stream().map(cohorte -> {
-            CohorteDTO cohorteDTO = new CohorteDTO();
-            BeanUtils.copyProperties(cohorte, cohorteDTO);
-            return cohorteDTO;
-        }).toList();
+        List<CohorteResponse> cohortesResponse = new ArrayList<>();
+        for (Cohorte cohorte : cohortes) {
+            List<CohorteGrupo> cohorteGrupos = cohorteGrupoRepository.findAllByCohorteId(cohorte);
+            List<CohorteResponse.CohortesGrupos> cohortesGrupos = new ArrayList<>();
+            for (CohorteGrupo cohorteGrupo : cohorteGrupos) {
+                CohorteResponse.CohortesGrupos cohortesGrupos1 = new CohorteResponse.CohortesGrupos();
+                cohortesGrupos1.setId(cohorteGrupo.getId());
+                cohortesGrupos1.setNombre(cohorteGrupo.getNombre());
+                cohortesGrupos.add(cohortesGrupos1);
+            }
+            CohorteResponse cohorteResponse = new CohorteResponse().builder()
+                    .id(cohorte.getId())
+                    .nombre(cohorte.getNombre())
+                    .fechaCreacion(cohorte.getFechaCreacion())
+                    .cohortesGrupos(cohortesGrupos)
+                    .build();
+            cohortesResponse.add(cohorteResponse);
+        }
+        return cohortesResponse;
     }
 
     
