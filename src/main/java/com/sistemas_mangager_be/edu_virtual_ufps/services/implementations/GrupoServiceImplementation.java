@@ -221,7 +221,7 @@ public class GrupoServiceImplementation implements IGrupoService {
         grupoRepository.save(grupo);
     }
 
-    public void vincularCohorteDocente(GrupoRequest grupoRequest)
+    public GrupoCohorteDocenteResponse vincularCohorteDocente(GrupoRequest grupoRequest)
             throws CohorteNotFoundException, GrupoNotFoundException, UserNotFoundException {
 
         Grupo grupo = grupoRepository.findById(grupoRequest.getGrupoId()).orElse(null);
@@ -256,6 +256,27 @@ public class GrupoServiceImplementation implements IGrupoService {
         grupoCohorte.setFechaCreacion(new Date());
 
         grupoCohorteRepository.save(grupoCohorte);
+
+        GrupoCohorteDocenteResponse grupoCohorteDocenteResponse = new GrupoCohorteDocenteResponse().builder()
+                .id(grupoCohorte.getId())
+                .grupoCohorteId(grupoCohorte.getId())
+                .grupoId(grupoCohorte.getGrupoId().getId())
+                .cohorteGrupoId(grupoCohorte.getCohorteGrupoId().getId())
+                .docenteId(grupoCohorte.getDocenteId().getId())
+                .docenteNombre(grupoCohorte.getDocenteId().getNombreCompleto())
+                .cohorteGrupoNombre(grupoCohorte.getCohorteGrupoId().getNombre())
+                .cohorteId(grupoCohorte.getCohorteId().getId())
+                .cohorteNombre(grupoCohorte.getCohorteId().getNombre())
+                .fechaCreacion(grupoCohorte.getFechaCreacion().toString())
+                .grupoNombre(grupoCohorte.getGrupoId().getNombre())
+                .codigoGrupo(grupoCohorte.getGrupoId().getCodigo())
+                .materia(grupoCohorte.getGrupoId().getMateriaId().getNombre())
+                .codigoMateria(grupoCohorte.getGrupoId().getMateriaId().getCodigo())
+                .semestreMateria(grupoCohorte.getGrupoId().getMateriaId().getSemestre())
+                .moodleId(grupoCohorte.getMoodleId())
+                .build();
+
+        return grupoCohorteDocenteResponse;
     }
 
     public void vincularGrupoMoodle(Long id, String moodleId) throws GrupoNotFoundException, GrupoExistException {

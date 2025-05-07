@@ -29,7 +29,7 @@ public interface IGrupoService {
 
       public void activarGrupo(Integer id) throws GrupoNotFoundException;
 
-      public void vincularCohorteDocente(GrupoRequest grupoRequest)
+      public GrupoCohorteDocenteResponse vincularCohorteDocente(GrupoRequest grupoRequest)
                   throws CohorteNotFoundException, GrupoNotFoundException, UserNotFoundException;
       public void vincularGrupoMoodle(Long id, String moodleId) throws GrupoNotFoundException, GrupoExistException;
       public void actualizarVinculacionCohorteDocente(Long vinculacionId, GrupoRequest grupoRequest)
