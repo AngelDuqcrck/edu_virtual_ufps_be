@@ -35,7 +35,7 @@ public interface SolicitudRepository extends JpaRepository<Solicitud, Long> {
             "WHERE s.estudianteId = :estudiante " +
             "AND s.tipoSolicitudId.id = 2 " + // 2 = Aplazamiento
             "AND s.estaAprobada = true " +
-            "ORDER BY s.fechaAprobacion DESC")
+            "ORDER BY s.fechaAprobacion DESC LIMIT 1")
      Optional<Solicitud> findLastAplazamientoAprobadoByEstudiante(
          @Param("estudiante") Estudiante estudiante
      );
