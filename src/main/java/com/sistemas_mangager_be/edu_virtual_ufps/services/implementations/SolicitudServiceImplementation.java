@@ -409,9 +409,11 @@ public class SolicitudServiceImplementation implements ISolicitudService {
                     .orElseThrow(() -> new SolicitudException("Estado 'Cancelada' no configurado"));
 
             for (Matricula matricula : matriculasEnCurso) {
+                
                 matricula.setEstadoMatriculaId(estadoCancelada);
                 matriculaRepository.save(matricula);
                 crearCambioEstadoMatricula(matricula, estadoCancelada, usuario);
+                
             }
         }
 
