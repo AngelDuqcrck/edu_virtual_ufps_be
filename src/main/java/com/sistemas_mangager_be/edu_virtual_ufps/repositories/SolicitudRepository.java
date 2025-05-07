@@ -31,22 +31,28 @@ public interface SolicitudRepository extends JpaRepository<Solicitud, Long> {
             @Param("estudiante") Estudiante estudiante,
             @Param("tipoSolicitudId") Integer tipoSolicitudId);
 
-            @Query("SELECT s FROM Solicitud s " +
+    @Query("SELECT s FROM Solicitud s " +
             "WHERE s.estudianteId = :estudiante " +
             "AND s.tipoSolicitudId.id = 2 " + // 2 = Aplazamiento
             "AND s.estaAprobada = true " +
             "ORDER BY s.fechaAprobacion DESC LIMIT 1")
-     Optional<Solicitud> findLastAplazamientoAprobadoByEstudiante(
-         @Param("estudiante") Estudiante estudiante
-     );
- 
-     // Verifica si un estudiante tiene al menos un aplazamiento aprobado (para validar reintegro)
-     @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END " +
+    Optional<Solicitud> findLastAplazamientoAprobadoByEstudiante(
+            @Param("estudiante") Estudiante estudiante);
+
+    // Verifica si un estudiante tiene al menos un aplazamiento aprobado (para
+    // validar reintegro)
+    @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END " +
             "FROM Solicitud s " +
             "WHERE s.estudianteId = :estudiante " +
             "AND s.tipoSolicitudId.id = 2 " + // 2 = Aplazamiento
             "AND s.estaAprobada = true")
-     boolean existsAplazamientoAprobadoByEstudiante(
-         @Param("estudiante") Estudiante estudiante
-     );
+    boolean existsAplazamientoAprobadoByEstudiante(
+            @Param("estudiante") Estudiante estudiante);
+
+    // Buscar solicitudes por matrícula y estado de aprobación
+    List<Solicitud> findByMatriculaIdAndEstudianteIdAndEstaAprobada(Matricula matriculaId, Estudiante estudianteId,Boolean estaAprobada);
+
+    // Buscar solicitudes por estudiante, tipo y estado de aprobación
+    List<Solicitud> findByEstudianteIdAndTipoSolicitudId_IdAndEstaAprobada(
+            Estudiante estudiante, Integer tipoSolicitudId, Boolean estaAprobada);
 }
