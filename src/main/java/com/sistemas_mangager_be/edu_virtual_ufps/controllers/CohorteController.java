@@ -47,8 +47,8 @@ public class CohorteController {
     }
 
     @GetMapping("/listar")
-    public ResponseEntity<List<CohorteDTO>> listarCohortes() {
-        List<CohorteDTO> cohortes = cohorteService.listarCohortes();
+    public ResponseEntity<List<CohorteResponse>> listarCohortes() {
+        List<CohorteResponse> cohortes = cohorteService.listarCohortes();
         return new ResponseEntity<>(cohortes, HttpStatus.OK);
     }
 

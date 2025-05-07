@@ -18,8 +18,7 @@ public interface ICohorteService {
 
     CohorteDTO actualizarCohorte(CohorteDTO cohorteDTO, Integer id) throws CohorteNotFoundException;
 
-    List<CohorteDTO> listarCohortes();
-
+    public List<CohorteResponse> listarCohortes();
     Map<Programa, List<Cohorte>> listarCohortesPorCarrera();
     
      List<CohortePorCarreraDTO> listarCohortesPorCarreraConGrupos();
