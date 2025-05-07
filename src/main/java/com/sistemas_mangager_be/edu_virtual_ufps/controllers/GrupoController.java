@@ -102,13 +102,10 @@ public class GrupoController {
     }
 
     @PostMapping("/vincular")
-    public ResponseEntity<HttpResponse> vincularCohorteDocente(@RequestBody GrupoRequest grupoRequest)
+    public ResponseEntity<GrupoCohorteDocenteResponse> vincularCohorteDocente(@RequestBody GrupoRequest grupoRequest)
             throws CohorteNotFoundException, GrupoNotFoundException, UserNotFoundException {
-        iGrupoService.vincularCohorteDocente(grupoRequest);
-        return new ResponseEntity<>(
-                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                        " Grupo vinculado con exito"),
-                HttpStatus.OK);
+        GrupoCohorteDocenteResponse grupoCohorteDocenteResponse =iGrupoService.vincularCohorteDocente(grupoRequest);
+        return new ResponseEntity<>(grupoCohorteDocenteResponse, HttpStatus.OK);
     }
 
     @PostMapping("/moodle/{grupoId}")
