@@ -7,9 +7,9 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProgramaDTO {
-    
+
     private Integer id;
-    
+
     private String nombre;
 
     private String codigo;
@@ -17,6 +17,5 @@ public class ProgramaDTO {
     private Boolean esPosgrado;
 
     private String moodleId;
-
 
 }
