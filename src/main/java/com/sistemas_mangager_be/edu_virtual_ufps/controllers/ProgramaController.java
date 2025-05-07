@@ -38,13 +38,10 @@ public class ProgramaController {
      */
     //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
      @PostMapping("/crear")
-    public ResponseEntity<Map<HttpResponse, ProgramaDTO>> crearPrograma(@RequestBody ProgramaDTO programaDTO) throws ProgramaExistsException {
+    public ResponseEntity<ProgramaDTO> crearPrograma(@RequestBody ProgramaDTO programaDTO) throws ProgramaExistsException {
         ProgramaDTO programa =programaService.crearPrograma(programaDTO);
 
-        return new ResponseEntity<>(
-                                Map.of(new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                                                " Programa creado con exito"), programa),
-                                HttpStatus.OK);
+        return new ResponseEntity<>(programa, HttpStatus.OK);
 
     }
     @PostMapping("/moodle")

@@ -381,8 +381,8 @@ public class SolicitudServiceImplementation implements ISolicitudService {
 
             for (Matricula matricula : matriculasEnCurso) {
                 matricula.setEstadoMatriculaId(estadoCancelada);
-                crearCambioEstadoMatricula(matricula, estadoCancelada, usuario);
                 matriculaRepository.save(matricula);
+                crearCambioEstadoMatricula(matricula, estadoCancelada, usuario );
             }
         }
 
