@@ -39,15 +39,12 @@ public class EstudianteController {
     private MigracionEstudiantesService migracionEstudiantesService;
 
     @PostMapping("/crear")
-    public ResponseEntity<Map<HttpResponse, EstudianteDTO>> crearEstudiante(@RequestBody EstudianteDTO estudianteDTO)
+    public ResponseEntity<EstudianteDTO> crearEstudiante(@RequestBody EstudianteDTO estudianteDTO)
             throws PensumNotFoundException, CohorteNotFoundException, EstadoEstudianteNotFoundException,
             RoleNotFoundException, UserExistException {
 
         EstudianteDTO estudiante = estudianteService.crearEstudiante(estudianteDTO);
-        return new ResponseEntity<>(
-                Map.of(new HttpResponse(HttpStatus.CREATED.value(), HttpStatus.CREATED, HttpStatus.CREATED.getReasonPhrase(),
-                        " Estudiante creado con exito"), estudiante),
-                HttpStatus.CREATED);
+        return new ResponseEntity<>(estudiante, HttpStatus.OK);
     }
 
     @PostMapping("/moodle")
