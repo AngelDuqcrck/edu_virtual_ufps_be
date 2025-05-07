@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class GrupoCohorteDocenteResponse {
-    
+
     private Long id;
     private Long grupoCohorteId;
     private Integer grupoId;
@@ -24,4 +24,6 @@ public class GrupoCohorteDocenteResponse {
     private String codigoMateria;
     private String semestreMateria;
     private String moodleId;
+    private Integer programaId;
+    private Integer materiaId;
 }

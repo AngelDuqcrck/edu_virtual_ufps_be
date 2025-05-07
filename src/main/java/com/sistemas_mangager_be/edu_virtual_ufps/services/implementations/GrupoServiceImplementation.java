@@ -274,6 +274,8 @@ public class GrupoServiceImplementation implements IGrupoService {
                 .codigoMateria(grupoCohorte.getGrupoId().getMateriaId().getCodigo())
                 .semestreMateria(grupoCohorte.getGrupoId().getMateriaId().getSemestre())
                 .moodleId(grupoCohorte.getMoodleId())
+                .materiaId(grupoCohorte.getGrupoId().getMateriaId().getId())
+                .programaId(grupoCohorte.getGrupoId().getMateriaId().getPensumId().getProgramaId().getId())
                 .build();
 
         return grupoCohorteDocenteResponse;
@@ -286,13 +288,13 @@ public class GrupoServiceImplementation implements IGrupoService {
             throw new GrupoNotFoundException(
                     String.format(IS_NOT_FOUND, "EL GRUPO COHORTE CON EL ID " + id).toLowerCase());
         }
-        if(grupoCohorteRepository.existsByMoodleId(moodleId)){
+        if (grupoCohorteRepository.existsByMoodleId(moodleId)) {
             throw new GrupoExistException(
                     String.format(IS_ALREADY_USE, "EL ID MOODLE " + moodleId).toLowerCase());
         }
         grupoCohorte.setMoodleId(moodleId);
         grupoCohorteRepository.save(grupoCohorte);
-        
+
     }
 
     public void actualizarVinculacionCohorteDocente(Long vinculacionId, GrupoRequest grupoRequest)
@@ -368,6 +370,9 @@ public class GrupoServiceImplementation implements IGrupoService {
                 .codigoMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getCodigo())
                 .semestreMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getSemestre())
                 .moodleId(grupoCohorteDocente.getMoodleId())
+                .grupoId(grupoCohorteDocente.getGrupoId().getId())
+                .materiaId(grupoCohorteDocente.getGrupoId().getMateriaId().getId())
+                .programaId(grupoCohorteDocente.getGrupoId().getMateriaId().getPensumId().getProgramaId().getId())
                 .build();
 
         return grupoCohorteDocenteResponse;
@@ -393,6 +398,8 @@ public class GrupoServiceImplementation implements IGrupoService {
                     .codigoMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getCodigo())
                     .semestreMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getSemestre())
                     .moodleId(grupoCohorteDocente.getMoodleId())
+                    .materiaId(grupoCohorteDocente.getGrupoId().getMateriaId().getId())
+                    .programaId(grupoCohorteDocente.getGrupoId().getMateriaId().getPensumId().getProgramaId().getId())
                     .build();
             return grupoCohorteDocenteResponse;
         }).toList();
@@ -422,6 +429,8 @@ public class GrupoServiceImplementation implements IGrupoService {
                     .codigoMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getCodigo())
                     .semestreMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getSemestre())
                     .moodleId(grupoCohorteDocente.getMoodleId())
+                    .materiaId(grupoCohorteDocente.getGrupoId().getMateriaId().getId())
+                    .programaId(grupoCohorteDocente.getGrupoId().getMateriaId().getPensumId().getProgramaId().getId())
                     .build();
             return grupoCohorteDocenteResponse;
         }).toList();
@@ -451,6 +460,8 @@ public class GrupoServiceImplementation implements IGrupoService {
                     .codigoMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getCodigo())
                     .semestreMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getSemestre())
                     .moodleId(grupoCohorteDocente.getMoodleId())
+                    .materiaId(grupoCohorteDocente.getGrupoId().getMateriaId().getId())
+                    .programaId(grupoCohorteDocente.getGrupoId().getMateriaId().getPensumId().getProgramaId().getId())
                     .build();
             return grupoCohorteDocenteResponse;
         }).toList();
@@ -464,6 +475,14 @@ public class GrupoServiceImplementation implements IGrupoService {
 
         List<GrupoCohorte> grupoCohorteDocentes = grupoCohorteRepository.findByCohorteId(cohorte);
         return grupoCohorteDocentes.stream().map(grupoCohorteDocente -> {
+            // Obtener la materia y programa IDs
+            Integer materiaId = grupoCohorteDocente.getGrupoId().getMateriaId().getId();
+            Integer programaId = null;
+            if (grupoCohorteDocente.getGrupoId().getMateriaId().getPensumId() != null &&
+                    grupoCohorteDocente.getGrupoId().getMateriaId().getPensumId().getProgramaId() != null) {
+                programaId = grupoCohorteDocente.getGrupoId().getMateriaId().getPensumId().getProgramaId().getId();
+            }
+
             GrupoCohorteDocenteResponse grupoCohorteDocenteResponse = new GrupoCohorteDocenteResponse().builder()
                     .id(grupoCohorteDocente.getId())
                     .grupoCohorteId(grupoCohorteDocente.getId())
@@ -481,6 +500,8 @@ public class GrupoServiceImplementation implements IGrupoService {
                     .codigoMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getCodigo())
                     .semestreMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getSemestre())
                     .moodleId(grupoCohorteDocente.getMoodleId())
+                    .materiaId(materiaId) // Asigna correctamente el ID de la materia
+                    .programaId(programaId) // Asigna el ID del programa (puede ser null)
                     .build();
             return grupoCohorteDocenteResponse;
         }).toList();
