@@ -50,4 +50,6 @@ public class EstudianteResponse {
     private String estadoEstudianteNombre;
 
     private Integer usuarioId;
+
+    private String moodleId;
 }
