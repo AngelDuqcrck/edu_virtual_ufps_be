@@ -40,17 +40,6 @@ public class MateriaController {
                                 HttpStatus.CREATED);
     }
 
-    @PostMapping("/moodle")
-    public ResponseEntity<HttpResponse> vincularMateriaMoodle(@RequestBody MoodleRequest moodleRequest) throws MateriaNotFoundException, MateriaExistsException {
-        materiaService.vincularMoodleId(moodleRequest);
-        return  new ResponseEntity<>(
-                                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                                                " Vinculacion con moodle realizada con exito"),
-                                HttpStatus.OK);
-        
-
-    }
-
     //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<HttpResponse> actualizarMateria(@PathVariable Integer id, @RequestBody MateriaDTO materiaDTO) throws MateriaExistsException,PensumNotFoundException, MateriaNotFoundException {

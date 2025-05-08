@@ -38,15 +38,7 @@ public class PensumController {
                                                 " Pensum creado con exito"), pensum),
                                 HttpStatus.OK);
     }
-    
-    @PostMapping("/moodle")
-    public ResponseEntity<HttpResponse> vincularPensumMoodleId(@RequestBody MoodleRequest moodleRequest) throws PensumNotFoundException, PensumExistException {
-        pensumService.vincularMoodleId(moodleRequest);
-        return new ResponseEntity<>(
-                                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                                                " Vinculacion con moodle realizada con exito"),
-                                HttpStatus.OK);
-    }
+
     
     @GetMapping("/listar")
     public List<PensumDTO> listarPensums() {

@@ -13,7 +13,6 @@ public interface IPensumService {
     
     PensumDTO crearPensum(PensumDTO pensumDTO) throws ProgramaNotFoundException;
 
-    public void vincularMoodleId(MoodleRequest moodleRequest)throws PensumNotFoundException, PensumExistException;
     PensumDTO listarPensum(Integer id) throws PensumNotFoundException;
 
     PensumDTO actualizarPensum(PensumDTO pensumDTO, Integer id) throws PensumNotFoundException, ProgramaNotFoundException;

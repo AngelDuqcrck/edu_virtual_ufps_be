@@ -54,18 +54,6 @@ public class PensumServiceImplementation implements IPensumService {
 
     }
 
-    public void vincularMoodleId(MoodleRequest moodleRequest)throws PensumNotFoundException, PensumExistException {
-        Pensum pensum = pensumRepository.findById(moodleRequest.getBackendId()).orElse(null);
-        if(pensum == null){
-            throw new PensumNotFoundException(String.format(IS_NOT_FOUND, "EL PENSUM CON EL ID " + moodleRequest.getBackendId()).toLowerCase());
-        }
-
-        if(pensumRepository.existsByMoodleId(moodleRequest.getMoodleId())){
-            throw new PensumExistException(String.format(IS_ALREADY_USE, "EL ID MOODLE " + moodleRequest.getMoodleId()).toLowerCase());
-        }
-        pensum.setMoodleId(moodleRequest.getMoodleId());
-        pensumRepository.save(pensum);
-    }
     @Override
     public PensumDTO listarPensum(Integer id) throws PensumNotFoundException {
         Pensum pensum = pensumRepository.findById(id).orElse(null);
