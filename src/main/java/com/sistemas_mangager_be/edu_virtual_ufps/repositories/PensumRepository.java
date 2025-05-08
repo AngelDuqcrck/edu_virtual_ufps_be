@@ -12,5 +12,4 @@ public interface PensumRepository extends JpaRepository<Pensum, Integer> {
     
     public List<Pensum> findByProgramaId(Programa programaId);
 
-    boolean existsByMoodleId(String moodleId);
 }
