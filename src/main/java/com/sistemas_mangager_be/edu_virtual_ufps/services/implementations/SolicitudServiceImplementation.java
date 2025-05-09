@@ -492,7 +492,7 @@ public class SolicitudServiceImplementation implements ISolicitudService {
 
         if (!solicitudesPendientes.isEmpty()) {
             throw new SolicitudException(
-                    "Ya existe una solicitud de cancelación pendiente para la materia "+ matricula.getGrupoCohorteId().getGrupoId().getMateriaId().getNombre()+ "realizada al estudiante "+estudiante.getNombre() + " " + estudiante.getApellido());
+                    "Ya existe una solicitud de cancelación pendiente para la materia "+ matricula.getGrupoCohorteId().getGrupoId().getMateriaId().getNombre()+ " realizada al estudiante "+estudiante.getNombre() + " " + estudiante.getApellido());
         }
     }
 
