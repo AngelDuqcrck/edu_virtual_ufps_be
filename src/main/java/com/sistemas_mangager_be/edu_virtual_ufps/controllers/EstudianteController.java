@@ -116,6 +116,12 @@ public class EstudianteController {
         return new ResponseEntity<>(estudianteGrupoResponse, HttpStatus.OK);
     }
 
+    @GetMapping("/matriculados/grupo-cohorte/{grupoCohorteId}")
+    public ResponseEntity<List<EstudianteResponse>> listarEstudiantesPorGrupoCohorteConMatriculaEnCurso(@PathVariable Long grupoCohorteId) throws CohorteNotFoundException {
+        List<EstudianteResponse> estudianteResponse = estudianteService.listarEstudiantesPorGrupoCohorteConMatriculaEnCurso(grupoCohorteId);
+        return new ResponseEntity<>(estudianteResponse, HttpStatus.OK);
+    }
+
     // @PostMapping("/migrar")
     // public ResponseEntity<HttpResponse> migrarEstudiantesTIC() {
     //     migracionEstudiantesService.migrarEstudiantesTIC();

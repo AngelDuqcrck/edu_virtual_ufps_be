@@ -22,5 +22,5 @@ public interface IMateriaService {
     List<MateriaDTO> listarMateriasPorPensum(Integer pensumId) throws PensumNotFoundException;
 
     List<MateriaDTO> listarMateriasPorPensumPorSemestre(MateriaSemestreRequest materiaSemestreRequest) throws PensumNotFoundException;
-    
+
 }
