@@ -61,4 +61,6 @@ public interface MatriculaRepository extends JpaRepository<Matricula, Long> {
         List<Estudiante> findEstudiantesByGrupoCohorteIdAndEstadoMatriculaId(
                         @Param("grupoCohorte") GrupoCohorte grupoCohorte,
                         @Param("estadoId") Integer estadoId);
+
+        List<Matricula> findByGrupoCohorteIdAndEstadoMatriculaId_Id(GrupoCohorte grupoCohorte, Integer estadoMatriculaId);
 }
