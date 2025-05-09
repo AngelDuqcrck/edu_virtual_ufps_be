@@ -1,5 +1,6 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.services.implementations;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.CohorteGrupo;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.EstadoEstudiante;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Estudiante;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.GrupoCohorte;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Pensum;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Programa;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Usuario;
@@ -27,6 +29,8 @@ import com.sistemas_mangager_be.edu_virtual_ufps.oracle.repositories.EstudianteO
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.CohorteGrupoRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.EstadoEstudianteRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.EstudianteRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.GrupoCohorteRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.MatriculaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.PensumRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.ProgramaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.RolRepository;
@@ -46,6 +50,11 @@ public class EstudianteServiceImplementation implements IEstudianteService {
         public static final String IS_NOT_VALID = "%s no es valido";
         public static final String ARE_NOT_EQUALS = "%s no son iguales";
         public static final String IS_NOT_CORRECT = "%s no es correcta";
+
+        @Autowired
+        private GrupoCohorteRepository grupoCohorteRepository;
+        @Autowired
+        private MatriculaRepository matriculaRepository;
 
         @Autowired
         private PensumRepository pensumRepository;
@@ -172,28 +181,29 @@ public class EstudianteServiceImplementation implements IEstudianteService {
                 return estudianteCreado;
         }
 
-        public void vincularMoodleId(MoodleRequest moodleRequest) throws EstudianteNotFoundException, UserExistException{
-                Estudiante estudiante  = estudianteRepository.findById(moodleRequest.getBackendId())
+        public void vincularMoodleId(MoodleRequest moodleRequest)
+                        throws EstudianteNotFoundException, UserExistException {
+                Estudiante estudiante = estudianteRepository.findById(moodleRequest.getBackendId())
                                 .orElseThrow(() -> new EstudianteNotFoundException(
-                                                String.format(IS_NOT_FOUND, "EL ESTUDIANTE CON ID " + moodleRequest.getBackendId())
+                                                String.format(IS_NOT_FOUND,
+                                                                "EL ESTUDIANTE CON ID " + moodleRequest.getBackendId())
                                                                 .toLowerCase()));
                 Usuario usuario = usuarioRepository.findById(estudiante.getUsuarioId().getId())
                                 .orElseThrow(() -> new EstudianteNotFoundException(
                                                 String.format(IS_NOT_FOUND, " EL USUARIO ASOCIADO AL ESTUDIANTE")
                                                                 .toLowerCase()));
-                
-                if(estudianteRepository.existsByCodigo(moodleRequest.getMoodleId())){
+
+                if (estudianteRepository.existsByCodigo(moodleRequest.getMoodleId())) {
                         throw new UserExistException(
                                         String.format(IS_ALREADY_USE,
                                                         "El ID de Moodle " + moodleRequest.getMoodleId()));
                 }
 
-                if(usuarioRepository.existsByMoodleId(moodleRequest.getMoodleId())){
+                if (usuarioRepository.existsByMoodleId(moodleRequest.getMoodleId())) {
                         throw new UserExistException(
                                         String.format(IS_ALREADY_USE,
                                                         "El ID de Moodle " + moodleRequest.getMoodleId()));
                 }
-
 
                 estudiante.setMoodleId(moodleRequest.getMoodleId());
                 estudianteRepository.save(estudiante);
@@ -202,6 +212,7 @@ public class EstudianteServiceImplementation implements IEstudianteService {
                 usuarioRepository.save(usuario);
 
         }
+
         @Override
         public EstudianteDTO actualizarEstudiante(Integer id, EstudianteDTO estudianteDTO)
                         throws UserNotFoundException, PensumNotFoundException, CohorteNotFoundException,
@@ -354,6 +365,48 @@ public class EstudianteServiceImplementation implements IEstudianteService {
                 })
                                 .collect(Collectors.toList());
 
+        }
+
+        /**
+         * Lista los estudiantes que están matriculados en un grupo-cohorte específico y
+         * tienen estado de matrícula "En curso"
+         * 
+         * @param grupoCohorteId ID del grupo-cohorte
+         * @return Lista de EstudianteResponse con los estudiantes activos en el grupo
+         * @throws CohorteNotFoundException Si el grupo-cohorte no existe
+         */
+        public List<EstudianteResponse> listarEstudiantesPorGrupoCohorteConMatriculaEnCurso(Long grupoCohorteId)
+                        throws CohorteNotFoundException {
+                // 1. Buscar el grupo-cohorte
+                GrupoCohorte grupoCohorte = grupoCohorteRepository.findById(grupoCohorteId)
+                                .orElseThrow(() -> new CohorteNotFoundException(
+                                                String.format(IS_NOT_FOUND_F,
+                                                                "EL GRUPO COHORTE CON ID " + grupoCohorteId)
+                                                                .toLowerCase()));
+
+                // 2. Buscar estudiantes con matrícula en curso (estado 2) en ese grupo-cohorte
+                List<Estudiante> estudiantes = matriculaRepository
+                                .findEstudiantesByGrupoCohorteIdAndEstadoMatriculaId(grupoCohorte, 2);
+                
+                List<EstudianteResponse> estudiantesResponse = new ArrayList<>();
+                // 3. Mapear los estudiantes a EstudianteResponse
+                for (Estudiante estudiante : estudiantes) {
+                        EstudianteResponse estudianteResponse = new EstudianteResponse();
+                        BeanUtils.copyProperties(estudiante, estudianteResponse);
+                        estudianteResponse.setUsuarioId(estudiante.getUsuarioId().getId());
+                        estudianteResponse.setCohorteId(estudiante.getCohorteId().getId());
+                        estudianteResponse.setCohorteNombre(estudiante.getCohorteId().getNombre());
+                        estudianteResponse.setPensumId(estudiante.getPensumId().getId());
+                        estudianteResponse.setPensumNombre(estudiante.getPensumId().getNombre());
+                        estudianteResponse.setProgramaId(estudiante.getProgramaId().getId());
+                        estudianteResponse.setProgramaNombre(estudiante.getProgramaId().getNombre());
+                        estudianteResponse.setEstadoEstudianteId(estudiante.getEstadoEstudianteId().getId());
+                        estudianteResponse.setEstadoEstudianteNombre(estudiante.getEstadoEstudianteId().getNombre());
+                        estudiantesResponse.add(estudianteResponse);
+                }
+
+                return estudiantesResponse; // 4. Retornar la lista de estudiantes activos
+               
         }
 
         @Override

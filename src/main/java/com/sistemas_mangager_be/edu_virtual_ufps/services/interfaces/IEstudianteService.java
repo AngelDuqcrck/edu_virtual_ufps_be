@@ -32,4 +32,6 @@ public interface IEstudianteService {
     public List<EstudianteResponse> listarEstudiantesPorEstado(Integer estadoEstudianteId) throws EstadoEstudianteNotFoundException;
 
 
+    List<EstudianteResponse> listarEstudiantesPorGrupoCohorteConMatriculaEnCurso(Long grupoCohorteId) 
+            throws CohorteNotFoundException;
 }
