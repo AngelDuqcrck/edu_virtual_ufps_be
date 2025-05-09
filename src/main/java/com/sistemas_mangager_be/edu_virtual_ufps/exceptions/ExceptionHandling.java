@@ -81,6 +81,11 @@ public class ExceptionHandling {
         return createHttpResponse(HttpStatus.CONFLICT, exception.getMessage());
     }
     
+    @ExceptionHandler(NotasException.class)
+    public ResponseEntity<HttpResponse> notasException(NotasException exception) {
+        return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+    
     @ExceptionHandler(GrupoNotFoundException.class)
     public ResponseEntity<HttpResponse> grupoNotFoundException(GrupoNotFoundException exception) {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
