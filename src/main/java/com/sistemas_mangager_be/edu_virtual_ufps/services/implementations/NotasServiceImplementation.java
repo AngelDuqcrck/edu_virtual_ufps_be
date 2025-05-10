@@ -2,10 +2,12 @@ package com.sistemas_mangager_be.edu_virtual_ufps.services.implementations;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.CambioEstadoMatricula;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.EstadoMatricula;
@@ -25,7 +27,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.INotaServic
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.NotasPosgradoRequest;
 
 @Service
-public class NotasServiceImplementation implements INotaService{
+public class NotasServiceImplementation implements INotaService {
 
     public static final String IS_ALREADY_USE = "%s ya esta en uso";
     public static final String IS_NOT_FOUND = "%s no fue encontrado";
@@ -126,6 +128,7 @@ public class NotasServiceImplementation implements INotaService{
      * @throws GrupoNotFoundException Si el grupo no existe o no tiene historial de
      *                                cierre
      */
+    @Transactional
     public void abrirNotasGrupoPosgrado(Long grupoCohorteId, String usuario) throws GrupoNotFoundException {
         // 1. Buscar el grupo-cohorte
         GrupoCohorte grupoCohorte = grupoCohorteRepository.findById(grupoCohorteId)
@@ -146,10 +149,15 @@ public class NotasServiceImplementation implements INotaService{
         estadoEnCurso.setId(2);
         estadoEnCurso.setNombre("En curso");
 
-        // 4. Procesar cada matrícula registrada en el historial
+        // 4. Procesar cada matrícula registrada en el historial usando un bucle
+        // tradicional
         for (HistorialCierreNotas historial : historialCierreList) {
             // Buscar la matrícula
-            matriculaRepository.findById(historial.getMatriculaId()).ifPresent(matricula -> {
+            Optional<Matricula> optionalMatricula = matriculaRepository.findById(historial.getMatriculaId());
+
+            if (optionalMatricula.isPresent()) {
+                Matricula matricula = optionalMatricula.get();
+
                 // Reabrir para edición
                 matricula.setNotaAbierta(true);
 
@@ -157,14 +165,15 @@ public class NotasServiceImplementation implements INotaService{
                 matricula.setEstadoMatriculaId(estadoEnCurso);
 
                 // Registrar el cambio de estado
-                crearCambioEstadoMatricula(matricula, estadoEnCurso, historial.getRealizadoPor() + usuario);
+                crearCambioEstadoMatricula(matricula, estadoEnCurso,
+                        historial.getRealizadoPor() + " (reabierto por " + usuario + ")");
 
                 // Guardar cambios
                 matriculaRepository.save(matricula);
-            });
+            }
         }
 
-        // 5. Eliminar el historial de cierre una vez procesado
+        // 5. Eliminar el historial de cierre una vez procesado (ahora como último paso)
         historialCierreNotasRepository.deleteByGrupoCohorteId(grupoCohorteId);
     }
 
