@@ -51,6 +51,16 @@ public class NotasServiceImplementation implements INotaService {
     @Autowired
     private CambioEstadoMatriculaRepository cambioEstadoMatriculaRepository;
 
+    /**
+     * Guarda o actualiza la nota de un estudiante de posgrado.
+     * - Verifica si la matrícula existe y está activa
+     * - Valida que la nota esté dentro del rango permitido (0 a 5)
+     * - Si la nota es válida, se guarda en la base de datos
+     * 
+     * @param notasPosgradoRequest Objeto que contiene los datos de la nota
+     * @throws MatriculaException Si la matrícula no existe o no está activa
+     * @throws NotasException     Si la nota no es válida
+     */
     public void guardaroActualizarNotaPosgrado(NotasPosgradoRequest notasPosgradoRequest)
             throws MatriculaException, NotasException {
         Matricula matricula = matriculaRepository.findById(notasPosgradoRequest.getMatriculaId()).orElse(null);
@@ -78,6 +88,8 @@ public class NotasServiceImplementation implements INotaService {
      * Cierra el periodo de notas para un grupo de posgrado.
      * - Establece notaAbierta=false para todas las matrículas activas
      * - Cambia el estado de las matrículas según las notas registradas
+     * - Si la nota es menor a 3.0, cambia el estado a "Reprobado"
+     * - Si la nota es mayor o igual a 3.0, cambia el estado a "Aprobado"
      * - Guarda registro del cierre para posterior reapertura
      * 
      * @param grupoCohorteId ID del grupo-cohorte

@@ -151,77 +151,86 @@ public class SolicitudServiceImplementation implements ISolicitudService {
                     "Error al actualizar la solicitud, el tipo de solicitud no puede ser modificado");
         }
 
-        // 3. Validar y actualizar estudiante si viene en el DTO
+        // 3. Validar y actualizar estudiante solo si se intenta cambiar
         if (solicitudDTO.getEstudianteId() != null) {
-            Estudiante estudiante = estudianteRepository.findById(solicitudDTO.getEstudianteId())
-                    .orElseThrow(() -> new EstudianteNotFoundException(
-                            String.format(IS_NOT_FOUND, "Estudiante con ID: " + solicitudDTO.getEstudianteId())));
+            // Verificar si realmente está cambiando el estudiante
+            if (!solicitudDTO.getEstudianteId().equals(solicitud.getEstudianteId().getId())) {
+                // Si hay cambio, realizar todas las validaciones
+                Estudiante estudiante = estudianteRepository.findById(solicitudDTO.getEstudianteId())
+                        .orElseThrow(() -> new EstudianteNotFoundException(
+                                String.format(IS_NOT_FOUND, "Estudiante con ID: " + solicitudDTO.getEstudianteId())));
 
-            // Validar que el nuevo estudiante cumpla con los requisitos del tipo de
-            // solicitud
-            validarEstudianteParaTipoSolicitud(estudiante, solicitud.getTipoSolicitudId());
+                // Validar que el nuevo estudiante cumpla con los requisitos
+                validarEstudianteParaTipoSolicitud(estudiante, solicitud.getTipoSolicitudId());
 
-            // Verificar si ya existe una solicitud pendiente para el nuevo estudiante
-            // del mismo tipo (excluyendo la solicitud actual)
-            if (tipoSolicitudId == 2 || tipoSolicitudId == 3) {
-                List<Solicitud> solicitudesPendientes = solicitudRepository
-                        .findByEstudianteIdAndTipoSolicitudId_IdAndEstaAprobada(
-                                estudiante, tipoSolicitudId, false);
-
-                solicitudesPendientes.removeIf(s -> s.getId().equals(solicitudId));
-
-                if (!solicitudesPendientes.isEmpty()) {
-                    throw new SolicitudException("Ya existe una solicitud pendiente del mismo tipo para el estudiante");
-                }
-            }
-
-            // Si es reintegro, verificar que el nuevo estudiante tenga un aplazamiento
-            // aprobado
-            if (solicitud.getTipoSolicitudId().getId() == 3) { // Reintegro
-                if (!solicitudRepository.existsAplazamientoAprobadoByEstudiante(estudiante)) {
-                    throw new SolicitudException("El nuevo estudiante no tiene un aplazamiento aprobado previo.");
-                }
-
-                // Actualizar el vínculo con el último aplazamiento aprobado del nuevo
-                // estudiante
-                Optional<Solicitud> ultimoAplazamiento = solicitudRepository
-                        .findLastAplazamientoAprobadoByEstudiante(estudiante);
-
-                if (ultimoAplazamiento.isPresent()) {
-                    solicitud.setSolicitudAplazamientoId(ultimoAplazamiento.get());
-                } else {
-                    throw new SolicitudException("No se encontró un aplazamiento aprobado para el nuevo estudiante.");
-                }
-            }
-
-            // 4. Validar y actualizar matrícula si es cancelación y viene en el DTO
-            if (solicitud.getTipoSolicitudId().getId() == 1 && solicitudDTO.getMatriculaId() != null) {
-
-                // Verificar si la matrícula está siendo modificada
-                if (solicitud.getMatriculaId() == null ||
-                        !solicitudDTO.getMatriculaId().equals(solicitud.getMatriculaId().getId())) {
-
-                    Matricula matricula = matriculaRepository.findActiveByIdAndEstudianteId(
-                            solicitudDTO.getMatriculaId(), solicitud.getEstudianteId())
-                            .orElseThrow(() -> new SolicitudException(
-                                    "La matrícula no pertenece al estudiante o no está activa"));
-
-                    // Verificar si ya existe una solicitud pendiente para esta matrícula
-                    // (excluyendo la solicitud actual)
+                // Verificar solicitudes pendientes
+                if (tipoSolicitudId == 2 || tipoSolicitudId == 3) {
                     List<Solicitud> solicitudesPendientes = solicitudRepository
-                            .findByMatriculaIdAndEstudianteIdAndEstaAprobada(matricula, estudiante, false);
+                            .findByEstudianteIdAndTipoSolicitudId_IdAndEstaAprobada(
+                                    estudiante, tipoSolicitudId, false);
 
                     solicitudesPendientes.removeIf(s -> s.getId().equals(solicitudId));
 
                     if (!solicitudesPendientes.isEmpty()) {
-                        throw new SolicitudException("Ya existe una solicitud pendiente para esta matrícula");
+                        throw new SolicitudException(
+                                "Ya existe una solicitud pendiente del mismo tipo para el estudiante");
                     }
-                    solicitud.setMatriculaId(matricula);
                 }
+
+                // Actualizar vínculo de aplazamiento si es reintegro
+                if (solicitud.getTipoSolicitudId().getId() == 3) {
+                    if (!solicitudRepository.existsAplazamientoAprobadoByEstudiante(estudiante)) {
+                        throw new SolicitudException("El nuevo estudiante no tiene un aplazamiento aprobado previo.");
+                    }
+
+                    Optional<Solicitud> ultimoAplazamiento = solicitudRepository
+                            .findLastAplazamientoAprobadoByEstudiante(estudiante);
+
+                    if (ultimoAplazamiento.isPresent()) {
+                        solicitud.setSolicitudAplazamientoId(ultimoAplazamiento.get());
+                    } else {
+                        throw new SolicitudException(
+                                "No se encontró un aplazamiento aprobado para el nuevo estudiante.");
+                    }
+                }
+
+                // Establecer el nuevo estudiante
+                solicitud.setEstudianteId(estudiante);
             }
-            solicitud.setEstudianteId(estudiante);
+            // Si no cambia, no hacemos nada con el estudiante
         }
 
+        // 4. Validar y actualizar matrícula solo si es cancelación y si intenta cambiar
+        // la matrícula
+        if (solicitud.getTipoSolicitudId().getId() == 1 && solicitudDTO.getMatriculaId() != null) {
+            // Verificar si la matrícula está siendo modificada
+            if (solicitud.getMatriculaId() == null ||
+                    !solicitudDTO.getMatriculaId().equals(solicitud.getMatriculaId().getId())) {
+
+                Estudiante estudiante = solicitud.getEstudianteId(); // Usar el estudiante actual o el nuevo asignado
+
+                Matricula matricula = matriculaRepository.findActiveByIdAndEstudianteId(
+                        solicitudDTO.getMatriculaId(), estudiante)
+                        .orElseThrow(() -> new SolicitudException(
+                                "La matrícula no pertenece al estudiante o no está activa"));
+
+                // Verificar si ya existe una solicitud pendiente para esta matrícula
+                List<Solicitud> solicitudesPendientes = solicitudRepository
+                        .findByMatriculaIdAndEstudianteIdAndEstaAprobada(matricula, estudiante, false);
+
+                solicitudesPendientes.removeIf(s -> s.getId().equals(solicitudId));
+
+                if (!solicitudesPendientes.isEmpty()) {
+                    throw new SolicitudException("Ya existe una solicitud pendiente para esta matrícula");
+                }
+
+                // Establecer la nueva matrícula
+                solicitud.setMatriculaId(matricula);
+            }
+            // Si no cambia la matrícula, no hacemos nada con ella
+        }
+
+        // 5. Actualizar la descripción (siempre permitido)
         solicitud.setDescripcion(solicitudDTO.getDescripcion());
 
         // 6. Guardar los cambios
@@ -409,11 +418,11 @@ public class SolicitudServiceImplementation implements ISolicitudService {
                     .orElseThrow(() -> new SolicitudException("Estado 'Cancelada' no configurado"));
 
             for (Matricula matricula : matriculasEnCurso) {
-                
+
                 matricula.setEstadoMatriculaId(estadoCancelada);
                 matriculaRepository.save(matricula);
                 crearCambioEstadoMatricula(matricula, estadoCancelada, usuario);
-                
+
             }
         }
 
@@ -492,7 +501,9 @@ public class SolicitudServiceImplementation implements ISolicitudService {
 
         if (!solicitudesPendientes.isEmpty()) {
             throw new SolicitudException(
-                    "Ya existe una solicitud de cancelación pendiente para la materia "+ matricula.getGrupoCohorteId().getGrupoId().getMateriaId().getNombre()+ " realizada al estudiante "+estudiante.getNombre() + " " + estudiante.getApellido());
+                    "Ya existe una solicitud de cancelación pendiente para la materia "
+                            + matricula.getGrupoCohorteId().getGrupoId().getMateriaId().getNombre()
+                            + " realizada al estudiante " + estudiante.getNombre() + " " + estudiante.getApellido());
         }
     }
 
@@ -514,7 +525,8 @@ public class SolicitudServiceImplementation implements ISolicitudService {
                         estudiante, 3, false); // 3 = Reintegro
 
         if (!solicitudesPendientes.isEmpty()) {
-            throw new SolicitudException("Ya existe una solicitud de reintegro pendiente para "+estudiante.getNombre() + " " + estudiante.getApellido());
+            throw new SolicitudException("Ya existe una solicitud de reintegro pendiente para " + estudiante.getNombre()
+                    + " " + estudiante.getApellido());
         }
     }
 
@@ -541,7 +553,8 @@ public class SolicitudServiceImplementation implements ISolicitudService {
                         estudiante, 2, false);
 
         if (!solicitudesPendientes.isEmpty()) {
-            throw new SolicitudException("Ya existe una solicitud de aplazamiento pendiente para "+estudiante.getNombre() + " " + estudiante.getApellido());
+            throw new SolicitudException("Ya existe una solicitud de aplazamiento pendiente para "
+                    + estudiante.getNombre() + " " + estudiante.getApellido());
         }
     }
 
