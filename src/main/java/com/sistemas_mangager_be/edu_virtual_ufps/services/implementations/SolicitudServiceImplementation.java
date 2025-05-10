@@ -492,7 +492,7 @@ public class SolicitudServiceImplementation implements ISolicitudService {
 
         if (!solicitudesPendientes.isEmpty()) {
             throw new SolicitudException(
-                    "Ya existe una solicitud de cancelación pendiente para la materia "+ matricula.getGrupoCohorteId().getGrupoId().getMateriaId().getNombre()+ "realizada al estudiante "+estudiante.getNombre() + " " + estudiante.getApellido());
+                    "Ya existe una solicitud de cancelación pendiente para la materia "+ matricula.getGrupoCohorteId().getGrupoId().getMateriaId().getNombre()+ " realizada al estudiante "+estudiante.getNombre() + " " + estudiante.getApellido());
         }
     }
 
@@ -514,7 +514,7 @@ public class SolicitudServiceImplementation implements ISolicitudService {
                         estudiante, 3, false); // 3 = Reintegro
 
         if (!solicitudesPendientes.isEmpty()) {
-            throw new SolicitudException("Ya existe una solicitud de reintegro pendiente del estudiante "+estudiante.getNombre() + " " + estudiante.getApellido());
+            throw new SolicitudException("Ya existe una solicitud de reintegro pendiente para "+estudiante.getNombre() + " " + estudiante.getApellido());
         }
     }
 
@@ -541,7 +541,7 @@ public class SolicitudServiceImplementation implements ISolicitudService {
                         estudiante, 2, false);
 
         if (!solicitudesPendientes.isEmpty()) {
-            throw new SolicitudException("Ya existe una solicitud de aplazamiento pendiente para el estudiante "+estudiante.getNombre() + " " + estudiante.getApellido());
+            throw new SolicitudException("Ya existe una solicitud de aplazamiento pendiente para "+estudiante.getNombre() + " " + estudiante.getApellido());
         }
     }
 

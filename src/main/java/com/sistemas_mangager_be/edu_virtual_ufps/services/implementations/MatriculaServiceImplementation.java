@@ -121,6 +121,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                                 .nuevaMatricula(matriculaDTO.isNuevaMatricula())
                                 .estadoMatriculaId(estadoMatricula)
                                 .semestre(semestre)
+                                .notaAbierta(true)
                                 .build();
 
                 // Guardar la matrícula

@@ -474,7 +474,7 @@ public class EstudianteServiceImplementation implements IEstudianteService {
                                                                 "EL ESTADO ESTUDIANTE CON ID " + estadoEstudianteId)
                                                                 .toLowerCase()));
 
-                List<Estudiante> estudiantes = estudianteRepository.findByEstadoEstudianteId(estadoEstudiante);
+                List<Estudiante> estudiantes = estudianteRepository.findByEstadoEstudianteIdAndProgramaId_EsPosgradoTrue(estadoEstudiante);
 
                 return estudiantes.stream().map(estudiante -> {
                         EstudianteResponse estudianteResponse = new EstudianteResponse();

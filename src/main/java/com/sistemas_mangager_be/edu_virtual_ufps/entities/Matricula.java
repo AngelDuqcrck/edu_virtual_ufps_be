@@ -4,6 +4,8 @@ import lombok.*;
 
 import java.util.Date;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -45,4 +47,7 @@ public class Matricula {
     private boolean correoEnviado;
 
     private Date fechaCorreoEnviado;
+
+    
+    private Boolean notaAbierta;
 }
