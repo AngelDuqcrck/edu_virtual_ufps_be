@@ -178,7 +178,7 @@ public class NotasServiceImplementation implements INotaService {
 
                 // Registrar el cambio de estado
                 crearCambioEstadoMatricula(matricula, estadoEnCurso,
-                        historial.getRealizadoPor() + " (reabierto por " + usuario + ")");
+                        " (reabierto por " + usuario + ")");
 
                 // Guardar cambios
                 matriculaRepository.save(matricula);
@@ -225,7 +225,7 @@ public class NotasServiceImplementation implements INotaService {
         }
 
         matricula.setEstadoMatriculaId(nuevoEstado);
-        crearCambioEstadoMatricula(matricula, nuevoEstado, usuario);
+        crearCambioEstadoMatricula(matricula, nuevoEstado, " (cerrado por " + usuario + ")");
         matriculaRepository.save(matricula);
     }
 
