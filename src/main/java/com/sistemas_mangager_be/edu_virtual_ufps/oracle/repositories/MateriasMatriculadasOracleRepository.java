@@ -7,17 +7,19 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface MateriasMatriculadasOracleRepository
-        extends JpaRepository<MateriasMatriculadasOracle, MateriasMatriculadasId> {
+                extends JpaRepository<MateriasMatriculadasOracle, MateriasMatriculadasId> {
 
-    // Puedes crear métodos derivados como:
-    List<MateriasMatriculadasOracle> findByCodCarMat(String codCarMat);
+        // Puedes crear métodos derivados como:
+        List<MateriasMatriculadasOracle> findByCodCarMat(String codCarMat);
 
-    List<MateriasMatriculadasOracle> findByCodAlumno(String codAlumno);
+        List<MateriasMatriculadasOracle> findByCodAlumno(String codAlumno);
 
-    List<MateriasMatriculadasOracle> findByCodAlumnoAndCodMateria(String codAlumno, String codMateria);
+        List<MateriasMatriculadasOracle> findByCodAlumnoAndCodMateria(String codAlumno, String codMateria);
 
-    List<MateriasMatriculadasOracle> findByCodCarMatAndCodMatMatAndGrupo(String codCarMat, String codMatMat,
-            String grupo);
+        List<MateriasMatriculadasOracle> findByCodCarMatAndCodMatMatAndGrupo(String codCarMat, String codMatMat,
+                        String grupo);
 
-    List<MateriasMatriculadasOracle> findByCodCarreraAndCodAlumno(String codCarrera, String codAlumno);
+        List<MateriasMatriculadasOracle> findByCodMateria(String codMateria);
+
+        List<MateriasMatriculadasOracle> findByCodCarreraAndCodAlumno(String codCarrera, String codAlumno);
 }
