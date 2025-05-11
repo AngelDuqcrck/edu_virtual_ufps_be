@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import jakarta.servlet.FilterChain;
@@ -43,20 +44,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(token) && jwtTokenGenerator.validarToken(token)) {
             String correo = jwtTokenGenerator.obtenerCorreoDeJWT(token);
             
-            // Verificar si el token es el último válido para este usuario
-            if (!sessionManager.isTokenValid(correo, token)) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                String jsonResponse = "{\"message\": \"Sesión iniciada en otro dispositivo, se cerrará la sesión\"}";
-                response.getWriter().write(jsonResponse);
-                return;
+            try {
+                // Verificar si el token es el último válido para este usuario
+                if (!sessionManager.isTokenValid(correo, token)) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+                    String jsonResponse = "{\"message\": \"Sesión iniciada en otro dispositivo, se cerrará la sesión\"}";
+                    response.getWriter().write(jsonResponse);
+                    return;
+                }
+                
+                UserDetails userDetails = customUserDetailsService.loadUserByUsername(correo);
+                UsernamePasswordAuthenticationToken authenticationToken =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            } catch (UsernameNotFoundException e) {
+                // Si la cuenta no está activa, enviamos respuesta de error
+                if (e.getMessage().contains("inactiva")) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+                    String jsonResponse = "{\"message\": \"" + e.getMessage() + "\"}";
+                    response.getWriter().write(jsonResponse);
+                    return;
+                }
             }
-            
-            UserDetails userDetails = customUserDetailsService.loadUserByUsername(correo);
-            UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         }
 
         filterChain.doFilter(request, response);

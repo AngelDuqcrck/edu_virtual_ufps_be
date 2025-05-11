@@ -29,6 +29,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         Admin admin = adminRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
+        // Verificar si la cuenta está activa
+        if (admin.getActivo() == null || !admin.getActivo()) {
+            throw new UsernameNotFoundException("La cuenta está inactiva. Contacte al administrador.");
+        }
+
         // Crear una lista de autoridades basada en el rol del administrador
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         if (admin.getEsSuperAdmin()) {
@@ -40,7 +45,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new CustomUserDetails(
             admin.getEmail(),
             admin.getPassword(),
-            true,
+            true,  // Cuenta siempre habilitada ya que validamos activo manualmente
             true,
             true,
             true,
