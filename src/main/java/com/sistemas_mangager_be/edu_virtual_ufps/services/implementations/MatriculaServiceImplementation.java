@@ -207,9 +207,9 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                         throw new EstudianteNotFoundException(
                                         String.format(IS_NOT_FOUND, "El estudiante con ID: " + estudianteId));
                 }
-
+                String semestreActual = calcularSemestre(new Date());
                 List<Matricula> matriculas = matriculaRepository.findByEstudianteAndSemestreAndEstados(estudiante,
-                                calcularSemestre(new Date()));
+                                semestreActual);
                 return matriculas.stream().map(matricula -> {
                         MatriculaResponse matriculaResponse = new MatriculaResponse();
                         BeanUtils.copyProperties(matricula, matriculaResponse);
