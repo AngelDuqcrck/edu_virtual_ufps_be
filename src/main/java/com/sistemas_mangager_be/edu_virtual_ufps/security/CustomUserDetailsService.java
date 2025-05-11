@@ -13,7 +13,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -23,7 +22,6 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Autowired
     private AdminRepository adminRepository;
 
-    
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Admin admin = adminRepository.findByEmail(username)
@@ -43,17 +41,16 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         return new CustomUserDetails(
-            admin.getEmail(),
-            admin.getPassword(),
-            true,  // Cuenta siempre habilitada ya que validamos activo manualmente
-            true,
-            true,
-            true,
-            authorities,
-            admin.getPrimerNombre(),
-            admin.getPrimerApellido(),
-            admin.getEsSuperAdmin()
-        );
+                admin.getEmail(),
+                admin.getPassword(),
+                true, // Cuenta siempre habilitada ya que validamos activo manualmente
+                true,
+                true,
+                true,
+                authorities,
+                admin.getPrimerNombre(),
+                admin.getPrimerApellido(),
+                admin.getEsSuperAdmin());
     }
 
     // Clase personalizada para extender UserDetails y incluir información adicional
@@ -63,9 +60,9 @@ public class CustomUserDetailsService implements UserDetailsService {
         private final Boolean esSuperAdmin;
 
         public CustomUserDetails(String username, String password, boolean enabled,
-                                boolean accountNonExpired, boolean credentialsNonExpired,
-                                boolean accountNonLocked, Collection<? extends GrantedAuthority> authorities,
-                                String primerNombre, String primerApellido, Boolean esSuperAdmin) {
+                boolean accountNonExpired, boolean credentialsNonExpired,
+                boolean accountNonLocked, Collection<? extends GrantedAuthority> authorities,
+                String primerNombre, String primerApellido, Boolean esSuperAdmin) {
             super(username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
             this.primerNombre = primerNombre;
             this.primerApellido = primerApellido;
