@@ -1,6 +1,8 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.services.implementations;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -383,10 +385,10 @@ public class EstudianteServiceImplementation implements IEstudianteService {
                                                 String.format(IS_NOT_FOUND_F,
                                                                 "EL GRUPO COHORTE CON ID " + grupoCohorteId)
                                                                 .toLowerCase()));
-
+                                String semestre = calcularSemestre(new Date());
                 // 2. Buscar estudiantes con matrícula en curso (estado 2) en ese grupo-cohorte
                 List<Estudiante> estudiantes = matriculaRepository
-                                .findEstudiantesByGrupoCohorteIdAndEstadoMatriculaId(grupoCohorte, 2);
+                                .findEstudiantesBySemestreAndGrupoCohorteIdAndEstados(grupoCohorte, semestre);
                 
                 List<EstudianteResponse> estudiantesResponse = new ArrayList<>();
                 // 3. Mapear los estudiantes a EstudianteResponse
@@ -491,5 +493,15 @@ public class EstudianteServiceImplementation implements IEstudianteService {
                         return estudianteResponse;
                 })
                                 .collect(Collectors.toList());
+        }
+
+        private String calcularSemestre(Date fechaMatriculacion) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(fechaMatriculacion);
+
+                int mes = cal.get(Calendar.MONTH) + 1; // Enero = 0
+                int anio = cal.get(Calendar.YEAR);
+
+                return anio + "-" + (mes <= 6 ? "I" : "II");
         }
 }
