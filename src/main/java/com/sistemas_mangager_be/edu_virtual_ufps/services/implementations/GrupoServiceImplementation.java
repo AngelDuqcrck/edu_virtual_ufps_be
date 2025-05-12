@@ -1,5 +1,6 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.services.implementations;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -536,13 +537,11 @@ public class GrupoServiceImplementation implements IGrupoService {
         GrupoCohorte grupoCohorte = grupoCohorteRepository.findById(grupoCohorteId)
                 .orElseThrow(() -> new RuntimeException("Grupo Cohorte no encontrado"));
 
-        // 2. Obtener estado "En curso" (ID 2)
-        EstadoMatricula estadoEnCurso = estadoMatriculaRepository.findById(2)
-                .orElseThrow(() -> new RuntimeException("Estado de matrícula 'En curso' no configurado"));
-
+        
+        String semestre = calcularSemestre(new Date());
         // 3. Obtener matrículas en curso para este grupo cohorte
-        List<Matricula> matriculas = matriculaRepository.findByGrupoCohorteIdAndEstadoMatriculaId(
-                grupoCohorte, estadoEnCurso);
+        List<Matricula> matriculas = matriculaRepository.findBySemestreAndGrupoCohorteIdAndEstados( semestre,
+                grupoCohorte);
 
         // 4. Construir la respuesta
         return EstudianteGrupoResponse.builder()
@@ -567,4 +566,13 @@ public class GrupoServiceImplementation implements IGrupoService {
                 .build();
     }
 
+    private String calcularSemestre(Date fechaMatriculacion) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(fechaMatriculacion);
+
+                int mes = cal.get(Calendar.MONTH) + 1; // Enero = 0
+                int anio = cal.get(Calendar.YEAR);
+
+                return anio + "-" + (mes <= 6 ? "I" : "II");
+        }
 }
