@@ -21,6 +21,13 @@ public interface MatriculaRepository extends JpaRepository<Matricula, Long> {
                         @Param("materia") Materia materia,
                         @Param("estados") List<Integer> estados);
 
+         @Query("SELECT m FROM Matricula m" +
+                        " WHERE m.estudianteId = :estudiante" +
+                        " AND m.semestre = :semestre" +
+                        " AND m.estadoMatriculaId.id IN (1, 2, 4)") // 1=Aprobado, 2=En curso 4=Reprobado
+        List<Matricula> findByEstudianteAndSemestreAndEstados(
+                        @Param("estudiante") Estudiante estudiante,
+                        @Param("semestre") String semestre);
         // Método alternativo para verificación rápida
         @Query("SELECT CASE WHEN COUNT(m) > 0 THEN true ELSE false END " +
                         "FROM Matricula m " +
@@ -40,6 +47,9 @@ public interface MatriculaRepository extends JpaRepository<Matricula, Long> {
         boolean existsByEstudianteIdAndGrupoCohorteId(Estudiante estudiante, GrupoCohorte grupoCohorte);
 
         List<Matricula> findByEstudianteIdAndEstadoMatriculaId_Id(Estudiante estudiante, Integer estadoMatriculaId);
+
+
+       
 
         List<Matricula> findByEstudianteId(Estudiante estudiante);
 

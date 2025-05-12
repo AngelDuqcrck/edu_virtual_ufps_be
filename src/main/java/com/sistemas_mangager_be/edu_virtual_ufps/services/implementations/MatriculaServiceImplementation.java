@@ -207,9 +207,9 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                         throw new EstudianteNotFoundException(
                                         String.format(IS_NOT_FOUND, "El estudiante con ID: " + estudianteId));
                 }
-
-                List<Matricula> matriculas = matriculaRepository.findByEstudianteIdAndEstadoMatriculaId_Id(estudiante,
-                                2);
+                String semestreActual = calcularSemestre(new Date());
+                List<Matricula> matriculas = matriculaRepository.findByEstudianteAndSemestreAndEstados(estudiante,
+                                semestreActual);
                 return matriculas.stream().map(matricula -> {
                         MatriculaResponse matriculaResponse = new MatriculaResponse();
                         BeanUtils.copyProperties(matricula, matriculaResponse);
@@ -228,6 +228,8 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                                         matricula.getGrupoCohorteId().getGrupoId().getMateriaId().getSemestre());
                         matriculaResponse.setCreditos(
                                         matricula.getGrupoCohorteId().getGrupoId().getMateriaId().getCreditos());
+                        matriculaResponse.setNota(matricula.getNota());
+                        matriculaResponse.setFechaNota(matricula.getFechaNota());
                         return matriculaResponse;
                 }).toList();
         }

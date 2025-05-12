@@ -11,12 +11,13 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 import java.util.*;
+
 public class JwtTokenGenerator {
 
-     @Autowired
+    @Autowired
     private SessionManager sessionManager;
 
-    //Metodo para generar el token  por medio de la autenticación
+    // Metodo para generar el token por medio de la autenticación
     public String generarToken(Authentication authentication) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         String correo = userDetails.getUsername();
@@ -24,7 +25,7 @@ public class JwtTokenGenerator {
         Date fechaActual = new Date();
         Date expiracionToken = new Date(fechaActual.getTime() + SecurityConstants.JWT_EXPIRATION_TIME_TOKEN);
 
-        //Aqui generamos el token con la información adicional
+        // Aqui generamos el token con la información adicional
         String token = Jwts.builder()
                 .setSubject(correo)
                 .claim("role", rol)
@@ -34,8 +35,9 @@ public class JwtTokenGenerator {
                 .setExpiration(expiracionToken)
                 .signWith(SignatureAlgorithm.HS512, SecurityConstants.JWT_FIRMA)
                 .compact();
-            
-                sessionManager.registerUserSession(correo, token);
+
+        // Registrar sesión activa
+        sessionManager.registerUserSession(correo, token);
 
         return token;
     }
@@ -55,7 +57,7 @@ public class JwtTokenGenerator {
                 .compact();
     }
 
-    //Metodo para extaer un email a partir de un token
+    // Metodo para extaer un email a partir de un token
     public String obtenerCorreoDeJWT(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(SecurityConstants.JWT_FIRMA)
@@ -91,14 +93,13 @@ public class JwtTokenGenerator {
                     .setSigningKey(SecurityConstants.JWT_FIRMA)
                     .parseClaimsJws(token)
                     .getBody();
-    
+
             // Verificamos si el token ha expirado
             return !claims.getExpiration().before(new Date());
         } catch (Exception e) {
             return false; // Token inválido o expirado
         }
     }
-    
 
     // Método para generar un token único de recuperación de password
     public String generarTokenRecuperacion(String email) {
@@ -114,6 +115,4 @@ public class JwtTokenGenerator {
                 .signWith(SignatureAlgorithm.HS512, SecurityConstants.JWT_FIRMA)
                 .compact();
     }
-
-    
 }
