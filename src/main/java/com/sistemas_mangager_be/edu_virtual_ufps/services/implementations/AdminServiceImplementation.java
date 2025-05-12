@@ -21,7 +21,7 @@ public class AdminServiceImplementation implements IAdminService {
     public static final String IS_ALREADY_USE = "%s ya esta en uso";
     public static final String IS_NOT_FOUND = "%s no fue encontrado";
     public static final String IS_NOT_FOUND_F = "%s no fue encontrada";
-    public static final String IS_NOT_ALLOWED = "no esta permitido %s ";
+    public static final String IS_NOT_ALLOWED = "No esta permitido %s ";
     public static final String IS_NOT_VALID = "%s no es valido";
     public static final String ARE_NOT_EQUALS = "%s no son iguales";
     public static final String IS_NOT_CORRECT = "%s no es correcta";
@@ -77,7 +77,7 @@ public class AdminServiceImplementation implements IAdminService {
         }
 
         if(admin.getEsSuperAdmin() ==true){
-            throw new ChangeNotAllowedException(String.format(IS_NOT_ALLOWED, "DESACTIVAR UN SUPERADMIN").toLowerCase());
+            throw new ChangeNotAllowedException(String.format(IS_NOT_ALLOWED, "desactivar un superadmin"));
         }
 
         admin.setActivo(false);
@@ -92,7 +92,7 @@ public class AdminServiceImplementation implements IAdminService {
         }
 
         if(admin.getEsSuperAdmin() ==true){
-            throw new ChangeNotAllowedException(String.format(IS_NOT_ALLOWED, "DESACTIVAR UN SUPERADMIN").toLowerCase());
+            throw new ChangeNotAllowedException(String.format(IS_NOT_ALLOWED, "activar un superadmin"));
         }
 
         admin.setActivo(true);
