@@ -8,11 +8,12 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.PensumNotFoundExcept
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.PensumDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.PensumResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.PensumSemestreResponse;
 
 public interface IPensumService {
     
-    PensumDTO crearPensum(PensumDTO pensumDTO) throws ProgramaNotFoundException;
+    PensumSemestreResponse crearPensum(PensumDTO pensumDTO) throws ProgramaNotFoundException;
 
     PensumSemestreResponse listarPensum(Integer id) throws PensumNotFoundException;
 
