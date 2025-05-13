@@ -3,6 +3,7 @@ package com.sistemas_mangager_be.edu_virtual_ufps.controllers;
 import java.util.List;
 import java.util.Map;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.PensumSemestreResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,43 +26,59 @@ import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.HttpResponse;
 @RestController
 @RequestMapping("/pensums")
 public class PensumController {
-    
+
     @Autowired
     private IPensumService pensumService;
-    
+
     @PostMapping("/crear")
-    public ResponseEntity<Map<HttpResponse, PensumDTO>> crearPensum( @RequestBody PensumDTO pensumDTO) throws ProgramaNotFoundException {
-        PensumDTO  pensum = pensumService.crearPensum(pensumDTO);
+    public ResponseEntity<Map<HttpResponse, PensumDTO>> crearPensum(@RequestBody PensumDTO pensumDTO)
+            throws ProgramaNotFoundException {
+        PensumDTO pensum = pensumService.crearPensum(pensumDTO);
 
         return new ResponseEntity<>(
-                                Map.of(new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                                                " Pensum creado con exito"), pensum),
-                                HttpStatus.OK);
+                Map.of(new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                        " Pensum creado con exito"), pensum),
+                HttpStatus.OK);
     }
 
-    
     @GetMapping("/listar")
-    public List<PensumDTO> listarPensums() {
+    public List<PensumSemestreResponse> listarPensums() {
         return pensumService.listarPensums();
-        
+
     }
 
     @GetMapping("/{id}")
-    public PensumDTO listarPensum(@PathVariable Integer id) throws PensumNotFoundException {
+    public PensumSemestreResponse listarPensum(@PathVariable Integer id) throws PensumNotFoundException {
         return pensumService.listarPensum(id);
     }
-    
+
     @PutMapping("/{id}")
-    public ResponseEntity<HttpResponse> actualizarPensum(@PathVariable Integer id, @RequestBody PensumDTO pensumDTO) throws PensumNotFoundException, ProgramaNotFoundException {
+    public ResponseEntity<HttpResponse> actualizarPensum(@PathVariable Integer id, @RequestBody PensumDTO pensumDTO)
+            throws PensumNotFoundException, ProgramaNotFoundException {
         pensumService.actualizarPensum(pensumDTO, id);
         return new ResponseEntity<>(
-                                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                                                " Pensum actualizado con exito"),
-                                HttpStatus.OK);
+                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                        " Pensum actualizado con exito"),
+                HttpStatus.OK);
     }
-    
+
     @GetMapping("/programa/{id}")
-    public List<PensumDTO> listarPensumsPorPrograma(@PathVariable Integer id) throws ProgramaNotFoundException {
-        return pensumService.listarPensumsPorPrograma(id);  
+    public List<PensumSemestreResponse> listarPensumsPorPrograma(@PathVariable Integer id) throws ProgramaNotFoundException {
+        return pensumService.listarPensumsPorPrograma(id);
+    }
+
+    @PostMapping("/semestre/moodle")
+    public ResponseEntity<HttpResponse> vincularSemestreMoodleId(
+            @RequestBody MoodleRequest moodleRequest) throws PensumNotFoundException {
+
+        pensumService.vincularSemestreMoodleId(moodleRequest);
+
+        return new ResponseEntity<>(
+                new HttpResponse(
+                        HttpStatus.OK.value(),
+                        HttpStatus.OK,
+                        HttpStatus.OK.getReasonPhrase(),
+                        "ID de Moodle vinculado al semestre correctamente"),
+                HttpStatus.OK);
     }
 }
