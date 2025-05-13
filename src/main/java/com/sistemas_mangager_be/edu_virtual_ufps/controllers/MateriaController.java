@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MateriaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.PensumNotFoundException;
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaExistsException;
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IMateriaService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MateriaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MateriaSemestreRequest;
@@ -75,5 +77,13 @@ public class MateriaController {
         return new ResponseEntity<>(materias, HttpStatus.OK);
     }
         
+    @PostMapping("/moodle")
+    public ResponseEntity<HttpResponse> vincularMoodle(@RequestBody MoodleRequest moodleRequest) throws MateriaExistsException, MateriaNotFoundException {
+        materiaService.vincularMoodleId(moodleRequest);
+        return new ResponseEntity<>(
+                                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                                                "Vinculacion con moodle realizada con exito"),
+                                HttpStatus.OK);
+    }
 
 }

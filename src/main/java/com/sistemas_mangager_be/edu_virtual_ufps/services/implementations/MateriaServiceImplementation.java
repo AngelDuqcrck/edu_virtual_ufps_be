@@ -59,6 +59,19 @@ public class MateriaServiceImplementation implements IMateriaService {
         
     }
     
+    public void vincularMoodleId(MoodleRequest moodleRequest) throws MateriaNotFoundException, MateriaExistsException {
+        Materia materia = materiaRepository.findById(moodleRequest.getBackendId()).orElse(null);
+        if (materia == null) {
+            throw new MateriaNotFoundException(String.format(IS_NOT_FOUND_F, "EL MATERIA CON EL ID " + moodleRequest.getBackendId()).toLowerCase());
+        }
+
+        if(materiaRepository.existsByMoodleId(moodleRequest.getMoodleId())) {
+            throw new MateriaExistsException(String.format(IS_ALREADY_USE, "LA MATERIA CON EL MOODLE ID " + moodleRequest.getMoodleId()).toLowerCase());
+        }
+        materia.setMoodleId(moodleRequest.getMoodleId());
+        materiaRepository.save(materia);
+    }
+
     @Override
     public MateriaDTO actualizarMateria(Integer id,MateriaDTO materiaDTO) throws MateriaExistsException, PensumNotFoundException, MateriaNotFoundException {
         

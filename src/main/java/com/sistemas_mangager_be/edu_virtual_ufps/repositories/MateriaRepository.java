@@ -28,4 +28,6 @@ public interface MateriaRepository extends JpaRepository<Materia, Integer> {
             "WHERE mat.estudianteId.id = :estudianteId")
     List<Materia> findAllByPensumId_Estudiante(@Param("estudianteId") Integer estudianteId);
 
+
+    boolean existsByMoodleId(String moodleId);
 }

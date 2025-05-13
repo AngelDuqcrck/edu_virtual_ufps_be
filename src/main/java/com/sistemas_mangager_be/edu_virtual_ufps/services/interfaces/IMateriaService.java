@@ -13,6 +13,8 @@ public interface IMateriaService {
     
     MateriaDTO crearMateria(MateriaDTO materiaDTO) throws PensumNotFoundException, MateriaExistsException;
 
+    public void vincularMoodleId(MoodleRequest moodleRequest) throws MateriaNotFoundException, MateriaExistsException;
+
     MateriaDTO actualizarMateria(Integer id, MateriaDTO materiaDTO) throws PensumNotFoundException, MateriaNotFoundException, MateriaExistsException;
 
     MateriaDTO listarMateria( Integer materiaId) throws MateriaNotFoundException;

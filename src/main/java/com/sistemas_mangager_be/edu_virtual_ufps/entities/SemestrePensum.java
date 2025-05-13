@@ -1,27 +1,31 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.entities;
-import lombok.*;
 import jakarta.persistence.*;
+import lombok.*;
 
-@Entity
 @Data
 @Builder
-@AllArgsConstructor 
+@AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "pensums")
-public class Pensum {
-
+@Entity
+@Table(name = "semestres_pensums")
+public class SemestrePensum {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String nombre;
+    @ManyToOne
+    @JoinColumn(name = "semestre_id")
+    private Semestre semestreId;
+
+    @ManyToOne
+    @JoinColumn(name = "pensum_id")
+    private Pensum pensumId;
 
     @ManyToOne
     @JoinColumn(name = "programa_id")
     private Programa programaId;
-    
-    private Integer cantidadSemestres;
 
     private String moodleId;
-
+    
 }
