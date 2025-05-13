@@ -255,6 +255,7 @@ public class GrupoServiceImplementation implements IGrupoService {
         grupoCohorte.setDocenteId(usuario);
         grupoCohorte.setGrupoId(grupo);
         grupoCohorte.setFechaCreacion(new Date());
+        grupoCohorte.setSemestre(calcularSemestre(new Date()));
 
         grupoCohorteRepository.save(grupoCohorte);
 

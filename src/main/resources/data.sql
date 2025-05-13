@@ -199,6 +199,26 @@ INSERT IGNORE INTO admins (
 -- (50, 'TAD603', 'Innovacion y emprendimiento', '2', 2, 'VI'),
 -- (51, 'TAD604', 'Practicas en Analitica de Datos', '6', 2, 'VI');
 
+-- Creamos la tabla de semestres si no existe
+CREATE TABLE IF NOT EXISTS semestres (
+    id INT NOT NULL AUTO_INCREMENT,
+    nombre VARCHAR(50) NOT NULL,
+    numero INT NOT NULL
+);
+
+-- Insertamos los semestres en el sistema si estos no existen
+INSERT IGNORE INTO semestres (id, nombre, numero)
+VALUES 
+    (1, 'Semestre I', 1),
+    (2, 'Semestre II', 2),
+    (3, 'Semestre III', 3),
+    (4, 'Semestre IV', 4),
+    (5, 'Semestre V', 5),
+    (6, 'Semestre VI', 6),
+    (7, 'Semestre VII', 7),
+    (8, 'Semestre VIII', 8),
+    (9, 'Semestre IX', 9),
+    (10, 'Semestre X', 10);
 
 --Creamos la tabla de estados de estudiantes si no existe
 CREATE TABLE IF NOT EXISTS estados_estudiantes (

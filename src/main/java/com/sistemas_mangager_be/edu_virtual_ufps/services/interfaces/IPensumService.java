@@ -8,16 +8,23 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.PensumNotFoundExcept
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.PensumDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.PensumSemestreResponse;
 
 public interface IPensumService {
     
     PensumDTO crearPensum(PensumDTO pensumDTO) throws ProgramaNotFoundException;
 
-    PensumDTO listarPensum(Integer id) throws PensumNotFoundException;
+    PensumSemestreResponse listarPensum(Integer id) throws PensumNotFoundException;
 
+    public void vincularMoodleId(MoodleRequest moodleRequest)
+            throws PensumNotFoundException;
     PensumDTO actualizarPensum(PensumDTO pensumDTO, Integer id) throws PensumNotFoundException, ProgramaNotFoundException;
 
-    List<PensumDTO> listarPensums();
+    List<PensumSemestreResponse> listarPensums();
 
-    List<PensumDTO> listarPensumsPorPrograma(Integer id) throws ProgramaNotFoundException;
+    // Cambiado de List<PensumDTO> a List<PensumSemestreResponse>
+    List<PensumSemestreResponse> listarPensumsPorPrograma(Integer id) throws ProgramaNotFoundException;
+
+     void vincularSemestreMoodleId(MoodleRequest moodleRequest)
+            throws PensumNotFoundException;
 }

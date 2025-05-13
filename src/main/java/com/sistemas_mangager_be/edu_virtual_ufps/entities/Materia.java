@@ -28,4 +28,6 @@ public class Materia {
 
     private String semestre;
 
+    private String moodleId;
+
 }
