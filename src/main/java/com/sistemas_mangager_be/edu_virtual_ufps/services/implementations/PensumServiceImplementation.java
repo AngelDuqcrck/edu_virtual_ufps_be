@@ -49,7 +49,7 @@ public class PensumServiceImplementation implements IPensumService {
     private SemestreRepository semestreRepository;
 
     @Override
-    public PensumDTO crearPensum(PensumDTO pensumDTO) throws ProgramaNotFoundException {
+    public PensumSemestreResponse crearPensum(PensumDTO pensumDTO) throws ProgramaNotFoundException {
         // Validar y crear el pensum base
         Programa programa = programaRepository.findById(pensumDTO.getProgramaId())
                 .orElseThrow(() -> new ProgramaNotFoundException(
@@ -65,10 +65,7 @@ public class PensumServiceImplementation implements IPensumService {
         crearSemestresParaPensum(pensum, pensumDTO.getCantidadSemestres());
 
         // Retornar el DTO con la información
-        PensumDTO pensumCreado = new PensumDTO();
-        BeanUtils.copyProperties(pensum, pensumCreado);
-        pensumCreado.setProgramaId(pensum.getProgramaId().getId());
-        return pensumCreado;
+        return mapToPensumSemestreResponse(pensum);
     }
 
     @Override

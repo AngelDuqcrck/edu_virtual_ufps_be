@@ -31,14 +31,11 @@ public class PensumController {
     private IPensumService pensumService;
 
     @PostMapping("/crear")
-    public ResponseEntity<Map<HttpResponse, PensumDTO>> crearPensum(@RequestBody PensumDTO pensumDTO)
+    public ResponseEntity<PensumSemestreResponse> crearPensum(@RequestBody PensumDTO pensumDTO)
             throws ProgramaNotFoundException {
-        PensumDTO pensum = pensumService.crearPensum(pensumDTO);
+        PensumSemestreResponse pensum = pensumService.crearPensum(pensumDTO);
 
-        return new ResponseEntity<>(
-                Map.of(new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
-                        " Pensum creado con exito"), pensum),
-                HttpStatus.OK);
+        return new ResponseEntity<>(pensum, HttpStatus.CREATED);
     }
 
     @GetMapping("/listar")
