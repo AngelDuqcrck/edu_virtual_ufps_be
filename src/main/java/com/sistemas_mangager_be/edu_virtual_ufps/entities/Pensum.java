@@ -22,6 +22,6 @@ public class Pensum {
     
     private Integer cantidadSemestres;
 
-    
+    private String moodleId;
 
 }

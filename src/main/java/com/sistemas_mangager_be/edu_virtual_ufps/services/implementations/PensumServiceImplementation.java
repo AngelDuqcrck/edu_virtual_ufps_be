@@ -93,16 +93,22 @@ public class PensumServiceImplementation implements IPensumService {
                         String.format(IS_NOT_FOUND_F, "EL PROGRAMA CON EL ID " + pensumDTO.getProgramaId())
                                 .toLowerCase()));
 
+        // Guardar el valor actual de cantidadSemestres antes de actualizar el pensum
+        Integer cantidadSemestresAntigua = pensum.getCantidadSemestres();
+
+        // Actualizar propiedades del pensum
         BeanUtils.copyProperties(pensumDTO, pensum);
         pensum.setProgramaId(programa);
 
         // Sincronizar semestres si cambió la cantidad
-        if (pensumDTO.getCantidadSemestres() != pensum.getCantidadSemestres()) {
+        if (cantidadSemestresAntigua == null || pensumDTO.getCantidadSemestres() != cantidadSemestresAntigua) {
             sincronizarSemestresPensum(pensum, pensumDTO.getCantidadSemestres());
         }
 
+        // Guardar el pensum actualizado
         pensumRepository.save(pensum);
 
+        // Mapear resultado a DTO y retornar
         PensumDTO pensumActualizado = new PensumDTO();
         BeanUtils.copyProperties(pensum, pensumActualizado);
         pensumActualizado.setProgramaId(pensum.getProgramaId().getId());
@@ -115,6 +121,21 @@ public class PensumServiceImplementation implements IPensumService {
         return pensums.stream().map(this::mapToPensumSemestreResponse).toList();
     }
 
+    public void vincularMoodleId(MoodleRequest moodleRequest)
+            throws PensumNotFoundException {
+
+        // Buscar el pensum por ID
+        Pensum pensum = pensumRepository.findById(moodleRequest.getBackendId())
+                .orElseThrow(() -> new PensumNotFoundException(
+                        String.format(IS_NOT_FOUND, "EL PENSUM CON ID " + moodleRequest.getBackendId()).toLowerCase()));
+
+        // Actualizar el moodleId
+        pensum.setMoodleId(moodleRequest.getMoodleId());
+
+        // Guardar los cambios
+        pensumRepository.save(pensum);
+    }
+    
     @Override
     public List<PensumSemestreResponse> listarPensumsPorPrograma(Integer id) throws ProgramaNotFoundException {
         Programa programa = programaRepository.findById(id)
@@ -164,12 +185,16 @@ public class PensumServiceImplementation implements IPensumService {
     /**
      * Sincroniza los semestres del pensum cuando cambia la cantidad.
      */
-    private void sincronizarSemestresPensum(Pensum pensum, int nuevaCantidad) {
+    private void sincronizarSemestresPensum(Pensum pensum, Integer nuevaCantidad) {
         List<SemestrePensum> semestresActuales = semestrePensumRepository.findByPensumId(pensum);
 
-        // Eliminar semestres excedentes
+        // Ordenamos los semestres por número para asegurar que eliminamos los correctos
+        semestresActuales
+                .sort((sp1, sp2) -> sp1.getSemestreId().getNumero().compareTo(sp2.getSemestreId().getNumero()));
+
+        // Eliminar semestres excedentes (empezando por los de mayor número)
         if (semestresActuales.size() > nuevaCantidad) {
-            for (int i = nuevaCantidad; i < semestresActuales.size(); i++) {
+            for (int i = semestresActuales.size() - 1; i >= nuevaCantidad; i--) {
                 semestrePensumRepository.delete(semestresActuales.get(i));
             }
         }
@@ -190,6 +215,7 @@ public class PensumServiceImplementation implements IPensumService {
             }
         }
 
+        // Actualizamos la cantidad de semestres en el pensum
         pensum.setCantidadSemestres(nuevaCantidad);
     }
 

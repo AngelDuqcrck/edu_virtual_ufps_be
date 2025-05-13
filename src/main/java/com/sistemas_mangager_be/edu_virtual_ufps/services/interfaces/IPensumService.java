@@ -16,6 +16,8 @@ public interface IPensumService {
 
     PensumSemestreResponse listarPensum(Integer id) throws PensumNotFoundException;
 
+    public void vincularMoodleId(MoodleRequest moodleRequest)
+            throws PensumNotFoundException;
     PensumDTO actualizarPensum(PensumDTO pensumDTO, Integer id) throws PensumNotFoundException, ProgramaNotFoundException;
 
     List<PensumSemestreResponse> listarPensums();

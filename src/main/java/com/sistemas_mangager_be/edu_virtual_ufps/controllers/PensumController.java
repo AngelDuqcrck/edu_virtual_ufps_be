@@ -47,6 +47,17 @@ public class PensumController {
 
     }
 
+    @PostMapping("/moodle")
+        public ResponseEntity<HttpResponse> vincularMoodleId(@RequestBody MoodleRequest moodleRequest)
+                throws PensumNotFoundException {
+                pensumService.vincularMoodleId(moodleRequest);
+        
+                return new ResponseEntity<>(
+                        new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                                "ID de Moodle vinculado al pensum correctamente"),
+                        HttpStatus.OK);
+        }
+        
     @GetMapping("/{id}")
     public PensumSemestreResponse listarPensum(@PathVariable Integer id) throws PensumNotFoundException {
         return pensumService.listarPensum(id);
