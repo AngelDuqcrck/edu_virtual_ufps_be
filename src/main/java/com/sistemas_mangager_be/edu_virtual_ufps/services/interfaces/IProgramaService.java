@@ -6,6 +6,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaExistsExcept
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.ProgramaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.SemestreProgramaResponse;
 
 public interface IProgramaService {
     
@@ -18,4 +19,6 @@ public interface IProgramaService {
     List<ProgramaDTO> listarProgramas();
 
     void vincularMoodleId(MoodleRequest moodleRequest) throws ProgramaNotFoundException, ProgramaExistsException;
+
+    public SemestreProgramaResponse listarSemestresPorPrograma(Integer programaId) throws ProgramaNotFoundException;
 }
