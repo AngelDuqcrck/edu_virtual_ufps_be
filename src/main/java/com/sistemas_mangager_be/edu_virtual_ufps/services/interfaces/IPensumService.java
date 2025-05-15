@@ -13,7 +13,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.PensumSemestre
 
 public interface IPensumService {
     
-    PensumSemestreResponse crearPensum(PensumDTO pensumDTO) throws ProgramaNotFoundException;
+    public PensumDTO crearPensum(PensumDTO pensumDTO) throws ProgramaNotFoundException;
 
     PensumSemestreResponse listarPensum(Integer id) throws PensumNotFoundException;
 
@@ -26,6 +26,6 @@ public interface IPensumService {
     // Cambiado de List<PensumDTO> a List<PensumSemestreResponse>
     List<PensumSemestreResponse> listarPensumsPorPrograma(Integer id) throws ProgramaNotFoundException;
 
-     void vincularSemestreMoodleId(MoodleRequest moodleRequest)
-            throws PensumNotFoundException;
+     public void vincularSemestreMoodleId(MoodleRequest moodleRequest)
+            throws ProgramaNotFoundException;
 }

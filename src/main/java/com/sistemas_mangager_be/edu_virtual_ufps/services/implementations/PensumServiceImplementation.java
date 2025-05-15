@@ -12,12 +12,14 @@ import com.sistemas_mangager_be.edu_virtual_ufps.entities.Pensum;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Programa;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Semestre;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.SemestrePensum;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.SemestrePrograma;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.PensumExistException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.PensumNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.PensumRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.ProgramaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.SemestrePensumRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.SemestreProgramaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.SemestreRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IPensumService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.PensumDTO;
@@ -48,8 +50,11 @@ public class PensumServiceImplementation implements IPensumService {
     @Autowired
     private SemestreRepository semestreRepository;
 
+    @Autowired
+    private SemestreProgramaRepository semestreProgramaRepository;
+
     @Override
-    public PensumSemestreResponse crearPensum(PensumDTO pensumDTO) throws ProgramaNotFoundException {
+    public PensumDTO crearPensum(PensumDTO pensumDTO) throws ProgramaNotFoundException {
         // Validar y crear el pensum base
         Programa programa = programaRepository.findById(pensumDTO.getProgramaId())
                 .orElseThrow(() -> new ProgramaNotFoundException(
@@ -61,12 +66,17 @@ public class PensumServiceImplementation implements IPensumService {
         pensum.setProgramaId(programa);
         pensumRepository.save(pensum);
 
-        // Crear los semestres asociados al pensum
-        crearSemestresParaPensum(pensum, pensumDTO.getCantidadSemestres());
+        // Crear los semestres asociados al programa (si no existen)
+        crearSemestresParaPrograma(programa, pensumDTO.getCantidadSemestres());
 
         // Retornar el DTO con la información
-        return mapToPensumSemestreResponse(pensum);
+        PensumDTO pensumCreado = new PensumDTO();
+        BeanUtils.copyProperties(pensum, pensumCreado);
+        pensumCreado.setProgramaId(pensum.getProgramaId().getId());
+        return pensumCreado;
     }
+
+    
 
     @Override
     public PensumSemestreResponse listarPensum(Integer id) throws PensumNotFoundException {
@@ -132,7 +142,7 @@ public class PensumServiceImplementation implements IPensumService {
         // Guardar los cambios
         pensumRepository.save(pensum);
     }
-    
+
     @Override
     public List<PensumSemestreResponse> listarPensumsPorPrograma(Integer id) throws ProgramaNotFoundException {
         Programa programa = programaRepository.findById(id)
@@ -144,40 +154,22 @@ public class PensumServiceImplementation implements IPensumService {
     }
 
     public void vincularSemestreMoodleId(MoodleRequest moodleRequest)
-            throws PensumNotFoundException {
+            throws ProgramaNotFoundException {
 
         // Buscar el SemestrePensum por ID
-        SemestrePensum semestrePensum = semestrePensumRepository.findById(moodleRequest.getBackendId())
-                .orElseThrow(() -> new PensumNotFoundException(
+        SemestrePrograma semestrePrograma = semestreProgramaRepository.findById(moodleRequest.getBackendId())
+                .orElseThrow(() -> new ProgramaNotFoundException(
                         String.format(IS_NOT_FOUND, "EL SEMESTRE DEL PENSUM CON ID " + moodleRequest.getBackendId())
                                 .toLowerCase()));
 
         // Actualizar el moodleId
-        semestrePensum.setMoodleId(moodleRequest.getMoodleId());
+        semestrePrograma.setMoodleId(moodleRequest.getMoodleId());
 
         // Guardar los cambios
-        semestrePensumRepository.save(semestrePensum);
+        semestreProgramaRepository.save(semestrePrograma);
     }
 
-    /**
-     * Crea los registros de SemestrePensum según la cantidad de semestres
-     * especificada.
-     */
-    private void crearSemestresParaPensum(Pensum pensum, int cantidadSemestres) {
-        for (int i = 1; i <= cantidadSemestres; i++) {
-            Semestre semestre = semestreRepository.findByNumero(i)
-                    .orElseThrow(() -> new RuntimeException("Semestre no configurado en la base de datos"));
-
-            SemestrePensum semestrePensum = SemestrePensum.builder()
-                    .semestreId(semestre)
-                    .pensumId(pensum)
-                    .moodleId(null)
-                    .programaId(pensum.getProgramaId())
-                    .build();
-
-            semestrePensumRepository.save(semestrePensum);
-        }
-    }
+    
 
     /**
      * Sincroniza los semestres del pensum cuando cambia la cantidad.
@@ -239,5 +231,27 @@ public class PensumServiceImplementation implements IPensumService {
                 .programaNombre(pensum.getProgramaId().getNombre())
                 .semestres(semestreResponses)
                 .build();
+    }
+
+    /**
+     * Crea los registros de SemestrePrograma según la cantidad de semestres
+     * especificada.
+     */
+    private void crearSemestresParaPrograma(Programa programa, int cantidadSemestres) {
+        for (int i = 1; i <= cantidadSemestres; i++) {
+            Semestre semestre = semestreRepository.findByNumero(i)
+                    .orElseThrow(() -> new RuntimeException("Semestre no configurado en la base de datos"));
+
+            // Verificar si ya existe la relación
+            if (!semestreProgramaRepository.existsBySemestreAndPrograma(semestre, programa)) {
+                SemestrePrograma semestrePrograma = SemestrePrograma.builder()
+                        .semestre(semestre)
+                        .programa(programa)
+                        .moodleId(null) // Se actualizará luego con Moodle
+                        .build();
+
+                semestreProgramaRepository.save(semestrePrograma);
+            }
+        }
     }
 }
