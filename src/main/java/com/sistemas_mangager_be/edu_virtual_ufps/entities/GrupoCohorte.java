@@ -44,4 +44,6 @@ public class GrupoCohorte {
     private String moodleId;
 
     private String semestre;
+
+    private boolean semestreTerminado;
 }

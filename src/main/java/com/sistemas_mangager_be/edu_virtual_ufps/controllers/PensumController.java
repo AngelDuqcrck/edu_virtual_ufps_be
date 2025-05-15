@@ -31,9 +31,9 @@ public class PensumController {
     private IPensumService pensumService;
 
     @PostMapping("/crear")
-    public ResponseEntity<PensumSemestreResponse> crearPensum(@RequestBody PensumDTO pensumDTO)
+    public ResponseEntity<PensumDTO> crearPensum(@RequestBody PensumDTO pensumDTO)
             throws ProgramaNotFoundException {
-        PensumSemestreResponse pensum = pensumService.crearPensum(pensumDTO);
+        PensumDTO pensum = pensumService.crearPensum(pensumDTO);
 
         return new ResponseEntity<>(pensum, HttpStatus.CREATED);
     }
@@ -77,7 +77,7 @@ public class PensumController {
 
     @PostMapping("/semestre/moodle")
     public ResponseEntity<HttpResponse> vincularSemestreMoodleId(
-            @RequestBody MoodleRequest moodleRequest) throws PensumNotFoundException {
+            @RequestBody MoodleRequest moodleRequest) throws ProgramaNotFoundException {
 
         pensumService.vincularSemestreMoodleId(moodleRequest);
 

@@ -18,4 +18,6 @@ public class Semestre {
     private String nombre;
 
     private Integer numero;
+
+    private String numeroRomano;
 }
