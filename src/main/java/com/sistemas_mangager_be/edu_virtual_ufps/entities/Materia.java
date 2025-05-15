@@ -28,6 +28,10 @@ public class Materia {
 
     private String semestre;
 
+    @ManyToOne
+    @JoinColumn(name = "semestre_pensum_id")
+    private SemestrePensum semestrePensum;
+
     private String moodleId;
 
 }
