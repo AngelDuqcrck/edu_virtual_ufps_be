@@ -21,6 +21,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IProgramaSe
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.ProgramaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.HttpResponse;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.SemestreProgramaResponse;
 
 @RestController
 @RequestMapping("/programas")
@@ -77,6 +78,11 @@ public class ProgramaController {
         return new ResponseEntity<>(programaDTO, HttpStatus.OK);
     }
     
+    @GetMapping("/{id}/semestres")
+    public ResponseEntity<SemestreProgramaResponse> listarSemestresPorPrograma(@PathVariable Integer id) throws ProgramaNotFoundException {
+        SemestreProgramaResponse semestreProgramaResponse = programaService.listarSemestresPorPrograma(id);
+        return new ResponseEntity<>(semestreProgramaResponse, HttpStatus.OK);
+    }
     /*
      * Actualiza un programa
      * 
