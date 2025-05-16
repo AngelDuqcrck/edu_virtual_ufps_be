@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -25,4 +26,6 @@ public class ProyectoDto implements Serializable {
     List<ObjetivoEspecificoDto> objetivosEspecificos;
     LineaInvestigacionDto lineaInvestigacion;
     List<UsuarioProyectoDto> usuariosAsignados;
+    LocalDate createdAt;
+    LocalDate updatedAt;
 }

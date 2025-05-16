@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -63,6 +64,8 @@ public class ProyectoService {
 
         Proyecto proyecto = proyectoMapper.toEntity(proyectoDto);
         proyecto.setLineaInvestigacion(linea);
+        proyecto.setCreatedAt(LocalDate.now());
+        proyecto.setUpdatedAt(LocalDate.now());
         Proyecto guardado = proyectoRepository.save(proyecto);
         return proyectoMapper.toDto(guardado);
     }
@@ -132,6 +135,8 @@ public class ProyectoService {
     public ProyectoDto actualizarProyecto(Integer id, ProyectoDto proyectoDto) {
         Proyecto existente = proyectoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
+
+        existente.setUpdatedAt(LocalDate.now());
 
         EstadoProyecto estadoActual = existente.getEstadoActual();
         Integer nuevoEstadoCode = proyectoDto.getEstadoActual();
