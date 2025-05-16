@@ -13,6 +13,7 @@ public class CertificadoResponse {
 
     private String nombreCompleto;
 
+
     private String cedula;
 
     private String programa;
