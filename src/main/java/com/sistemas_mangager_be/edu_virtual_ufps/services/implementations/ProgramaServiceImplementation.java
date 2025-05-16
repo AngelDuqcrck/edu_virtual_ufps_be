@@ -48,6 +48,7 @@ public class ProgramaServiceImplementation implements IProgramaService {
                 .codigo(programa.getCodigo())
                 .moodleId(programa.getMoodleId())
                 .esPosgrado(programa.getEsPosgrado())
+                .historicoMoodleId(programa.getHistoricoMoodleId())
                 .build();
     }
 
@@ -68,13 +69,14 @@ public class ProgramaServiceImplementation implements IProgramaService {
         return programaCreado;
     }
 
-    
-    public void vincularMoodleId(MoodleRequest moodleRequest) throws ProgramaNotFoundException, ProgramaExistsException {
+    public void vincularMoodleId(MoodleRequest moodleRequest)
+            throws ProgramaNotFoundException, ProgramaExistsException {
         Programa programa = programaRepository.findById(moodleRequest.getBackendId())
                 .orElseThrow(() -> new ProgramaNotFoundException(
-                        String.format(IS_NOT_FOUND, "EL PROGRAMA CON EL ID " + moodleRequest.getBackendId()).toLowerCase()));
-        
-        if(programaRepository.existsByMoodleId(moodleRequest.getMoodleId())) {
+                        String.format(IS_NOT_FOUND, "EL PROGRAMA CON EL ID " + moodleRequest.getBackendId())
+                                .toLowerCase()));
+
+        if (programaRepository.existsByMoodleId(moodleRequest.getMoodleId())) {
             throw new ProgramaExistsException(
                     String.format(IS_ALREADY_USE, "El moodleId de programa " + moodleRequest.getMoodleId()));
         }
@@ -82,20 +84,20 @@ public class ProgramaServiceImplementation implements IProgramaService {
         programaRepository.save(programa);
     }
 
-
-    public void vincularHistoricoMoodleId(MoodleRequest moodleRequest) throws ProgramaNotFoundException, ProgramaExistsException {
+    public void vincularHistoricoMoodleId(MoodleRequest moodleRequest)
+            throws ProgramaNotFoundException, ProgramaExistsException {
         Programa programa = programaRepository.findById(moodleRequest.getBackendId())
                 .orElseThrow(() -> new ProgramaNotFoundException(
-                        String.format(IS_NOT_FOUND, "EL PROGRAMA CON EL ID " + moodleRequest.getBackendId()).toLowerCase()));
-        
-        if(programaRepository.existsByHistoricoMoodleId(moodleRequest.getMoodleId())) {
+                        String.format(IS_NOT_FOUND, "EL PROGRAMA CON EL ID " + moodleRequest.getBackendId())
+                                .toLowerCase()));
+
+        if (programaRepository.existsByHistoricoMoodleId(moodleRequest.getMoodleId())) {
             throw new ProgramaExistsException(
                     String.format(IS_ALREADY_USE, "El moodleId de programa " + moodleRequest.getMoodleId()));
         }
         programa.setHistoricoMoodleId(moodleRequest.getMoodleId());
         programaRepository.save(programa);
     }
-
 
     @Override
     public ProgramaDTO actualizarPrograma(ProgramaDTO programaDTO, Integer id)
@@ -129,41 +131,39 @@ public class ProgramaServiceImplementation implements IProgramaService {
         }).toList();
     }
 
-    public SemestreProgramaResponse listarSemestresPorPrograma(Integer programaId) throws ProgramaNotFoundException{
+    public SemestreProgramaResponse listarSemestresPorPrograma(Integer programaId) throws ProgramaNotFoundException {
         Programa programa = programaRepository.findById(programaId)
                 .orElseThrow(() -> new ProgramaNotFoundException(
                         String.format(IS_NOT_FOUND, "EL PROGRAMA CON EL ID " + programaId).toLowerCase()));
 
-       
         return mapToSemestreProgramaResponse(programa);
     }
 
     private SemestreProgramaResponse mapToSemestreProgramaResponse(Programa programa) {
-    // Obtener todos los semestres asociados al programa
-    List<SemestrePrograma> semestresPrograma = semestreProgramaRepository.findByPrograma(programa);
-    
-    // Mapear cada SemestrePrograma a un SemestreResponse
-    List<SemestreProgramaResponse.SemestreResponse> semestreResponses = semestresPrograma.stream()
-            .map(semestrePrograma -> {
-                return new SemestreProgramaResponse.SemestreResponse().builder()
-                        .id(semestrePrograma.getId())
-                        .nombre(semestrePrograma.getSemestre().getNombre())
-                        .numero(semestrePrograma.getSemestre().getNumero())
-                        .moodleId(semestrePrograma.getMoodleId())
-                        .build();
-            })
-            .toList();
-    
-    
-    // Construir y retornar la respuesta completa
-    return SemestreProgramaResponse.builder()
-            .id(programa.getId())
-            .nombre(programa.getNombre())
-            .codigo(programa.getCodigo())
-            .semestres(semestreResponses)
-            .moodleId(programa.getMoodleId())
-            .esPosgrado(programa.getEsPosgrado())
-            .build();
-}
+        // Obtener todos los semestres asociados al programa
+        List<SemestrePrograma> semestresPrograma = semestreProgramaRepository.findByPrograma(programa);
+
+        // Mapear cada SemestrePrograma a un SemestreResponse
+        List<SemestreProgramaResponse.SemestreResponse> semestreResponses = semestresPrograma.stream()
+                .map(semestrePrograma -> {
+                    return new SemestreProgramaResponse.SemestreResponse().builder()
+                            .id(semestrePrograma.getId())
+                            .nombre(semestrePrograma.getSemestre().getNombre())
+                            .numero(semestrePrograma.getSemestre().getNumero())
+                            .moodleId(semestrePrograma.getMoodleId())
+                            .build();
+                })
+                .toList();
+
+        // Construir y retornar la respuesta completa
+        return SemestreProgramaResponse.builder()
+                .id(programa.getId())
+                .nombre(programa.getNombre())
+                .codigo(programa.getCodigo())
+                .semestres(semestreResponses)
+                .moodleId(programa.getMoodleId())
+                .esPosgrado(programa.getEsPosgrado())
+                .build();
+    }
 
 }
