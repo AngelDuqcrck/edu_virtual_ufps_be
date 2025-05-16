@@ -561,7 +561,8 @@ public class GrupoServiceImplementation implements IGrupoService {
                                     e.getApellido(),
                                     e.getApellido2(),
                                     e.getCodigo(),
-                                    e.getEmail());
+                                    e.getEmail(),
+                                    e.getMoodleId());
                         })
                         .collect(Collectors.toList()))
                 .build();
