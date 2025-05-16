@@ -19,6 +19,8 @@ import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MateriaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MateriaSemestreRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
 
+import oracle.net.aso.m;
+
 @Service
 public class MateriaServiceImplementation implements IMateriaService {
 
@@ -44,61 +46,54 @@ public class MateriaServiceImplementation implements IMateriaService {
                         throws PensumNotFoundException, MateriaExistsException, SemestrePensumNotFoundException {
                 // Verificar si ya existe una materia con el mismo código
                 if (materiaRepository.existsByCodigo(materiaDTO.getCodigo())) {
-                        throw new MateriaExistsException(
-                                        String.format(IS_ALREADY_USE,
-                                                        "LA MATERIA CON EL CODIGO " + materiaDTO.getCodigo())
-                                                        .toLowerCase());
+                        throw new MateriaExistsException(String
+                                        .format(IS_ALREADY_USE, "LA MATERIA CON EL CODIGO " + materiaDTO.getCodigo())
+                                        .toLowerCase());
                 }
 
                 // Buscar el pensum
                 Pensum pensum = pensumRepository.findById(materiaDTO.getPensumId())
-                                .orElseThrow(() -> new PensumNotFoundException(
-                                                String.format(IS_NOT_FOUND,
-                                                                "EL PENSUM CON EL ID " + materiaDTO.getPensumId())
-                                                                .toLowerCase()));
+                                .orElseThrow(() -> new PensumNotFoundException(String
+                                                .format(IS_NOT_FOUND, "EL PENSUM CON EL ID " + materiaDTO.getPensumId())
+                                                .toLowerCase()));
 
-                // Obtener el semestre en números romanos
-                String semestreRomano = materiaDTO.getSemestre();
+                // Verificar que el semestre esté dentro del rango permitido para el pensum
+                if (pensum.getCantidadSemestres() == null ||
+                                Integer.parseInt(materiaDTO.getSemestre()) > pensum.getCantidadSemestres() ||
+                                Integer.parseInt(materiaDTO.getSemestre()) < 1) {
+                        throw new SemestrePensumNotFoundException(
+                                        String.format(IS_NOT_VALID,
+                                                        "EL SEMESTRE " + materiaDTO.getSemestre()
+                                                                        + " NO ESTÁ EN EL RANGO DEL PENSUM (1-"
+                                                                        + pensum.getCantidadSemestres() + ")")
+                                                        .toLowerCase());
+                }
 
-                // Buscar la relación entre el semestre y el pensum directamente por número
-                // romano
+                // Buscar la relación entre el semestre y el pensum
                 Optional<SemestrePensum> semestrePensumOpt = semestrePensumRepository
-                                .findFirstByPensumIdAndSemestreId_NumeroRomano(pensum, semestreRomano);
+                                .findFirstByPensumIdAndSemestreId_Numero(pensum,
+                                                Integer.parseInt(materiaDTO.getSemestre()));
 
                 if (semestrePensumOpt.isEmpty()) {
                         throw new SemestrePensumNotFoundException(
-                                        String.format(IS_NOT_FOUND,
-                                                        "LA RELACIÓN ENTRE EL PENSUM Y EL SEMESTRE " + semestreRomano)
-                                                        .toLowerCase());
+                                        String.format(IS_NOT_FOUND, "LA RELACIÓN ENTRE EL PENSUM Y EL SEMESTRE "
+                                                        + materiaDTO.getSemestre()).toLowerCase());
                 }
 
                 SemestrePensum semestrePensum = semestrePensumOpt.get();
-
-                // Verificar que el semestre esté dentro del rango permitido para el pensum
-                int numeroSemestre = semestrePensum.getSemestreId().getNumero();
-                if (pensum.getCantidadSemestres() == null ||
-                                numeroSemestre > pensum.getCantidadSemestres() ||
-                                numeroSemestre < 1) {
-                        throw new SemestrePensumNotFoundException(
-                                        String.format(IS_NOT_VALID, "EL SEMESTRE " + semestreRomano
-                                                        + " NO ESTÁ EN EL RANGO DEL PENSUM (1-"
-                                                        + pensum.getCantidadSemestres() + ")")
-                                                        .toLowerCase());
-                }
 
                 // Crear y configurar la nueva materia
                 Materia materia = new Materia();
                 BeanUtils.copyProperties(materiaDTO, materia);
                 materia.setPensumId(pensum);
                 materia.setSemestrePensum(semestrePensum);
-                // Aseguramos que el semestre se guarda en formato romano
-                materia.setSemestre(semestreRomano);
 
                 materiaRepository.save(materia);
 
                 // Mapear la materia creada a DTO para retornarla
                 MateriaDTO materiaCreada = new MateriaDTO();
                 BeanUtils.copyProperties(materia, materiaCreada);
+                materiaCreada.setSemestrePensumId(materia.getSemestrePensum().getId());
                 materiaCreada.setPensumId(materia.getPensumId().getId());
                 return materiaCreada;
         }
@@ -117,10 +112,9 @@ public class MateriaServiceImplementation implements IMateriaService {
                 // Verificar código único si ha cambiado
                 if (!materia.getCodigo().equals(materiaDTO.getCodigo())
                                 && materiaRepository.existsByCodigo(materiaDTO.getCodigo())) {
-                        throw new MateriaExistsException(
-                                        String.format(IS_ALREADY_USE,
-                                                        "LA MATERIA CON EL CODIGO " + materiaDTO.getCodigo())
-                                                        .toLowerCase());
+                        throw new MateriaExistsException(String
+                                        .format(IS_ALREADY_USE, "LA MATERIA CON EL CODIGO " + materiaDTO.getCodigo())
+                                        .toLowerCase());
                 }
 
                 // Buscar el pensum
@@ -130,42 +124,36 @@ public class MateriaServiceImplementation implements IMateriaService {
                                                                 "EL PENSUM CON EL ID " + materiaDTO.getPensumId())
                                                                 .toLowerCase()));
 
-                // Obtener el semestre en números romanos
-                String semestreRomano = materiaDTO.getSemestre();
+                // Verificar que el semestre esté dentro del rango permitido para el pensum
+                if (pensum.getCantidadSemestres() == null ||
+                                Integer.parseInt(materiaDTO.getSemestre()) > pensum.getCantidadSemestres() ||
+                                Integer.parseInt(materiaDTO.getSemestre()) < 1) {
+                        throw new SemestrePensumNotFoundException(
+                                        String.format(IS_NOT_VALID,
+                                                        "EL SEMESTRE " + materiaDTO.getSemestre()
+                                                                        + " NO ESTÁ EN EL RANGO DEL PENSUM (1-"
+                                                                        + pensum.getCantidadSemestres() + ")")
+                                                        .toLowerCase());
+                }
 
-                // Buscar la relación entre el semestre y el pensum directamente por número
-                // romano
+                // Buscar la relación entre el semestre y el pensum
                 Optional<SemestrePensum> semestrePensumOpt = semestrePensumRepository
-                                .findFirstByPensumIdAndSemestreId_NumeroRomano(pensum, semestreRomano);
+                                .findFirstByPensumIdAndSemestreId_Numero(pensum,
+                                                Integer.parseInt(materiaDTO.getSemestre()));
 
                 if (semestrePensumOpt.isEmpty()) {
                         throw new SemestrePensumNotFoundException(
-                                        String.format(IS_NOT_FOUND,
-                                                        "LA RELACIÓN ENTRE EL PENSUM Y EL SEMESTRE " + semestreRomano)
-                                                        .toLowerCase());
+                                        String.format(IS_NOT_FOUND, "LA RELACIÓN ENTRE EL PENSUM Y EL SEMESTRE "
+                                                        + materiaDTO.getSemestre()).toLowerCase());
                 }
 
                 SemestrePensum semestrePensum = semestrePensumOpt.get();
-
-                // Verificar que el semestre esté dentro del rango permitido para el pensum
-                int numeroSemestre = semestrePensum.getSemestreId().getNumero();
-                if (pensum.getCantidadSemestres() == null ||
-                                numeroSemestre > pensum.getCantidadSemestres() ||
-                                numeroSemestre < 1) {
-                        throw new SemestrePensumNotFoundException(
-                                        String.format(IS_NOT_VALID, "EL SEMESTRE " + semestreRomano
-                                                        + " NO ESTÁ EN EL RANGO DEL PENSUM (1-"
-                                                        + pensum.getCantidadSemestres() + ")")
-                                                        .toLowerCase());
-                }
 
                 // Actualizar la materia
                 BeanUtils.copyProperties(materiaDTO, materia);
                 materia.setId(id); // Asegurar que el ID siga siendo el mismo
                 materia.setPensumId(pensum);
                 materia.setSemestrePensum(semestrePensum);
-                // Aseguramos que el semestre se guarda en formato romano
-                materia.setSemestre(semestreRomano);
 
                 materiaRepository.save(materia);
 
@@ -173,6 +161,7 @@ public class MateriaServiceImplementation implements IMateriaService {
                 MateriaDTO materiaActualizada = new MateriaDTO();
                 BeanUtils.copyProperties(materia, materiaActualizada);
                 materiaActualizada.setPensumId(materia.getPensumId().getId());
+                materiaActualizada.setSemestrePensumId(materia.getSemestrePensum().getId());
                 return materiaActualizada;
         }
 
@@ -194,8 +183,6 @@ public class MateriaServiceImplementation implements IMateriaService {
                 materia.setMoodleId(moodleRequest.getMoodleId());
                 materiaRepository.save(materia);
         }
-
-
 
         @Override
         public MateriaDTO listarMateria(Integer materiaId) throws MateriaNotFoundException {
