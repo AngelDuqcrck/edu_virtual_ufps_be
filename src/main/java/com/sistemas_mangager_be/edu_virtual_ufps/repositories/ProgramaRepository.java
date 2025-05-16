@@ -13,4 +13,6 @@ public interface ProgramaRepository extends JpaRepository<Programa, Integer> {
     boolean existsByCodigo(String codigo);
 
     boolean existsByMoodleId(String moodleId);
+
+    boolean existsByHistoricoMoodleId(String historicoMoodleId);
 }

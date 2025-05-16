@@ -18,6 +18,7 @@ public interface IProgramaService {
 
     List<ProgramaDTO> listarProgramas();
 
+    public void vincularHistoricoMoodleId(MoodleRequest moodleRequest) throws ProgramaNotFoundException, ProgramaExistsException;
     void vincularMoodleId(MoodleRequest moodleRequest) throws ProgramaNotFoundException, ProgramaExistsException;
 
     public SemestreProgramaResponse listarSemestresPorPrograma(Integer programaId) throws ProgramaNotFoundException;

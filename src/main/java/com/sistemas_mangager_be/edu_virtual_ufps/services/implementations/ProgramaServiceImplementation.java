@@ -82,6 +82,21 @@ public class ProgramaServiceImplementation implements IProgramaService {
         programaRepository.save(programa);
     }
 
+
+    public void vincularHistoricoMoodleId(MoodleRequest moodleRequest) throws ProgramaNotFoundException, ProgramaExistsException {
+        Programa programa = programaRepository.findById(moodleRequest.getBackendId())
+                .orElseThrow(() -> new ProgramaNotFoundException(
+                        String.format(IS_NOT_FOUND, "EL PROGRAMA CON EL ID " + moodleRequest.getBackendId()).toLowerCase()));
+        
+        if(programaRepository.existsByHistoricoMoodleId(moodleRequest.getMoodleId())) {
+            throw new ProgramaExistsException(
+                    String.format(IS_ALREADY_USE, "El moodleId de programa " + moodleRequest.getMoodleId()));
+        }
+        programa.setHistoricoMoodleId(moodleRequest.getMoodleId());
+        programaRepository.save(programa);
+    }
+
+
     @Override
     public ProgramaDTO actualizarPrograma(ProgramaDTO programaDTO, Integer id)
             throws ProgramaNotFoundException, ProgramaExistsException {
