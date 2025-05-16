@@ -47,6 +47,17 @@ INSERT IGNORE INTO admins (
     '$2a$10$u1L5aDVRx0tQtfTyqylYVu3mXH6TXvzxX0vEj/yuNwTHK.aj6R3oG',  -- Contraseña: 123456 encriptada
     true,
     true
+), 
+(
+    2,
+    'Kevin', 
+    'A', 
+    'Tarazona', 
+    'Botello', 
+    'admin@gmail.com', 
+    '$2a$10$u1L5aDVRx0tQtfTyqylYVu3mXH6TXvzxX0vEj/yuNwTHK.aj6R3oG',  -- Contraseña: 123456 encriptada
+    true,
+    true
 );
 
 -- INSERT IGNORE INTO admins (

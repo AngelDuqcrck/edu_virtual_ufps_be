@@ -27,4 +27,6 @@ public class Programa {
     @Column(unique = true)
     private String moodleId;
 
+    private String historicoMoodleId;
+
 }
