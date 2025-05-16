@@ -123,6 +123,11 @@ public class ExceptionHandling {
     public ResponseEntity<HttpResponse> vinculacionNotFoundException(VinculacionNotFoundException exception) {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
     }
+
+    @ExceptionHandler(SemestrePensumNotFoundException.class)
+    public ResponseEntity<HttpResponse> semestrePensumNotFoundException(SemestrePensumNotFoundException exception) {
+        return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
     @ExceptionHandler(RoleNotFoundException.class)
     public ResponseEntity<HttpResponse> roleNotFoundException(RoleNotFoundException exception) {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());

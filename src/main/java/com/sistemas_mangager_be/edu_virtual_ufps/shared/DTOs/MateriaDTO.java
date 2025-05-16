@@ -13,5 +13,6 @@ public class MateriaDTO {
     private String creditos;
     private String semestre;
     private Integer pensumId;
+    private Integer semestrePensumId;
     
 }

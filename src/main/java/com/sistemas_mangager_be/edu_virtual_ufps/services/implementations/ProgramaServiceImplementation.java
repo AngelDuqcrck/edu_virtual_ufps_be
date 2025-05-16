@@ -7,12 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Programa;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Semestre;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.SemestrePrograma;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaExistsException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.ProgramaRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.SemestreProgramaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IProgramaService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.ProgramaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.SemestreProgramaResponse;
 
 @Service
 public class ProgramaServiceImplementation implements IProgramaService {
@@ -25,6 +29,8 @@ public class ProgramaServiceImplementation implements IProgramaService {
     public static final String ARE_NOT_EQUALS = "%s no son iguales";
     public static final String IS_NOT_CORRECT = "%s no es correcta";
 
+    @Autowired
+    private SemestreProgramaRepository semestreProgramaRepository;
     @Autowired
     private ProgramaRepository programaRepository;
 
@@ -107,5 +113,42 @@ public class ProgramaServiceImplementation implements IProgramaService {
             return programaDTO;
         }).toList();
     }
+
+    public SemestreProgramaResponse listarSemestresPorPrograma(Integer programaId) throws ProgramaNotFoundException{
+        Programa programa = programaRepository.findById(programaId)
+                .orElseThrow(() -> new ProgramaNotFoundException(
+                        String.format(IS_NOT_FOUND, "EL PROGRAMA CON EL ID " + programaId).toLowerCase()));
+
+       
+        return mapToSemestreProgramaResponse(programa);
+    }
+
+    private SemestreProgramaResponse mapToSemestreProgramaResponse(Programa programa) {
+    // Obtener todos los semestres asociados al programa
+    List<SemestrePrograma> semestresPrograma = semestreProgramaRepository.findByPrograma(programa);
+    
+    // Mapear cada SemestrePrograma a un SemestreResponse
+    List<SemestreProgramaResponse.SemestreResponse> semestreResponses = semestresPrograma.stream()
+            .map(semestrePrograma -> {
+                return new SemestreProgramaResponse.SemestreResponse().builder()
+                        .id(semestrePrograma.getId())
+                        .nombre(semestrePrograma.getSemestre().getNombre())
+                        .numero(semestrePrograma.getSemestre().getNumero())
+                        .moodleId(semestrePrograma.getMoodleId())
+                        .build();
+            })
+            .toList();
+    
+    
+    // Construir y retornar la respuesta completa
+    return SemestreProgramaResponse.builder()
+            .id(programa.getId())
+            .nombre(programa.getNombre())
+            .codigo(programa.getCodigo())
+            .semestres(semestreResponses)
+            .moodleId(programa.getMoodleId())
+            .esPosgrado(programa.getEsPosgrado())
+            .build();
+}
 
 }

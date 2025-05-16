@@ -40,17 +40,12 @@ public class GrupoController {
     private IGrupoService iGrupoService;
 
     @PostMapping("/crear")
-    public ResponseEntity<Object> crearGrupo(@RequestBody GrupoDTO grupoDTO)
+    public ResponseEntity<GrupoDTO> crearGrupo(@RequestBody GrupoDTO grupoDTO)
             throws MateriaNotFoundException, CohorteNotFoundException, UserNotFoundException, RoleNotFoundException {
         // Guarda el grupo y obtén el grupo creado con su ID asignada
         GrupoDTO grupoCreado = iGrupoService.crearGrupo(grupoDTO);
 
-        // Crea un mapa que contenga tanto el mensaje como el grupo creado
-        Map<String, Object> response = new HashMap<>();
-        response.put("mensaje", "Grupo creado con éxito");
-        response.put("grupo", grupoCreado);
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(grupoCreado, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")

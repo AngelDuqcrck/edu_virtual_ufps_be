@@ -203,22 +203,24 @@ INSERT IGNORE INTO admins (
 CREATE TABLE IF NOT EXISTS semestres (
     id INT NOT NULL AUTO_INCREMENT,
     nombre VARCHAR(50) NOT NULL,
-    numero INT NOT NULL
+    numero INT NOT NULL,
+    numeroRomano VARCHAR(50) NOT NULL
 );
 
 -- Insertamos los semestres en el sistema si estos no existen
-INSERT IGNORE INTO semestres (id, nombre, numero)
+INSERT IGNORE INTO semestres (id, nombre, numero, numeroRomano)
 VALUES 
-    (1, 'Semestre I', 1),
-    (2, 'Semestre II', 2),
-    (3, 'Semestre III', 3),
-    (4, 'Semestre IV', 4),
-    (5, 'Semestre V', 5),
-    (6, 'Semestre VI', 6),
-    (7, 'Semestre VII', 7),
-    (8, 'Semestre VIII', 8),
-    (9, 'Semestre IX', 9),
-    (10, 'Semestre X', 10);
+    (1, 'Semestre I', 1, 'I'),
+    (2, 'Semestre II', 2, 'II'),
+    (3, 'Semestre III', 3, 'III'),
+    (4, 'Semestre IV', 4, 'IV'),
+    (5, 'Semestre V', 5, 'V'),
+    (6, 'Semestre VI', 6, 'VI'),
+    (7, 'Semestre VII', 7, 'VII'),
+    (8, 'Semestre VIII', 8, 'VIII'),
+    (9, 'Semestre IX', 9, 'IX'),
+    (10, 'Semestre X', 10, 'X');
+    
 
 --Creamos la tabla de estados de estudiantes si no existe
 CREATE TABLE IF NOT EXISTS estados_estudiantes (
