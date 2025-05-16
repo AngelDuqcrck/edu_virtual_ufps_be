@@ -53,6 +53,15 @@ public class ProgramaController {
                                                 "Vinculacion con moodle realizada con exito"),
                                 HttpStatus.OK);
     }
+
+    @PostMapping("/historico/moodle")
+    public ResponseEntity<HttpResponse> vincularHistoricoMoodle(@RequestBody MoodleRequest moodleRequest) throws ProgramaNotFoundException, ProgramaExistsException {
+        programaService.vincularHistoricoMoodleId(moodleRequest);
+        return new ResponseEntity<>(
+                                new HttpResponse(HttpStatus.OK.value(), HttpStatus.OK, HttpStatus.OK.getReasonPhrase(),
+                                                "Vinculacion del historico con moodle realizada con exito"),
+                                HttpStatus.OK);
+    }
     /*
      * Lista todos los programas
      * 
