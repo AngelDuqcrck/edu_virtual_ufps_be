@@ -336,15 +336,15 @@ public class ContraprestacionServiceImplementation implements IContraprestacionS
                                 .orElseThrow(() -> new ContraprestacionException(
                                                 String.format(IS_NOT_FOUND_F, "La contraprestación con ID: " + contraprestacionId)));
                 
-                // // Si ya hay un certificado generado, descargarlo directamente desde S3
-                // if (Boolean.TRUE.equals(contraprestacion.getCertificadoGenerado()) && contraprestacion.getCertificadoId() != null) {
-                //         try (S3ObjectInputStream objectContent = s3Service.downloadFile(contraprestacion.getCertificadoId().getId())) {
-                //                 // Leer todos los bytes del stream y devolverlos
-                //                 return objectContent.readAllBytes();
-                //         } catch (IOException e) {
-                //                 throw new IOException("Error al obtener certificado desde S3: " + e.getMessage(), e);
-                //         }
-                // }
+                // Si ya hay un certificado generado, descargarlo directamente desde S3
+                if (Boolean.TRUE.equals(contraprestacion.getCertificadoGenerado()) && contraprestacion.getCertificadoId() != null) {
+                        try (S3ObjectInputStream objectContent = s3Service.downloadFile(contraprestacion.getCertificadoId().getId())) {
+                                // Leer todos los bytes del stream y devolverlos
+                                return objectContent.readAllBytes();
+                        } catch (IOException e) {
+                                throw new IOException("Error al obtener certificado desde S3: " + e.getMessage(), e);
+                        }
+                }
                 
                 // Si no existe certificado, generar uno nuevo
                 // 1. Validar y obtener datos del certificado
