@@ -30,11 +30,10 @@ public class MateriaController {
 
     //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PostMapping("/crear")
-    public ResponseEntity<Map<HttpResponse, MateriaDTO>> crearMateria(@RequestBody MateriaDTO materiaDTO) throws PensumNotFoundException, MateriaExistsException, SemestrePensumNotFoundException {
+    public ResponseEntity<MateriaDTO> crearMateria(@RequestBody MateriaDTO materiaDTO) throws PensumNotFoundException, MateriaExistsException, SemestrePensumNotFoundException {
         MateriaDTO materia = materiaService.crearMateria(materiaDTO);
          return new ResponseEntity<>(
-                                Map.of(new HttpResponse(HttpStatus.CREATED.value(), HttpStatus.CREATED, HttpStatus.CREATED.getReasonPhrase(),
-                                                " Materia creada con exito"), materia),
+                                 materia,
                                 HttpStatus.CREATED);
     }
 
