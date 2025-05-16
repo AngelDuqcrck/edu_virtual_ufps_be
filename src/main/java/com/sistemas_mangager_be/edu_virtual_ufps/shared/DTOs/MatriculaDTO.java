@@ -9,7 +9,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Builder
 public class MatriculaDTO {
-    
+
     private Integer id;
     private Integer estudianteId;
     private Long grupoCohorteId;

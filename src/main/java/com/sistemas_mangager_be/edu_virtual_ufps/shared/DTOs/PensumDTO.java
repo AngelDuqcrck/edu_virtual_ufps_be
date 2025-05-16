@@ -12,5 +12,6 @@ public class PensumDTO {
     private String nombre;
     private Integer programaId;
     private Integer cantidadSemestres;
+    private String moodleId;
 
 }
