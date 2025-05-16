@@ -14,5 +14,6 @@ public class MateriaDTO {
     private String semestre;
     private Integer pensumId;
     private String moodleId;
+    private Integer semestrePensumId;
 
 }
