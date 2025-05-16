@@ -1,6 +1,6 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs;
-import lombok.*;
 
+import lombok.*;
 
 @Data
 @AllArgsConstructor
@@ -13,5 +13,6 @@ public class MateriaDTO {
     private String creditos;
     private String semestre;
     private Integer pensumId;
-    
+    private String moodleId;
+
 }
