@@ -13,5 +13,7 @@ public interface SemestreProgramaRepository extends JpaRepository<SemestreProgra
     boolean existsBySemestreAndPrograma(Semestre semestre, Programa programa);
 
     List<SemestrePrograma> findByPrograma(Programa programa);
+
+   
     
 }

@@ -3,7 +3,7 @@ package com.sistemas_mangager_be.edu_virtual_ufps.controllers;
 import java.util.List;
 import java.util.Map;
 
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MateriaExistsException;
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MateriaNotFoundException;
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.PensumNotFoundException;
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaExistsException;
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IMateriaService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MateriaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MateriaSemestreRequest;
@@ -34,7 +30,7 @@ public class MateriaController {
 
     //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PostMapping("/crear")
-    public ResponseEntity<Map<HttpResponse, MateriaDTO>> crearMateria(@RequestBody MateriaDTO materiaDTO) throws PensumNotFoundException, MateriaExistsException {
+    public ResponseEntity<Map<HttpResponse, MateriaDTO>> crearMateria(@RequestBody MateriaDTO materiaDTO) throws PensumNotFoundException, MateriaExistsException, SemestrePensumNotFoundException {
         MateriaDTO materia = materiaService.crearMateria(materiaDTO);
          return new ResponseEntity<>(
                                 Map.of(new HttpResponse(HttpStatus.CREATED.value(), HttpStatus.CREATED, HttpStatus.CREATED.getReasonPhrase(),
@@ -44,7 +40,7 @@ public class MateriaController {
 
     //@PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<HttpResponse> actualizarMateria(@PathVariable Integer id, @RequestBody MateriaDTO materiaDTO) throws MateriaExistsException,PensumNotFoundException, MateriaNotFoundException {
+    public ResponseEntity<HttpResponse> actualizarMateria(@PathVariable Integer id, @RequestBody MateriaDTO materiaDTO) throws MateriaExistsException,PensumNotFoundException, MateriaNotFoundException, SemestrePensumNotFoundException {
         materiaService.actualizarMateria(id, materiaDTO);
 
         return new ResponseEntity<>(
