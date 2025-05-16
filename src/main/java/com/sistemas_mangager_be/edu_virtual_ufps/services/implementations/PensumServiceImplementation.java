@@ -69,14 +69,14 @@ public class PensumServiceImplementation implements IPensumService {
         // Crear los semestres asociados al programa (si no existen)
         crearSemestresParaPrograma(programa, pensumDTO.getCantidadSemestres());
 
+        // Crea los semestres asociados al pensum (si no existen)
+        crearSemestresParaPensum(pensum, pensumDTO.getCantidadSemestres());
         // Retornar el DTO con la información
         PensumDTO pensumCreado = new PensumDTO();
         BeanUtils.copyProperties(pensum, pensumCreado);
         pensumCreado.setProgramaId(pensum.getProgramaId().getId());
         return pensumCreado;
     }
-
-    
 
     @Override
     public PensumSemestreResponse listarPensum(Integer id) throws PensumNotFoundException {
@@ -169,8 +169,6 @@ public class PensumServiceImplementation implements IPensumService {
         semestreProgramaRepository.save(semestrePrograma);
     }
 
-    
-
     /**
      * Sincroniza los semestres del pensum cuando cambia la cantidad.
      */
@@ -252,6 +250,25 @@ public class PensumServiceImplementation implements IPensumService {
 
                 semestreProgramaRepository.save(semestrePrograma);
             }
+        }
+    }
+
+    /**
+     * Crea los registros de SemestrePensum según la cantidad de semestres
+     * especificada.
+     */
+    private void crearSemestresParaPensum(Pensum pensum, int cantidadSemestres) {
+        for (int i = 1; i <= cantidadSemestres; i++) {
+            Semestre semestre = semestreRepository.findByNumero(i)
+                    .orElseThrow(() -> new RuntimeException("Semestre no configurado en la base de datos"));
+
+            SemestrePensum semestrePensum = SemestrePensum.builder()
+                    .semestreId(semestre)
+                    .pensumId(pensum)
+                    .moodleId(null) // Se actualizará luego con Moodle
+                    .build();
+
+            semestrePensumRepository.save(semestrePensum);
         }
     }
 }

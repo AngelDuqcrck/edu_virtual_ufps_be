@@ -13,5 +13,7 @@ public interface SemestrePensumRepository extends JpaRepository<SemestrePensum, 
     List<SemestrePensum> findByPensumId(Pensum pensumId);
     List<SemestrePensum> findByPensumIdAndSemestreId(Pensum pensumId, Semestre semestreId);
 
+    boolean existsByPensumIdAndId(Pensum pensumId, Integer id);
     Optional<SemestrePensum> findFirstByPensumIdAndSemestreId_Numero(Pensum pensumId, Integer numero);
+    Optional<SemestrePensum> findFirstByPensumIdAndSemestreId_NumeroRomano(Pensum pensumId, String numero);
 }
