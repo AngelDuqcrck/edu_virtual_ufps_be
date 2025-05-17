@@ -327,6 +327,7 @@ public class ContraprestacionServiceImplementation implements IContraprestacionS
                                 .fechaCertificado(new Date())
                                 .aprobada(contraprestacion.getAprobada())
                                 .codigoEstudiante(contraprestacion.getEstudianteId().getCodigo())
+                                .tipoContraprestacionNombre(contraprestacion.getTipoContraprestacionId().getNombre())
                                 .build();
         }
 

@@ -282,6 +282,8 @@ CREATE TABLE IF NOT EXISTS tipos_contraprestaciones (
 );
 
 INSERT IGNORE INTO tipos_contraprestaciones (id, nombre, porcentaje) VALUES 
-(1, 'Laureada', '30%'),
-(2, 'Meritoria', '20%');
+(1, 'Tesis Laureada', '50%'),
+(2, 'Tesis Meritoria', '30%'),
+(3, 'Medalla en Plata', '30%'),
+(4, 'Matricula de Honor', '50%');
 
