@@ -43,7 +43,7 @@ INSERT IGNORE INTO admins (
     'Yesid', 
     'Duque', 
     'Cruz', 
-    'angelyesidducr@ufps.edu.com', 
+    'angelyesidducr@ufps.edu.co', 
     '$2a$10$ddkeQ8RKhqKAT6XTQe2iTuW5vBjWbOUAM0l4EUKVjK.rsJCnHHqZu',  -- Contraseña: 123456789 encriptada
     true,
     true

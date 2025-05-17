@@ -1,8 +1,5 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.services.implementations;
 
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -34,6 +31,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.repositories.GrupoCohorteReposi
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.MateriaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.MatriculaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IMatriculaService;
+import com.sistemas_mangager_be.edu_virtual_ufps.services.moodle.MoodleMatriculaService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MateriaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.MatriculaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.CambioEstadoMatriculaResponse;
@@ -43,6 +41,9 @@ import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.MateriaPensumR
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.MatriculaResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.PensumResponse;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class MatriculaServiceImplementation implements IMatriculaService {
 
@@ -53,6 +54,9 @@ public class MatriculaServiceImplementation implements IMatriculaService {
         public static final String IS_NOT_VALID = "%s no es valido";
         public static final String ARE_NOT_EQUALS = "%s no son iguales";
         public static final String IS_NOT_CORRECT = "%s no es correcta";
+
+        @Autowired
+        private MoodleMatriculaService moodleMatriculaService;
 
         @Autowired
         private CambioEstadoMatriculaRepository cambioEstadoMatriculaRepository;
@@ -124,11 +128,25 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                                 .notaAbierta(true)
                                 .build();
 
+                // Integración con Moodle - Solo si tanto el estudiante como el grupo tienen
+                // moodleId
+                if (estudiante.getMoodleId() != null && !estudiante.getMoodleId().isEmpty() &&
+                                grupoCohorte.getMoodleId() != null && !grupoCohorte.getMoodleId().isEmpty()) {
+                        try {
+                                moodleMatriculaService.matricularEstudianteEnMoodle(estudiante, grupoCohorte);
+                        } catch (Exception e) {
+                                // Log del error pero permitir que la transacción continúe
+                                log.error("Error al matricular en Moodle: {}", e.getMessage());
+                        }
+                }
+                
                 // Guardar la matrícula
                 matricula = matriculaRepository.save(matricula);
 
                 crearCambioEstadoMatricula(matricula, estadoMatricula, usuario);
-                // Convertir a DTO para retornar
+
+                
+
                 return convertirAmatriculaDTO(matricula);
         }
 
@@ -179,6 +197,20 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                                                                 "El estado de matricula " + matricula
                                                                                 .getEstadoMatriculaId().getId())
                                                 .toLowerCase()));
+
+                // Integración con Moodle - Desmatricualción
+                Estudiante estudiante = matricula.getEstudianteId();
+                GrupoCohorte grupoCohorte = matricula.getGrupoCohorteId();
+
+                if (estudiante.getMoodleId() != null && !estudiante.getMoodleId().isEmpty() &&
+                                grupoCohorte.getMoodleId() != null && !grupoCohorte.getMoodleId().isEmpty()) {
+                        try {
+                                moodleMatriculaService.desmatricularEstudianteEnMoodle(estudiante, grupoCohorte);
+                        } catch (Exception e) {
+                                // Log del error pero permitir que la transacción continúe
+                                log.error("Error al desmatricular en Moodle: {}", e.getMessage());
+                        }
+                }
                 matricula.setEstadoMatriculaId(estadoMatricula);
                 crearCambioEstadoMatricula(matricula, estadoMatricula, usuario);
                 matriculaRepository.save(matricula);
