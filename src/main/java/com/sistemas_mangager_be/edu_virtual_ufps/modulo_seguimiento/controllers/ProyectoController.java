@@ -1,5 +1,6 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.controllers;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.DefinitivaDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.ProyectoDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.UsuarioProyectoDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.services.ProyectoService;
@@ -54,6 +55,11 @@ public class ProyectoController {
     public ResponseEntity<Void> desasignarUsuario(@PathVariable Integer idProyecto, @PathVariable Integer idUsuario) {
         proyectoService.desasignarUsuarioDeProyecto(idUsuario, idProyecto);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{idProyecto}/definitiva")
+    public ResponseEntity<DefinitivaDto> obtenerDefinitiva(@PathVariable Integer idProyecto) {
+        return ResponseEntity.ok(proyectoService.calcularYAsignarDefinitiva(idProyecto));
     }
 }
 

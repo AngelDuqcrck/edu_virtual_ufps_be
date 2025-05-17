@@ -2,20 +2,18 @@ package com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.services;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Rol;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Usuario;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.DefinitivaDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.ObjetivoEspecificoDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.ProyectoDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.UsuarioProyectoDto;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.LineaInvestigacion;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.ObjetivoEspecifico;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.Proyecto;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.*;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.enums.EstadoProyecto;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.SustentacionEvaluador;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.UsuarioProyecto;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.DefinitivaMapper;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.ObjetivoEspecificoMapper;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.ProyectoMapper;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.LineaInvestigacionRepository;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.ObjetivoEspecificoRepository;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.ProyectoRepository;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.UsuarioProyectoRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.*;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.RolRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,14 +37,20 @@ public class ProyectoService {
 
     private final ProyectoMapper proyectoMapper;
     private final ObjetivoEspecificoMapper objetivoEspecificoMapper;
-
+    private final DefinitivaMapper definitivaMapper;
+    private final DefinitivaRepository definitivaRepository;
+    private final SustentacionRepository sustentacionRepository;
+    private final SustentacionEvaluadorRepository sustentacionEvaluadorRepository;
 
 
     @Autowired
     public ProyectoService(ProyectoRepository proyectoRepository, UsuarioProyectoRepository usuarioProyectoRepository,
                            LineaInvestigacionRepository lineaInvestigacionRepository, ObjetivoEspecificoRepository objetivoEspecificoRepository,
                            UsuarioRepository usuarioRepository, RolRepository rolRepository, ProyectoMapper proyectoMapper,
-                           ObjetivoEspecificoMapper objetivoEspecificoMapper) {
+                           ObjetivoEspecificoMapper objetivoEspecificoMapper, DefinitivaMapper definitivaMapper,
+                           DefinitivaRepository definitivaRepository,
+                           SustentacionRepository sustentacionRepository,
+                           SustentacionEvaluadorRepository sustentacionEvaluadorRepository) {
         this.proyectoRepository = proyectoRepository;
         this.usuarioProyectoRepository = usuarioProyectoRepository;
         this.lineaInvestigacionRepository = lineaInvestigacionRepository;
@@ -54,6 +59,10 @@ public class ProyectoService {
         this.rolRepository = rolRepository;
         this.proyectoMapper = proyectoMapper;
         this.objetivoEspecificoMapper = objetivoEspecificoMapper;
+        this.definitivaMapper = definitivaMapper;
+        this.definitivaRepository = definitivaRepository;
+        this.sustentacionRepository = sustentacionRepository;
+        this.sustentacionEvaluadorRepository = sustentacionEvaluadorRepository;
     }
 
     @Transactional
@@ -234,5 +243,45 @@ public class ProyectoService {
         }
 
         usuarioProyectoRepository.deleteByIdUsuarioAndIdProyecto(idUsuario, idProyecto);
+    }
+
+    @Transactional
+    public DefinitivaDto calcularYAsignarDefinitiva(Integer idProyecto) {
+        Proyecto proyecto = proyectoRepository.findById(idProyecto)
+                .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
+
+        if (proyecto.getEstadoActual() != EstadoProyecto.FASE_9) {
+            throw new RuntimeException("Solo se puede asignar la calificación en la fase de " + EstadoProyecto.FASE_9.getDescripcion() + " ("+ EstadoProyecto.FASE_9.name() + ")");
+        }
+
+        Sustentacion sustentacion = sustentacionRepository.findByProyectoId(idProyecto)
+                .orElseThrow(() -> new RuntimeException("Sustentación no encontrada para el proyecto"));
+
+        List<SustentacionEvaluador> evaluadores = sustentacionEvaluadorRepository.findByIdSustentacion(sustentacion.getId());
+
+        if (evaluadores.isEmpty()) {
+            throw new RuntimeException("No hay evaluadores asignados a la sustentación");
+        }
+
+        double promedio = evaluadores.stream()
+                .map(SustentacionEvaluador::getNota)
+                .filter(Objects::nonNull)
+                .mapToDouble(Double::doubleValue)
+                .average()
+                .orElseThrow(() -> new RuntimeException("No se encontraron notas válidas"));
+
+        Definitiva definitiva = proyecto.getDefinitiva();
+        if (definitiva == null) {
+            definitiva = new Definitiva();
+            definitiva.setProyecto(proyecto);
+        }
+
+        definitiva.setCalificacion(promedio);
+        definitiva.setHonores(promedio >= 4.5);
+
+        proyecto.setDefinitiva(definitiva);
+        proyectoRepository.save(proyecto);
+
+        return definitivaMapper.toDto(proyecto.getDefinitiva());
     }
 }
