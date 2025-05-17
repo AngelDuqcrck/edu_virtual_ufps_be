@@ -40,4 +40,6 @@ public class CertificadoResponse {
 
     private String codigoEstudiante;
 
+    private String tipoContraprestacionNombre;
+
 }
