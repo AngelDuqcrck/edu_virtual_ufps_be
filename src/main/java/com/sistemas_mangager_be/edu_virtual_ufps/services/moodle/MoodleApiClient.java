@@ -186,52 +186,113 @@ public class MoodleApiClient {
     }
 
     /**
-     * Crea una categoría en Moodle
-     * 
-     * @param nombre   Nombre de la categoría
-     * @param parentId ID de la categoría padre
-     * @return ID de la nueva categoría
-     */
-    public String crearCategoria(String nombre, String parentId) {
-        log.info("Creando categoría '{}' bajo la categoría padre {}", nombre, parentId);
-
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("wstoken", moodleApiToken);
-        params.add("wsfunction", "core_course_create_categories");
-        params.add("moodlewsrestformat", "json");
-        params.add("categories[0][name]", nombre);
-        params.add("categories[0][parent]", parentId);
-        params.add("categories[0][idnumber]", nombre.replaceAll("\\s+", "_").toLowerCase());
-        params.add("categories[0][description]", "Categoría creada automáticamente por el sistema");
-        params.add("categories[0][descriptionformat]", "1"); // 1 = HTML
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-
-        try {
-            log.debug("Enviando petición para crear categoría en Moodle");
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            String response = restTemplate.postForObject(moodleApiUrl, request, String.class);
-            log.debug("Respuesta de Moodle (crear categoría): {}", response);
-
-            JsonNode rootNode = objectMapper.readTree(response);
-
-            if (rootNode.isArray() && rootNode.size() > 0) {
-                String categoryId = rootNode.get(0).path("id").asText();
-                log.info("Categoría creada con ID: {}", categoryId);
-                return categoryId;
-            } else if (response.contains("exception")) {
-                throw new RuntimeException("Error de Moodle al crear categoría: " + response);
-            }
-
-            return null;
-        } catch (Exception e) {
-            log.error("Error al crear categoría en Moodle: {}", e.getMessage(), e);
-            throw new RuntimeException("Error al crear categoría en Moodle: " + e.getMessage());
-        }
+ * Crea una categoría en Moodle
+ * 
+ * @param nombre Nombre de la categoría
+ * @param parentId ID de la categoría padre
+ * @return ID de la nueva categoría
+ */
+public String crearCategoria(String nombre, String parentId) {
+    log.info("Creando categoría '{}' bajo la categoría padre {}", nombre, parentId);
+    
+    // Primero verificar si la categoría ya existe
+    String existingCategoryId = buscarCategoria(nombre, parentId);
+    if (existingCategoryId != null) {
+        log.info("La categoría ya existe, usando la categoría existente con ID: {}", existingCategoryId);
+        return existingCategoryId;
     }
+    
+    // Generar un idnumber único agregando un timestamp
+    String idNumber = nombre.replaceAll("\\s+", "_").toLowerCase() + "_" + System.currentTimeMillis();
+    
+    MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+    params.add("wstoken", moodleApiToken);
+    params.add("wsfunction", "core_course_create_categories");
+    params.add("moodlewsrestformat", "json");
+    params.add("categories[0][name]", nombre);
+    params.add("categories[0][parent]", parentId);
+    params.add("categories[0][idnumber]", idNumber);
+    params.add("categories[0][description]", "Categoría creada automáticamente por el sistema");
+    params.add("categories[0][descriptionformat]", "1"); // 1 = HTML
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    
+    HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+    
+    try {
+        log.debug("Enviando petición para crear categoría en Moodle");
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+        String response = restTemplate.postForObject(moodleApiUrl, request, String.class);
+        log.debug("Respuesta de Moodle (crear categoría): {}", response);
+        
+        JsonNode rootNode = objectMapper.readTree(response);
+        
+        if (rootNode.isArray() && rootNode.size() > 0) {
+            String categoryId = rootNode.get(0).path("id").asText();
+            log.info("Categoría creada con ID: {}", categoryId);
+            return categoryId;
+        } else if (response.contains("exception")) {
+            throw new RuntimeException("Error de Moodle al crear categoría: " + response);
+        }
+        
+        return null;
+    } catch (Exception e) {
+        log.error("Error al crear categoría en Moodle: {}", e.getMessage(), e);
+        throw new RuntimeException("Error al crear categoría en Moodle: " + e.getMessage());
+    }
+}
 
+    /**
+ * Busca categorías de cursos en Moodle por su nombre
+ * 
+ * @param nombre Nombre de la categoría a buscar
+ * @param parentId ID de la categoría padre (opcional)
+ * @return ID de la categoría si existe, null en caso contrario
+ */
+public String buscarCategoria(String nombre, String parentId) {
+    log.info("Buscando categoría '{}' bajo la categoría padre {}", nombre, parentId);
+    
+    MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+    params.add("wstoken", moodleApiToken);
+    params.add("wsfunction", "core_course_get_categories");
+    params.add("moodlewsrestformat", "json");
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    
+    HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+    
+    try {
+        log.debug("Enviando petición para buscar categorías en Moodle");
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+        String response = restTemplate.postForObject(moodleApiUrl, request, String.class);
+        log.debug("Respuesta de Moodle (buscar categorías): {}", response);
+        
+        JsonNode rootNode = objectMapper.readTree(response);
+        
+        if (rootNode.isArray()) {
+            for (JsonNode category : rootNode) {
+                String categoryName = category.path("name").asText();
+                String categoryParent = category.path("parent").asText();
+                
+                // Verificar si coincide el nombre y el padre (si se especifica)
+                if (categoryName.equals(nombre) && 
+                    (parentId == null || categoryParent.equals(parentId))) {
+                    String categoryId = category.path("id").asText();
+                    log.info("Categoría encontrada con ID: {}", categoryId);
+                    return categoryId;
+                }
+            }
+        }
+        
+        log.info("No se encontró la categoría '{}'", nombre);
+        return null;
+    } catch (Exception e) {
+        log.error("Error al buscar categoría en Moodle: {}", e.getMessage(), e);
+        return null;
+    }
+}
 }

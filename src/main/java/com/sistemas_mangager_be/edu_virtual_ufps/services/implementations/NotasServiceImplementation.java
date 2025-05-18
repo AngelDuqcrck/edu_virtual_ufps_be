@@ -101,8 +101,7 @@ public class NotasServiceImplementation implements INotaService {
             throws GrupoNotFoundException, NotasException {
         // 1. Verificar si ya existe un historial de cierre
         if (!historialCierreNotasRepository.findByGrupoCohorteId(grupoCohorteId).isEmpty()) {
-            throw new NotasException(
-                    "Las notas de este grupo ya fueron cerradas. Utilice 'abrirNotasGrupoPosgrado' primero.");
+            return; // No hacer nada si ya existe un historial
         }
 
         // 2. Buscar el grupo-cohorte
