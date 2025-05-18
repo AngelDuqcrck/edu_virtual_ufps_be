@@ -255,7 +255,7 @@ public class GrupoServiceImplementation implements IGrupoService {
         grupoCohorte.setDocenteId(usuario);
         grupoCohorte.setGrupoId(grupo);
         grupoCohorte.setFechaCreacion(new Date());
-        grupoCohorte.setSemestre(calcularSemestre(new Date()));
+        grupoCohorte.setSemestre(grupo.getMateriaId().getPensumId().getProgramaId().getSemestreActual());
 
         grupoCohorteRepository.save(grupoCohorte);
 
@@ -539,7 +539,7 @@ public class GrupoServiceImplementation implements IGrupoService {
                 .orElseThrow(() -> new RuntimeException("Grupo Cohorte no encontrado"));
 
         
-        String semestre = calcularSemestre(new Date());
+        String semestre = grupoCohorte.getSemestre();
         // 3. Obtener matrículas en curso para este grupo cohorte
         List<Matricula> matriculas = matriculaRepository.findBySemestreAndGrupoCohorteIdAndEstados( semestre,
                 grupoCohorte);

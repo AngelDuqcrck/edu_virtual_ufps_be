@@ -112,8 +112,8 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                         matriculaDTO.setFechaMatriculacion(new Date());
                 }
 
-                // Calcular el semestre basado en la fecha actual
-                String semestre = calcularSemestre(matriculaDTO.getFechaMatriculacion());
+                // Calcular el semestre basado en el semestre actual del estudiante
+                String semestre = grupoCohorte.getGrupoId().getMateriaId().getPensumId().getProgramaId().getSemestreActual();
 
                 // Crear la entidad Matricula
                 Matricula matricula = Matricula.builder()
@@ -353,7 +353,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                 CorreoResponse correoResponse = CorreoResponse.builder()
                                 .nombreEstudiante(estudiante.getNombre() + " " + estudiante.getApellido())
                                 .correo(estudiante.getEmail())
-                                .semestre(calcularSemestre(new Date()))
+                                .semestre(estudiante.getProgramaId().getSemestreActual())
                                 .fecha(new Date())
                                 .matriculas(matriculasResponse)
                                 .build();
@@ -393,8 +393,9 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                 Estudiante estudiante = estudianteRepository.findById(estudianteId)
                                 .orElseThrow(() -> new EstudianteNotFoundException("Estudiante no encontrado"));
 
+                String semestre = estudiante.getProgramaId().getSemestreActual();
                 List<CambioEstadoMatricula> cambiosEstado = cambioEstadoMatriculaRepository
-                                .findByMatriculaId_EstudianteIdAndSemestre(estudiante, calcularSemestre(new Date()));
+                                .findByMatriculaId_EstudianteIdAndSemestre(estudiante, semestre);
                 if (cambiosEstado.isEmpty()) {
                         throw new MatriculaException("No se encontraron cambios de estado para el estudiante");
                 }
@@ -578,7 +579,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                 cambioEstado.setEstadoMatriculaId(estadoMatricula);
                 cambioEstado.setFechaCambioEstado(new Date());
                 cambioEstado.setUsuarioCambioEstado(usuario);
-                cambioEstado.setSemestre(calcularSemestre(new Date()));
+                cambioEstado.setSemestre(matricula.getSemestre());
 
                 cambioEstadoMatriculaRepository.save(cambioEstado);
 

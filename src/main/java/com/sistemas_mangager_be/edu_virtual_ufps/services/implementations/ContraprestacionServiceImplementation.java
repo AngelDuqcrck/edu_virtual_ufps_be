@@ -70,7 +70,7 @@ public class ContraprestacionServiceImplementation implements IContraprestacionS
                                                                 .toLowerCase()));
 
                 // Validar si ya existe una contraprestación para este estudiante en el semestre
-                String semestre = calcularSemestre(new Date());
+                String semestre = estudiante.getProgramaId().getSemestreActual();
                 if (contraprestacionRepository.existsByEstudianteIdAndSemestre(estudiante, semestre)) {
                         throw new ContraprestacionException(
                                         String.format(CONTRAPRESTACION_EXISTENTE, semestre));
