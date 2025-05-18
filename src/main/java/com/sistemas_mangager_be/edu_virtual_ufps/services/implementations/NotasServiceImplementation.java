@@ -235,7 +235,7 @@ public class NotasServiceImplementation implements INotaService {
         cambioEstado.setEstadoMatriculaId(estadoMatricula);
         cambioEstado.setFechaCambioEstado(new Date());
         cambioEstado.setUsuarioCambioEstado(usuario);
-        cambioEstado.setSemestre(calcularSemestre(new Date()));
+        cambioEstado.setSemestre(matricula.getSemestre());
 
         cambioEstadoMatriculaRepository.save(cambioEstado);
 
