@@ -73,57 +73,73 @@ public class MoodleService {
      * Realiza el proceso completo de terminación de semestre para un programa
      * 
      * @param programaId ID del programa académico
-     * @param semestre Semestre actual a terminar (formato "YYYY-I" o "YYYY-II")
-     * @param usuario Usuario que realiza la acción
+     * @param semestre   Semestre actual a terminar (formato "YYYY-I" o "YYYY-II")
+     * @param usuario    Usuario que realiza la acción
      * @return Resultado del proceso con estadísticas
-     * @throws SemestreException Si hay errores en el proceso
+     * @throws SemestreException      Si hay errores en el proceso
      * @throws GrupoNotFoundException Si no se encuentra algún grupo
-     * @throws NotasException Si hay error al cerrar las notas
+     * @throws NotasException         Si hay error al cerrar las notas
      */
     @Transactional
-    public Map<String, Object> terminarSemestre(Integer programaId, String semestre, String usuario) 
+    public Map<String, Object> terminarSemestre(Integer programaId, String semestre, String usuario)
             throws SemestreException, GrupoNotFoundException, NotasException {
-        
+
         // 1. Verificar y obtener el programa
         Programa programa = programaRepository.findById(programaId)
                 .orElseThrow(() -> new SemestreException("Programa no encontrado con ID: " + programaId));
-        
-        // 2. Verificar semestre actual del programa
-        if (!semestre.equals(programa.getSemestreActual())) {
-            throw new SemestreException("El semestre proporcionado (" + semestre + 
-                    ") no coincide con el semestre actual del programa (" + programa.getSemestreActual() + ")");
+
+        // 2. Verificar si ya existe un histórico para este semestre (para evitar
+        // duplicados)
+        Optional<HistoricoSemestre> existenteHistorico = historicoSemestreRepository
+                .findByProgramaAndSemestre(programa, semestre);
+
+        if (existenteHistorico.isPresent()) {
+            // Si ya existe un histórico, podemos continuar pero advertir
+            log.warn("Ya existe un registro histórico para el semestre {} en el programa {}. " +
+                    "Se utilizará el existente.", semestre, programa.getNombre());
         }
-        
-        log.info("Iniciando proceso de terminación del semestre {} para el programa {}", 
-                semestre, programa.getNombre());
-        
+
+        // Resto del código igual...
+
+        // 7. Cambiar al siguiente semestre (solo si no se había terminado previamente)
+        if (!existenteHistorico.isPresent()) {
+            String siguienteSemestre = calcularSiguienteSemestre(semestre);
+            programa.setSemestreActual(siguienteSemestre);
+            programaRepository.save(programa);
+            log.info("Semestre actualizado: {} → {}", semestre, siguienteSemestre);
+        } else {
+            log.info("No se actualizó el semestre del programa ya que ya había sido terminado previamente");
+        }
+
+        // Resto del código igual...
+
         // 3. Cerrar las notas de todos los grupos del semestre
         cerrarNotasPorSemestre(programa, usuario);
         log.info("Notas cerradas correctamente para todos los grupos del programa");
-        
+
         // 4. Crear histórico de semestre en la base de datos
         HistoricoSemestre historicoSemestre = crearHistoricoSemestre(programa, semestre);
-        
+
         // 5. Crear categoría histórica en Moodle y obtener su ID
         String historicoSemestreMoodleId = crearCategoriaHistoricaSemestre(programa, semestre);
         historicoSemestre.setMoodleCategoriaId(historicoSemestreMoodleId);
         historicoSemestreRepository.save(historicoSemestre);
-        
+
         // 6. Procesar cada grupo del semestre
         List<GrupoCohorte> grupos = grupoCohorteRepository.findByGrupoId_MateriaId_PensumId_ProgramaIdAndSemestre(
                 programa, semestre);
-        
+
         int totalGrupos = grupos.size();
         int gruposExitosos = 0;
         List<String> errores = new ArrayList<>();
-        
+
         // Estadísticas para el reporte
         Map<String, Object> resultado = new HashMap<>();
         resultado.put("programaId", programaId);
         resultado.put("nombrePrograma", programa.getNombre());
         resultado.put("semestre", semestre);
         resultado.put("totalGrupos", totalGrupos);
-        
+
         for (GrupoCohorte grupo : grupos) {
             try {
                 procesarGrupoParaHistorico(grupo, programa, historicoSemestre);
@@ -133,21 +149,22 @@ public class MoodleService {
                 errores.add("Error al procesar grupo " + grupo.getId() + ": " + e.getMessage());
             }
         }
-        
+
         // 7. Cambiar al siguiente semestre
         String siguienteSemestre = calcularSiguienteSemestre(semestre);
         programa.setSemestreActual(siguienteSemestre);
         programaRepository.save(programa);
-        
+
         log.info("Semestre finalizado: {} → {}", semestre, siguienteSemestre);
-        
+
         // 8. Completar estadísticas
         resultado.put("gruposExitosos", gruposExitosos);
         resultado.put("errores", errores);
         resultado.put("nuevoSemestre", siguienteSemestre);
-        
+
         return resultado;
     }
+
     /**
      * Crea un registro histórico del semestre en la base de datos
      */
@@ -175,30 +192,36 @@ public class MoodleService {
     }
 
     /**
-     * Crea una categoría en Moodle para el semestre histórico
+     * Crea o recupera una categoría en Moodle para el semestre histórico
      */
     private String crearCategoriaHistoricaSemestre(Programa programa, String semestre) {
         // 1. Verificar que el programa tenga un ID de categoría históricos en Moodle
         if (programa.getHistoricoMoodleId() == null || programa.getHistoricoMoodleId().isEmpty()) {
             throw new RuntimeException("El programa no tiene configurada una categoría de históricos en Moodle");
         }
-        
-        // 2. Verificar si ya existe la categoría para este semestre
+
+        // 2. Nombre de la categoría para este semestre
         String nombreCategoria = semestre;
-        
-        // 3. Crear la categoría del semestre bajo la categoría de históricos
+
+        // 3. Intentar crear la categoría o recuperar existente
         String categoriaSemestreId = moodleApiClient.crearCategoria(
                 nombreCategoria,
-                programa.getHistoricoMoodleId()
-        );
-        
-        log.info("Categoría para semestre histórico creada en Moodle con ID: {}", categoriaSemestreId);
-        
+                programa.getHistoricoMoodleId());
+
+        // 4. Verificar si se pudo crear u obtener
+        if (categoriaSemestreId == null) {
+            throw new RuntimeException("No se pudo crear o encontrar la categoría para el semestre " +
+                    semestre + " bajo la categoría históricos");
+        }
+
+        log.info("Categoría para semestre histórico: {} (ID: {})", nombreCategoria, categoriaSemestreId);
+
         return categoriaSemestreId;
     }
 
     /**
-     * Procesa un grupo para el histórico: duplica en Moodle, crea registro histórico y reinicia para siguiente semestre
+     * Procesa un grupo para el histórico: duplica en Moodle, crea registro
+     * histórico y reinicia para siguiente semestre
      */
     @Transactional
     public void procesarGrupoParaHistorico(GrupoCohorte grupo, Programa programa, HistoricoSemestre historicoSemestre) {
@@ -206,32 +229,31 @@ public class MoodleService {
             log.warn("El grupo {} no tiene ID de Moodle. Omitiendo...", grupo.getId());
             return;
         }
-        
+
         // 1. Determinar el semestre del grupo en números romanos (I, II, III, etc.)
         String semestreRomano = determinarSemestreRomanoDelGrupo(grupo);
-        
-        // 2. Crear o verificar la categoría del semestre (I, II, etc.) bajo la categoría del semestre histórico
+
+        // 2. Crear o verificar la categoría del semestre (I, II, etc.) bajo la
+        // categoría del semestre histórico
         String categoriaSemestreRomanoId = crearCategoriaSemestreRomano(
                 historicoSemestre.getMoodleCategoriaId(),
-                semestreRomano
-        );
-        
+                semestreRomano);
+
         // 3. Duplicar el curso a la categoría histórica
-        String nombreCursoHistorico = grupo.getGrupoId().getMateriaId().getNombre() + 
+        String nombreCursoHistorico = grupo.getGrupoId().getMateriaId().getNombre() +
                 " - " + grupo.getGrupoId().getNombre() + " (" + historicoSemestre.getSemestre() + ")";
-        
+
         String cursoDuplicadoId = moodleApiClient.copiarCurso(
                 grupo.getMoodleId(),
                 categoriaSemestreRomanoId,
-                nombreCursoHistorico
-        );
-        
+                nombreCursoHistorico);
+
         if (cursoDuplicadoId == null) {
             throw new RuntimeException("No se pudo crear el curso histórico para el grupo " + grupo.getId());
         }
-        
+
         log.info("Curso duplicado en Moodle con ID: {}", cursoDuplicadoId);
-        
+
         // 4. Crear registro de grupo histórico
         HistoricoGrupo historicoGrupo = new HistoricoGrupo();
         historicoGrupo.setGrupoCohorte(grupo);
@@ -239,64 +261,64 @@ public class MoodleService {
         historicoGrupo.setMoodleCursoOriginalId(grupo.getMoodleId());
         historicoGrupo.setMoodleCursoHistoricoId(cursoDuplicadoId);
         historicoGrupo.setFechaCreacion(new Date());
-        
+
         historicoGrupoRepository.save(historicoGrupo);
-        
+
         String semestreActual = calcularSemestre(new Date());
         // 5. Desmatricular estudiantes del curso original
-        List<Matricula> matriculas = matriculaRepository.findBySemestreAndGrupoCohorteIdAndEstados(semestreActual,grupo);
-        
+        List<Matricula> matriculas = matriculaRepository.findBySemestreAndGrupoCohorteIdAndEstados(semestreActual,
+                grupo);
+
         for (Matricula matricula : matriculas) {
             Estudiante estudiante = matricula.getEstudianteId();
-            
+
             if (estudiante.getMoodleId() != null && !estudiante.getMoodleId().isEmpty()) {
                 try {
                     moodleApiClient.desmatricularEstudiante(
                             estudiante.getMoodleId(),
-                            grupo.getMoodleId()
-                    );
-                    log.debug("Estudiante {} desmatriculado del curso {}", 
+                            grupo.getMoodleId());
+                    log.debug("Estudiante {} desmatriculado del curso {}",
                             estudiante.getId(), grupo.getMoodleId());
                 } catch (Exception e) {
-                    log.warn("Error al desmatricular estudiante {} del curso {}: {}", 
+                    log.warn("Error al desmatricular estudiante {} del curso {}: {}",
                             estudiante.getId(), grupo.getMoodleId(), e.getMessage());
                     // Continuamos con el siguiente estudiante
                 }
             }
         }
-        
+
         // 6. Actualizar el semestre del grupo para el siguiente periodo
         String siguienteSemestre = calcularSiguienteSemestre(grupo.getSemestre());
         grupo.setSemestre(siguienteSemestre);
         grupoCohorteRepository.save(grupo);
     }
-    
+
     /**
      * Crear categoría para semestre romano bajo la categoría del semestre histórico
      */
     private String crearCategoriaSemestreRomano(String categoriaPadreId, String semestreRomano) {
         String nombreCategoria = "Semestre " + semestreRomano;
-        
+
+        // Usar el método crearCategoria de MoodleApiClient
         return moodleApiClient.crearCategoria(nombreCategoria, categoriaPadreId);
     }
-    
+
     /**
      * Determina el semestre romano (I, II, III) al que pertenece un grupo
      */
     private String determinarSemestreRomanoDelGrupo(GrupoCohorte grupo) {
         // Determinar el semestre romano basado en la materia del grupo
-        if (grupo.getGrupoId() != null && 
-            grupo.getGrupoId().getMateriaId() != null && 
-            grupo.getGrupoId().getMateriaId().getSemestrePensum() != null && 
-            grupo.getGrupoId().getMateriaId().getSemestrePensum().getSemestreId() != null) {
-            
+        if (grupo.getGrupoId() != null &&
+                grupo.getGrupoId().getMateriaId() != null &&
+                grupo.getGrupoId().getMateriaId().getSemestrePensum() != null &&
+                grupo.getGrupoId().getMateriaId().getSemestrePensum().getSemestreId() != null) {
+
             return grupo.getGrupoId().getMateriaId().getSemestrePensum().getSemestreId().getNumeroRomano();
         }
-        
+
         // Si no se puede determinar, usar un valor predeterminado
         return "I";
     }
-    
 
     private Date crearFecha(int dia, int mes, int año) {
         Calendar cal = Calendar.getInstance();
@@ -310,24 +332,25 @@ public class MoodleService {
         return cal.getTime();
     }
 
-     private String calcularSemestre(Date fechaMatriculacion) {
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(fechaMatriculacion);
+    private String calcularSemestre(Date fechaMatriculacion) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(fechaMatriculacion);
 
-                int mes = cal.get(Calendar.MONTH) + 1; // Enero = 0
-                int anio = cal.get(Calendar.YEAR);
+        int mes = cal.get(Calendar.MONTH) + 1; // Enero = 0
+        int anio = cal.get(Calendar.YEAR);
 
-                return anio + "-" + (mes <= 6 ? "I" : "II");
-        }
+        return anio + "-" + (mes <= 6 ? "I" : "II");
+    }
 
     /**
-     * Calcula el siguiente semestre académico basado en el formato "YYYY-I" o "YYYY-II"
+     * Calcula el siguiente semestre académico basado en el formato "YYYY-I" o
+     * "YYYY-II"
      */
     private String calcularSiguienteSemestre(String semestreActual) {
         String[] partes = semestreActual.split("-");
         int anio = Integer.parseInt(partes[0]);
         String periodo = partes[1];
-        
+
         if (periodo.equals("I")) {
             return anio + "-II";
         } else {
