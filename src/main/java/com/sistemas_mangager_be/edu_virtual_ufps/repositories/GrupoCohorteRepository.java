@@ -13,6 +13,7 @@ public interface GrupoCohorteRepository extends JpaRepository<GrupoCohorte, Long
     
     List<GrupoCohorte> findByCohorteId(Cohorte cohorteId);
 
+   List<GrupoCohorte> findByGrupoId_MateriaId_PensumId_ProgramaIdAndSemestre(Programa programa, String semestre);
     List<GrupoCohorte> findByDocenteId(Usuario docenteId);
 
     List<GrupoCohorte> findByGrupoId(Grupo grupoId);

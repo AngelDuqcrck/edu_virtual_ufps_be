@@ -80,6 +80,8 @@ public interface MatriculaRepository extends JpaRepository<Matricula, Long> {
                         @Param("grupoCohorte") GrupoCohorte grupoCohorte,
                         @Param("semestre") String semestre);
 
+
+
         /*
          * @Query("SELECT m FROM Matricula m" +
          * " WHERE m.estudianteId = :estudiante" +
@@ -94,4 +96,6 @@ public interface MatriculaRepository extends JpaRepository<Matricula, Long> {
          */
         List<Matricula> findByGrupoCohorteIdAndEstadoMatriculaId_Id(GrupoCohorte grupoCohorte,
                         Integer estadoMatriculaId);
+
+        List<Matricula> findByGrupoCohorteId(GrupoCohorte grupoCohorteId);
 }

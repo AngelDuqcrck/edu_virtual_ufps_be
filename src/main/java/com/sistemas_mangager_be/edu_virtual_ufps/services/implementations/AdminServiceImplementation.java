@@ -14,6 +14,8 @@ import com.sistemas_mangager_be.edu_virtual_ufps.repositories.AdminRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IAdminService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.AdminDTO;
 
+import lombok.RequiredArgsConstructor;
+
 
 @Service
 public class AdminServiceImplementation implements IAdminService {
@@ -106,5 +108,9 @@ public class AdminServiceImplementation implements IAdminService {
             BeanUtils.copyProperties(admin, adminDTO);
             return adminDTO;
         }).toList();
+    }
+
+    public void terminarSemestre(Integer programaId, String semestre){
+
     }
 }

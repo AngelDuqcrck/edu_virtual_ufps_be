@@ -9,6 +9,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -116,4 +119,119 @@ public class MoodleApiClient {
             throw new RuntimeException("Error al desmatricular estudiante en Moodle: " + e.getMessage());
         }
     }
+
+    /**
+     * Copia un curso de Moodle a una categoría específica
+     * 
+     * @param cursoOrigenId      ID del curso a copiar
+     * @param categoriaDestinoId ID de la categoría destino
+     * @param nombreCurso        Nombre para el nuevo curso
+     * @return ID del nuevo curso
+     */
+    public String copiarCurso(String cursoOrigenId, String categoriaDestinoId, String nombreCurso) {
+        log.info("Copiando curso {} a la categoría {}", cursoOrigenId, categoriaDestinoId);
+
+        String shortName = nombreCurso.replaceAll("\\s+", "_");
+        if (shortName.length() > 15) {
+            shortName = shortName.substring(0, 12) + "_" + System.currentTimeMillis() % 1000;
+        }
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("wstoken", moodleApiToken);
+        params.add("wsfunction", "core_course_duplicate_course");
+        params.add("moodlewsrestformat", "json");
+        params.add("courseid", cursoOrigenId);
+        params.add("fullname", nombreCurso);
+        params.add("shortname", shortName);
+        params.add("categoryid", categoriaDestinoId);
+        params.add("visible", "0");
+
+        // Incluir todos los componentes del curso
+        params.add("options[0][name]", "users");
+        params.add("options[0][value]", "1"); // Incluir usuarios
+        params.add("options[1][name]", "activities");
+        params.add("options[1][value]", "1"); // Incluir actividades
+        params.add("options[2][name]", "blocks");
+        params.add("options[2][value]", "1"); // Incluir bloques
+        params.add("options[3][name]", "filters");
+        params.add("options[3][value]", "1"); // Incluir filtros
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+
+        try {
+            log.debug("Enviando petición para duplicar curso en Moodle");
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            String response = restTemplate.postForObject(moodleApiUrl, request, String.class);
+            log.debug("Respuesta de Moodle (duplicar curso): {}", response);
+
+            JsonNode rootNode = objectMapper.readTree(response);
+
+            if (rootNode.has("id")) {
+                String courseId = rootNode.path("id").asText();
+                log.info("Curso duplicado con ID: {}", courseId);
+                return courseId;
+            } else if (response.contains("exception")) {
+                throw new RuntimeException("Error de Moodle al duplicar curso: " + response);
+            }
+
+            return null;
+        } catch (Exception e) {
+            log.error("Error al duplicar curso en Moodle: {}", e.getMessage(), e);
+            throw new RuntimeException("Error al duplicar curso en Moodle: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Crea una categoría en Moodle
+     * 
+     * @param nombre   Nombre de la categoría
+     * @param parentId ID de la categoría padre
+     * @return ID de la nueva categoría
+     */
+    public String crearCategoria(String nombre, String parentId) {
+        log.info("Creando categoría '{}' bajo la categoría padre {}", nombre, parentId);
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("wstoken", moodleApiToken);
+        params.add("wsfunction", "core_course_create_categories");
+        params.add("moodlewsrestformat", "json");
+        params.add("categories[0][name]", nombre);
+        params.add("categories[0][parent]", parentId);
+        params.add("categories[0][idnumber]", nombre.replaceAll("\\s+", "_").toLowerCase());
+        params.add("categories[0][description]", "Categoría creada automáticamente por el sistema");
+        params.add("categories[0][descriptionformat]", "1"); // 1 = HTML
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+
+        try {
+            log.debug("Enviando petición para crear categoría en Moodle");
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            String response = restTemplate.postForObject(moodleApiUrl, request, String.class);
+            log.debug("Respuesta de Moodle (crear categoría): {}", response);
+
+            JsonNode rootNode = objectMapper.readTree(response);
+
+            if (rootNode.isArray() && rootNode.size() > 0) {
+                String categoryId = rootNode.get(0).path("id").asText();
+                log.info("Categoría creada con ID: {}", categoryId);
+                return categoryId;
+            } else if (response.contains("exception")) {
+                throw new RuntimeException("Error de Moodle al crear categoría: " + response);
+            }
+
+            return null;
+        } catch (Exception e) {
+            log.error("Error al crear categoría en Moodle: {}", e.getMessage(), e);
+            throw new RuntimeException("Error al crear categoría en Moodle: " + e.getMessage());
+        }
+    }
+
 }
