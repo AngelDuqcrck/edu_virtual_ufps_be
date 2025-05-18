@@ -6,6 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.*;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 
 @Data
@@ -14,7 +15,7 @@ import jakarta.persistence.Entity;
 @AllArgsConstructor
 @Builder
 public class SemestrePrograma {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -28,5 +29,7 @@ public class SemestrePrograma {
     private Programa programa;
 
     private String moodleId;
+
+    
 
 }

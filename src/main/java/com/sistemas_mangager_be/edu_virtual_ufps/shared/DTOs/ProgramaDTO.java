@@ -20,4 +20,6 @@ public class ProgramaDTO {
 
     private String historicoMoodleId;
 
+    private String semestreActual;
+
 }

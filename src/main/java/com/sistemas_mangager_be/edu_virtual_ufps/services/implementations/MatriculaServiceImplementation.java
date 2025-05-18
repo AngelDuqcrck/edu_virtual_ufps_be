@@ -239,7 +239,7 @@ public class MatriculaServiceImplementation implements IMatriculaService {
                         throw new EstudianteNotFoundException(
                                         String.format(IS_NOT_FOUND, "El estudiante con ID: " + estudianteId));
                 }
-                String semestreActual = calcularSemestre(new Date());
+                String semestreActual = estudiante.getProgramaId().getSemestreActual();
                 List<Matricula> matriculas = matriculaRepository.findByEstudianteAndSemestreAndEstados(estudiante,
                                 semestreActual);
                 return matriculas.stream().map(matricula -> {

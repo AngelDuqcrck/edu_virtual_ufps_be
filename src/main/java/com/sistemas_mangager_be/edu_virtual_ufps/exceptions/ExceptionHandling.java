@@ -124,6 +124,11 @@ public class ExceptionHandling {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
+    @ExceptionHandler(SemestreException.class)
+    public ResponseEntity<HttpResponse> semestreException(SemestreException exception) {
+        return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
     @ExceptionHandler(SemestrePensumNotFoundException.class)
     public ResponseEntity<HttpResponse> semestrePensumNotFoundException(SemestrePensumNotFoundException exception) {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());

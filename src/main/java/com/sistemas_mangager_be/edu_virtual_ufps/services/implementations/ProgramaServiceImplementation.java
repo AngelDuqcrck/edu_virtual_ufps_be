@@ -1,5 +1,7 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.services.implementations;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.BeanUtils;
@@ -62,6 +64,7 @@ public class ProgramaServiceImplementation implements IProgramaService {
 
         Programa programa = new Programa();
         BeanUtils.copyProperties(programaDTO, programa);
+        programa.setSemestreActual(calcularSemestre(new Date()));
         programaRepository.save(programa);
 
         ProgramaDTO programaCreado = new ProgramaDTO();
@@ -166,4 +169,13 @@ public class ProgramaServiceImplementation implements IProgramaService {
                 .build();
     }
 
+    private String calcularSemestre(Date fechaMatriculacion) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(fechaMatriculacion);
+
+                int mes = cal.get(Calendar.MONTH) + 1; // Enero = 0
+                int anio = cal.get(Calendar.YEAR);
+
+                return anio + "-" + (mes <= 6 ? "I" : "II");
+        }
 }
