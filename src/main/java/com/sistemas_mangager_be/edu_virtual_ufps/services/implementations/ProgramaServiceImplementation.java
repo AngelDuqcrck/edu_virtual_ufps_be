@@ -11,10 +11,12 @@ import org.springframework.stereotype.Service;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Programa;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Semestre;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.SemestrePrograma;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.TipoPrograma;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaExistsException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.ProgramaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.SemestreProgramaRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.TipoProgramaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IProgramaService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.ProgramaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
@@ -35,6 +37,8 @@ public class ProgramaServiceImplementation implements IProgramaService {
     private SemestreProgramaRepository semestreProgramaRepository;
     @Autowired
     private ProgramaRepository programaRepository;
+    @Autowired
+    private TipoProgramaRepository tipoProgramaRepository;
 
     @Override
     public ProgramaDTO listarPrograma(Integer id) throws ProgramaNotFoundException {
@@ -65,6 +69,13 @@ public class ProgramaServiceImplementation implements IProgramaService {
         Programa programa = new Programa();
         BeanUtils.copyProperties(programaDTO, programa);
         programa.setSemestreActual(calcularSemestre(new Date()));
+        TipoPrograma tipoPrograma = new TipoPrograma();
+        if(programa.getEsPosgrado() == true){
+                  tipoPrograma = tipoProgramaRepository.findById(2).get();
+        }else{
+                  tipoPrograma = tipoProgramaRepository.findById(1).get();
+        }
+        programa.setTipoPrograma(tipoPrograma);
         programaRepository.save(programa);
 
         ProgramaDTO programaCreado = new ProgramaDTO();
