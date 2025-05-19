@@ -50,4 +50,6 @@ public class Matricula {
 
     
     private Boolean notaAbierta;
+
+    
 }
