@@ -26,6 +26,9 @@ import com.sistemas_mangager_be.edu_virtual_ufps.repositories.NotasPosgradoRepos
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.INotaService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.NotasPosgradoRequest;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class NotasServiceImplementation implements INotaService {
 
@@ -97,37 +100,73 @@ public class NotasServiceImplementation implements INotaService {
      * @throws GrupoNotFoundException Si el grupo no existe o no tiene estudiantes
      *                                matriculados
      */
+    @Transactional
     public void cerrarNotasGrupoPosgrado(Long grupoCohorteId, String usuario)
             throws GrupoNotFoundException, NotasException {
-        // 1. Verificar si ya existe un historial de cierre
-        if (!historialCierreNotasRepository.findByGrupoCohorteId(grupoCohorteId).isEmpty()) {
-            return; // No hacer nada si ya existe un historial
-        }
-
-        // 2. Buscar el grupo-cohorte
+        // 1. Buscar el grupo-cohorte primero para validar que existe
         GrupoCohorte grupoCohorte = grupoCohorteRepository.findById(grupoCohorteId)
                 .orElseThrow(() -> new GrupoNotFoundException(
                         String.format(IS_NOT_FOUND, "El Grupo Cohorte con id " + grupoCohorteId).toLowerCase()));
 
-        // 3. Obtener matrículas activas
+        // 2. Verificar si ya existe un historial de cierre para este grupo
+        List<HistorialCierreNotas> historialExistente = historialCierreNotasRepository
+                .findByGrupoCohorteId(grupoCohorteId);
+
+        // 3. Si ya existe historial pero no se han cerrado las notas, eliminar el
+        // historial
+        // para permitir cerrarlas nuevamente
+        if (!historialExistente.isEmpty()) {
+            // Verificar si hay matrículas con notasAbiertas = true
+            List<Matricula> matriculasActivas = matriculaRepository
+                    .findByGrupoCohorteIdAndEstadoMatriculaId_Id(grupoCohorte, 2);
+
+            boolean hayMatriculasAbiertas = matriculasActivas.stream()
+                    .anyMatch(m -> m.getNotaAbierta() != null && m.getNotaAbierta());
+
+            if (hayMatriculasAbiertas) {
+                // Si hay matrículas abiertas pero existe historial, limpiar el historial
+                log.info("Eliminando historial de cierre previo para el grupo {} porque hay matrículas abiertas",
+                        grupoCohorteId);
+                historialCierreNotasRepository.deleteByGrupoCohorteId(grupoCohorteId);
+            } else {
+                // Si todas las matrículas ya están cerradas, no hacemos nada
+                log.info("Las notas del grupo {} ya están cerradas", grupoCohorteId);
+                return;
+            }
+        }
+
+        // 4. Obtener matrículas activas
         List<Matricula> matriculasActivasPorGrupo = matriculaRepository
                 .findByGrupoCohorteIdAndEstadoMatriculaId_Id(grupoCohorte, 2);
 
         if (matriculasActivasPorGrupo.isEmpty()) {
-            throw new GrupoNotFoundException(
-                    String.format("No hay estudiantes matriculados actualmente en el grupo " + grupoCohorte.getId())
-                            .toLowerCase());
+            log.warn("No hay estudiantes matriculados activamente en el grupo {}", grupoCohorteId);
+            return; // No lanzamos excepción para permitir continuar con los demás grupos
         }
 
-        // 4. Fecha actual para el registro
+        // 5. Fecha actual para el registro
         Date fechaCierre = new Date();
+        int matriculasProcesadas = 0;
 
-        // 5. Procesar matrículas
+        // 6. Procesar matrículas
         for (Matricula matricula : matriculasActivasPorGrupo) {
-            matricula.setNotaAbierta(false);
-            cambiarEstadoMatriculaPorNotas(matricula, usuario);
-            guardarHistorialCierreNotas(grupoCohorte.getId(), matricula.getId(), fechaCierre, usuario);
+            try {
+                // Solo procesar si la nota está abierta o es null
+                if (matricula.getNotaAbierta() == null || matricula.getNotaAbierta()) {
+                    matricula.setNotaAbierta(false);
+                    cambiarEstadoMatriculaPorNotas(matricula, usuario);
+                    matriculaRepository.save(matricula); // Guardamos explícitamente cada matrícula
+                    guardarHistorialCierreNotas(grupoCohorte.getId(), matricula.getId(), fechaCierre, usuario);
+                    matriculasProcesadas++;
+                }
+            } catch (Exception e) {
+                log.error("Error procesando matrícula {}: {}", matricula.getId(), e.getMessage());
+                // Continuar con la siguiente matrícula
+            }
         }
+
+        log.info("Proceso de cierre de notas para grupo {} completado. Matrículas procesadas: {}/{}",
+                grupoCohorteId, matriculasProcesadas, matriculasActivasPorGrupo.size());
     }
 
     /**
@@ -207,9 +246,11 @@ public class NotasServiceImplementation implements INotaService {
      * @param usuario   Usuario que realiza el cambio
      */
     private void cambiarEstadoMatriculaPorNotas(Matricula matricula, String usuario) {
-
         if (matricula.getNota() == null) {
-            return; // No hacer cambios si no hay nota
+            // Si la nota es null, asignar una nota por defecto de 0.0 para considerar como
+            // reprobada
+            matricula.setNota(0.0);
+            matricula.setFechaNota(new Date());
         }
 
         EstadoMatricula nuevoEstado = new EstadoMatricula();
@@ -218,14 +259,20 @@ public class NotasServiceImplementation implements INotaService {
             nuevoEstado.setId(1);
             nuevoEstado.setNombre("Aprobada");
         } else {
-
             nuevoEstado.setId(4);
             nuevoEstado.setNombre("Reprobada");
         }
 
+        // Guardar el estado anterior para saber si realmente cambia
+        Integer estadoAnteriorId = matricula.getEstadoMatriculaId() != null ? matricula.getEstadoMatriculaId().getId()
+                : null;
+
         matricula.setEstadoMatriculaId(nuevoEstado);
-        crearCambioEstadoMatricula(matricula, nuevoEstado, " (cerrado por " + usuario + ")");
-        matriculaRepository.save(matricula);
+
+        // Solo crear registro de cambio de estado si realmente cambia
+        if (estadoAnteriorId == null || !estadoAnteriorId.equals(nuevoEstado.getId())) {
+            crearCambioEstadoMatricula(matricula, nuevoEstado, " (cerrado por " + usuario + ")");
+        }
     }
 
     private void crearCambioEstadoMatricula(Matricula matricula, EstadoMatricula estadoMatricula, String usuario) {

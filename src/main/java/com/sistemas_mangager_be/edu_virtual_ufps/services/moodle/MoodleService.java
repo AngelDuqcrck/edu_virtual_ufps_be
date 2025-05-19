@@ -50,24 +50,50 @@ public class MoodleService {
     private NotasServiceImplementation notasServiceImplementation;
 
     /**
-     * Cierra las notas de todos los grupos de un programa en un semestre específico
-     * 
-     * @param programa Entidad programa
-     * @param usuario  Usuario que realiza la acción
-     * @throws GrupoNotFoundException Si no se encuentra algún grupo
-     * @throws NotasException         Si hay error al cerrar las notas
-     */
-    @Transactional
-    public void cerrarNotasPorSemestre(Programa programa, String usuario)
-            throws GrupoNotFoundException, NotasException {
-
-        List<GrupoCohorte> grupos = grupoCohorteRepository
-                .findByGrupoId_MateriaId_PensumId_ProgramaIdAndSemestre(programa, programa.getSemestreActual());
-
-        for (GrupoCohorte grupo : grupos) {
+ * Cierra las notas para todos los grupos de un semestre en un programa
+ * 
+ * @param programa Programa académico
+ * @param usuario  Usuario que realiza la acción
+ * @throws NotasException Si hay un error crítico al cerrar las notas
+ */
+@Transactional
+public void cerrarNotasPorSemestre(Programa programa, String usuario, String semestre) throws NotasException {
+    log.info("Iniciando cierre de notas para el semestre {} del programa {}", 
+             semestre, programa.getNombre());
+    
+    List<GrupoCohorte> grupos = grupoCohorteRepository
+            .findByGrupoId_MateriaId_PensumId_ProgramaIdAndSemestre(programa, semestre);
+    
+    if (grupos.isEmpty()) {
+        log.warn("No hay grupos para el semestre {} en el programa {}", 
+                 programa.getSemestreActual(), programa.getNombre());
+        return;
+    }
+    
+    log.info("Se encontraron {} grupos para cerrar notas", grupos.size());
+    
+    int gruposExitosos = 0;
+    List<String> gruposConError = new ArrayList<>();
+    
+    for (GrupoCohorte grupo : grupos) {
+        try {
+            log.info("Procesando cierre de notas para grupo {}", grupo.getId());
             notasServiceImplementation.cerrarNotasGrupoPosgrado(grupo.getId(), usuario);
+            gruposExitosos++;
+            log.info("Notas cerradas exitosamente para el grupo {}", grupo.getId());
+        } catch (Exception e) {
+            log.error("Error al cerrar notas del grupo {}: {}", grupo.getId(), e.getMessage(), e);
+            gruposConError.add("Grupo " + grupo.getId() + ": " + e.getMessage());
         }
     }
+    
+    log.info("Cierre de notas completado. Grupos exitosos: {}/{}, Grupos con error: {}",
+            gruposExitosos, grupos.size(), gruposConError.size());
+    
+    if (gruposExitosos == 0 && !grupos.isEmpty()) {
+        throw new NotasException("No se pudo cerrar las notas de ningún grupo del programa");
+    }
+}
 
     /**
      * Realiza el proceso completo de terminación de semestre para un programa
@@ -88,6 +114,7 @@ public class MoodleService {
         Programa programa = programaRepository.findById(programaId)
                 .orElseThrow(() -> new SemestreException("Programa no encontrado con ID: " + programaId));
 
+        String semestrePrograma = programa.getSemestreActual();
         // 2. Verificar si ya existe un histórico para este semestre (para evitar
         // duplicados)
         Optional<HistoricoSemestre> existenteHistorico = historicoSemestreRepository
@@ -114,7 +141,7 @@ public class MoodleService {
         // Resto del código igual...
 
         // 3. Cerrar las notas de todos los grupos del semestre
-        cerrarNotasPorSemestre(programa, usuario);
+        cerrarNotasPorSemestre(programa, usuario, semestrePrograma);
         log.info("Notas cerradas correctamente para todos los grupos del programa");
 
         // 4. Crear histórico de semestre en la base de datos
