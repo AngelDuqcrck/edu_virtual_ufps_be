@@ -102,4 +102,48 @@ public class MoodleMatriculaService {
             throw new MatriculaException("Error al desmatricular en Moodle: " + e.getMessage());
         }
     }
+
+    /**
+     * Suspende la matrícula de un estudiante en un curso de Moodle (alternativa a
+     * desmatricular)
+     * 
+     * @param estudiante   Entidad de estudiante
+     * @param grupoCohorte Entidad de grupo cohorte (curso)
+     * @throws MatriculaException Si ocurre un error durante la suspensión
+     */
+    public void suspenderMatriculaEnMoodle(Estudiante estudiante, GrupoCohorte grupoCohorte)
+            throws MatriculaException {
+
+        // Verificar que existan los IDs de Moodle
+        if (estudiante.getMoodleId() == null || estudiante.getMoodleId().isEmpty()) {
+            throw new MatriculaException("El estudiante no tiene un ID de Moodle asociado");
+        }
+
+        if (grupoCohorte.getMoodleId() == null || grupoCohorte.getMoodleId().isEmpty()) {
+            throw new MatriculaException("El curso no tiene un ID de Moodle asociado");
+        }
+
+        try {
+            // Realizar la suspensión de matrícula en Moodle
+            String resultado = moodleApiClient.cancelarMatriculaSemestre(
+                    estudiante.getMoodleId(),
+                    grupoCohorte.getMoodleId(),
+                    ROLE_STUDENT);
+
+            // Verificar si la respuesta contiene un error
+            if (resultado.contains("exception") || resultado.contains("error")) {
+                throw new MatriculaException("Error en la respuesta de Moodle: " + resultado);
+            }
+
+            log.info("Estudiante {} (ID Moodle: {}) suspendido exitosamente en el curso {} (ID Moodle: {})",
+                    estudiante.getCodigo(),
+                    estudiante.getMoodleId(),
+                    grupoCohorte.getGrupoId().getCodigo(),
+                    grupoCohorte.getMoodleId());
+
+        } catch (Exception e) {
+            log.error("Error al suspender matrícula del estudiante en Moodle: {}", e.getMessage(), e);
+            throw new MatriculaException("Error al suspender matrícula en Moodle: " + e.getMessage());
+        }
+    }
 }

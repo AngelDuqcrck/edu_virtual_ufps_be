@@ -77,6 +77,54 @@ public class MoodleApiClient {
         }
     }
 
+     /**
+     * Usado para cancelar la matricula de un estudiante en un curso de Moodle
+     * Suspendiendo la matricula del estudiante en el curso
+     * 
+     * @param moodleUserId   ID del estudiante en Moodle
+     * @param moodleCourseId ID del curso en Moodle
+     * @param roleId         Rol del estudiante (5 = estudiante)
+     * @return Resultado de la operación
+     */
+    public String cancelarMatriculaSemestre(String moodleUserId, String moodleCourseId, int roleId) {
+        log.info("Matriculando estudiante con ID {} en curso {}", moodleUserId, moodleCourseId);
+
+        // Creación de los parámetros individualmente según formato esperado por Moodle
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("wstoken", moodleApiToken);
+        params.add("wsfunction", "enrol_manual_enrol_users");
+        params.add("moodlewsrestformat", "json");
+
+        // En lugar de un JSON string, Moodle espera parámetros con formato específico
+        // Para cada enrolment debemos crear: enrolments[0][roleid],
+        // enrolments[0][userid], enrolments[0][courseid]
+        params.add("enrolments[0][roleid]", String.valueOf(roleId));
+        params.add("enrolments[0][userid]", moodleUserId);
+        params.add("enrolments[0][courseid]", moodleCourseId);
+        params.add("enrolments[0][suspend]", "1"); // Suspender la matricula
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+
+        try {
+            log.debug("Enviando petición a Moodle para matricular: {}", params);
+            String response = restTemplate.postForObject(moodleApiUrl, request, String.class);
+            log.info("Respuesta de Moodle: {}", response);
+
+            // Una respuesta nula o vacía generalmente indica éxito en Moodle
+            if (response == null || response.isEmpty() || "null".equals(response)) {
+                return "Matriculación exitosa";
+            }
+
+            return response;
+        } catch (Exception e) {
+            log.error("Error al matricular estudiante en Moodle: {}", e.getMessage(), e);
+            throw new RuntimeException("Error al matricular estudiante en Moodle: " + e.getMessage());
+        }
+    }
+
     /**
      * Desmatricula un estudiante de un curso de Moodle
      * 
