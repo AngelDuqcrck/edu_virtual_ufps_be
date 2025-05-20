@@ -73,9 +73,9 @@ public class GrupoController {
     }
 
     @GetMapping("/materia/{materiaId}")
-    public ResponseEntity<List<GrupoResponse>> listarGruposPorMateria(@PathVariable Integer materiaId)
+    public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGruposPorMateria(@PathVariable Integer materiaId)
             throws MateriaNotFoundException {
-        List<GrupoResponse> grupoResponse = iGrupoService.listarGruposPorMateria(materiaId);
+        List<GrupoCohorteDocenteResponse> grupoResponse = iGrupoService.listarGruposCohortePorMateria(materiaId);
         return new ResponseEntity<>(grupoResponse, HttpStatus.OK);
     }
 

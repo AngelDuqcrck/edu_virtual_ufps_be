@@ -224,6 +224,7 @@ public class MateriaServiceImplementation implements IMateriaService {
                         MateriaDTO materiaDTO = new MateriaDTO();
                         BeanUtils.copyProperties(materia, materiaDTO);
                         materiaDTO.setPensumId(materia.getPensumId().getId());
+                        materiaDTO.setSemestrePensumId(materia.getSemestrePensum().getId());
                         return materiaDTO;
                 }).toList();
         }
