@@ -10,6 +10,8 @@ import java.util.List;
 
 
 public interface GrupoCohorteRepository extends JpaRepository<GrupoCohorte, Long> {
+
+    List<GrupoCohorte> findByGrupoId_MateriaId_PensumId_ProgramaId(Programa programa);
     
     List<GrupoCohorte> findByCohorteId(Cohorte cohorteId);
 
