@@ -70,17 +70,31 @@ public class DashboardService {
         int totalFases = EstadoProyecto.values().length;
         int porcentaje = (proyecto.getEstadoActual() == EstadoProyecto.FASE_0) ? 100 : numeroFase * 10;
 
-        List<String> fasesCompletadas = Arrays.stream(EstadoProyecto.values())
-                .filter(f -> f.getCode() != 0 && f.getCode() < numeroFase)
-                .sorted(Comparator.comparingInt(EstadoProyecto::getCode))
-                .map(EstadoProyecto::getDescripcion)
-                .collect(Collectors.toList());
+        List<String> fasesCompletadas;
+        List<String> fasesPendientes;
 
-        List<String> fasesPendientes = Arrays.stream(EstadoProyecto.values())
-                .filter(f -> f.getCode() != 0 && f.getCode() > numeroFase)
-                .sorted(Comparator.comparingInt(EstadoProyecto::getCode))
-                .map(EstadoProyecto::getDescripcion)
-                .collect(Collectors.toList());
+        if (proyecto.getEstadoActual() == EstadoProyecto.FASE_0) {
+            fasesCompletadas = Arrays.stream(EstadoProyecto.values())
+                    .filter(f -> f.getCode() != 0)
+                    .sorted(Comparator.comparingInt(EstadoProyecto::getCode))
+                    .map(EstadoProyecto::getDescripcion)
+                    .collect(Collectors.toList());
+
+            fasesPendientes = new ArrayList<>();
+        } else {
+            fasesCompletadas = Arrays.stream(EstadoProyecto.values())
+                    .filter(f -> f.getCode() != 0 && f.getCode() < numeroFase)
+                    .sorted(Comparator.comparingInt(EstadoProyecto::getCode))
+                    .map(EstadoProyecto::getDescripcion)
+                    .collect(Collectors.toList());
+
+            fasesPendientes = Arrays.stream(EstadoProyecto.values())
+                    .filter(f -> f.getCode() != 0 && f.getCode() > numeroFase)
+                    .sorted(Comparator.comparingInt(EstadoProyecto::getCode))
+                    .map(EstadoProyecto::getDescripcion)
+                    .collect(Collectors.toList());
+            fasesPendientes.add(EstadoProyecto.FASE_0.getDescripcion());
+        }
 
         return new FaseDto(
                 numeroFase,
