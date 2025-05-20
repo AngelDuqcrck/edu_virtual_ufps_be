@@ -444,6 +444,38 @@ public class GrupoServiceImplementation implements IGrupoService {
         }).toList();
     }
 
+    public List<GrupoCohorteDocenteResponse> listarGruposCohortePorMateria(Integer materiaId) throws MateriaNotFoundException {
+        Materia materia = materiaRepository.findById(materiaId)
+                .orElseThrow(() -> new MateriaNotFoundException(
+                        String.format(IS_NOT_FOUND_F, "LA MATERIA CON ID " + materiaId).toLowerCase()));
+        
+        List<GrupoCohorte> grupoCohorteDocentes = grupoCohorteRepository.findByGrupoId_MateriaId(materia);
+
+        return grupoCohorteDocentes.stream().map(grupoCohorteDocente -> {
+            GrupoCohorteDocenteResponse grupoCohorteDocenteResponse = new GrupoCohorteDocenteResponse().builder()
+                    .id(grupoCohorteDocente.getId())
+                    .grupoCohorteId(grupoCohorteDocente.getId())
+                    .grupoId(grupoCohorteDocente.getGrupoId().getId())
+                    .cohorteGrupoId(grupoCohorteDocente.getCohorteGrupoId().getId())
+                    .docenteId(grupoCohorteDocente.getDocenteId().getId())
+                    .docenteNombre(grupoCohorteDocente.getDocenteId().getNombreCompleto())
+                    .cohorteGrupoNombre(grupoCohorteDocente.getCohorteGrupoId().getNombre())
+                    .cohorteId(grupoCohorteDocente.getCohorteId().getId())
+                    .cohorteNombre(grupoCohorteDocente.getCohorteId().getNombre())
+                    .fechaCreacion(grupoCohorteDocente.getFechaCreacion().toString())
+                    .grupoNombre(grupoCohorteDocente.getGrupoId().getNombre())
+                    .codigoGrupo(grupoCohorteDocente.getGrupoId().getCodigo())
+                    .materia(grupoCohorteDocente.getGrupoId().getMateriaId().getNombre())
+                    .codigoMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getCodigo())
+                    .semestreMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getSemestre())
+                    .moodleId(grupoCohorteDocente.getMoodleId())
+                    .materiaId(grupoCohorteDocente.getGrupoId().getMateriaId().getId())
+                    .programaId(grupoCohorteDocente.getGrupoId().getMateriaId().getPensumId().getProgramaId().getId())
+                    .build();
+            return grupoCohorteDocenteResponse;
+        }).toList();
+    }
+
 
     public List<GrupoCohorteDocenteResponse> listarGruposPorPrograma (Integer programaId) throws ProgramaNotFoundException{
         Programa programa = programaRepository.findById(programaId)
