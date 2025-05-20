@@ -32,4 +32,7 @@ public class Programa {
     @Column(name = "semestre_actual")
     private String semestreActual;
 
+    @ManyToOne
+    @JoinColumn(name = "tipo_programa_id")
+    private TipoPrograma tipoPrograma;
 }

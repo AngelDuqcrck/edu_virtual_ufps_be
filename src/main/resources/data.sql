@@ -138,3 +138,15 @@ INSERT IGNORE INTO tipos_contraprestaciones (id, nombre, porcentaje) VALUES
 (3, 'Medalla en Plata', '30%'),
 (4, 'Matricula de Honor', '50%');
 
+--Creamos la tabla de tipos de programa si no existe
+CREATE TABLE IF NOT EXISTS tipos_programas (
+    id INT NOT NULL AUTO_INCREMENT,
+    nombre VARCHAR(50) NOT NULL,
+    moodle_id VARCHAR(50) NOT NULL,
+    PRIMARY KEY (id)
+);
+
+--Insertamos los tipos de programas en el sistema si estos no existen
+INSERT IGNORE INTO tipos_programas(id, nombre, moodle_id) VALUES
+(1, 'Tecnologia','307'),
+(2, 'Maestria', '306')

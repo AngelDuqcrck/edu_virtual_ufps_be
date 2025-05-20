@@ -50,7 +50,6 @@ public class SolicitudServiceImplementation implements ISolicitudService {
     public static final String ARE_NOT_EQUALS = "%s no son iguales";
     public static final String IS_NOT_CORRECT = "%s no es correcta";
 
-
     @Autowired
     private MoodleMatriculaService moodleMatriculaService;
     @Autowired
@@ -398,15 +397,15 @@ public class SolicitudServiceImplementation implements ISolicitudService {
         Estudiante estudiante = solicitud.getMatriculaId().getEstudianteId();
         GrupoCohorte grupoCohorte = solicitud.getMatriculaId().getGrupoCohorteId();
 
-                if (estudiante.getMoodleId() != null && !estudiante.getMoodleId().isEmpty() &&
-                                grupoCohorte.getMoodleId() != null && !grupoCohorte.getMoodleId().isEmpty()) {
-                        try {
-                                moodleMatriculaService.desmatricularEstudianteEnMoodle(estudiante, grupoCohorte);
-                        } catch (Exception e) {
-                                // Log del error pero permitir que la transacción continúe
-                                log.error("Error al cancelar la materia en Moodle: {}", e.getMessage());
-                        }
-                }
+        if (estudiante.getMoodleId() != null && !estudiante.getMoodleId().isEmpty() &&
+                grupoCohorte.getMoodleId() != null && !grupoCohorte.getMoodleId().isEmpty()) {
+            try {
+                moodleMatriculaService.suspenderMatriculaEnMoodle(estudiante, grupoCohorte);
+            } catch (Exception e) {
+                // Log del error pero permitir que la transacción continúe
+                log.error("Error al cancelar la matrícula en Moodle: {}", e.getMessage());
+            }
+        }
         solicitud.getMatriculaId().setEstadoMatriculaId(estadoCancelada);
         crearCambioEstadoMatricula(solicitud.getMatriculaId(), estadoCancelada, usuario);
 
@@ -444,13 +443,13 @@ public class SolicitudServiceImplementation implements ISolicitudService {
                 GrupoCohorte grupoCohorte = matricula.getGrupoCohorteId();
 
                 if (estudiante.getMoodleId() != null && !estudiante.getMoodleId().isEmpty() &&
-                                grupoCohorte.getMoodleId() != null && !grupoCohorte.getMoodleId().isEmpty()) {
-                        try {
-                                moodleMatriculaService.desmatricularEstudianteEnMoodle(estudiante, grupoCohorte);
-                        } catch (Exception e) {
-                                // Log del error pero permitir que la transacción continúe
-                                log.error("Error al realizar el aplazamiento de semestre en Moodle: {}", e.getMessage());
-                        }
+                        grupoCohorte.getMoodleId() != null && !grupoCohorte.getMoodleId().isEmpty()) {
+                    try {
+                         moodleMatriculaService.suspenderMatriculaEnMoodle(estudiante, grupoCohorte);
+                    } catch (Exception e) {
+                        // Log del error pero permitir que la transacción continúe
+                        log.error("Error al realizar el aplazamiento de semestre en Moodle: {}", e.getMessage());
+                    }
                 }
                 matriculaRepository.save(matricula);
                 crearCambioEstadoMatricula(matricula, estadoCancelada, usuario);
