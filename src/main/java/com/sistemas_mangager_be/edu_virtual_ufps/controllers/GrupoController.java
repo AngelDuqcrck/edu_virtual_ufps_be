@@ -20,6 +20,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.CohorteNotFoundExcep
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.GrupoExistException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.GrupoNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MateriaNotFoundException;
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.VinculacionNotFoundException;
@@ -144,6 +145,13 @@ public class GrupoController {
         return new ResponseEntity<>(grupoCohorteDocenteResponse, HttpStatus.OK);
     }
 
+    @GetMapping("/programa/{programaId}")
+    public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGruposPorPrograma(@PathVariable Integer programaId)
+            throws ProgramaNotFoundException {
+        List<GrupoCohorteDocenteResponse> grupoCohorteDocenteResponse = iGrupoService.listarGruposPorPrograma(programaId);
+        return new ResponseEntity<>(grupoCohorteDocenteResponse, HttpStatus.OK);
+    }
+    
     @GetMapping("/grupo/{grupoId}")
     public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGruposPorGrupo(@PathVariable Integer grupoId)
             throws GrupoNotFoundException {
