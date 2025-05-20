@@ -67,12 +67,15 @@ public class ProyectoService {
 
     @Transactional
     public ProyectoDto crearProyecto(ProyectoDto proyectoDto) {
-        LineaInvestigacion linea = lineaInvestigacionRepository
-                .findById(proyectoDto.getLineaInvestigacion().getId())
-                .orElseThrow(() -> new RuntimeException("Línea de investigación no encontrada"));
+        LineaInvestigacion lineaInvestigacion = null;
+        if (proyectoDto.getLineaInvestigacion() != null && proyectoDto.getLineaInvestigacion().getId() != null) {
+            lineaInvestigacion = lineaInvestigacionRepository
+                    .findById(proyectoDto.getLineaInvestigacion().getId())
+                    .orElseThrow(() -> new RuntimeException("Línea de investigación no encontrada"));
+        }
 
         Proyecto proyecto = proyectoMapper.toEntity(proyectoDto);
-        proyecto.setLineaInvestigacion(linea);
+        proyecto.setLineaInvestigacion(lineaInvestigacion);
         proyecto.setCreatedAt(LocalDate.now());
         proyecto.setUpdatedAt(LocalDate.now());
         Proyecto guardado = proyectoRepository.save(proyecto);
@@ -146,6 +149,14 @@ public class ProyectoService {
                 .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
 
         existente.setUpdatedAt(LocalDate.now());
+
+        LineaInvestigacion nuevaLinea = null;
+        if (proyectoDto.getLineaInvestigacion() != null && proyectoDto.getLineaInvestigacion().getId() != null) {
+            nuevaLinea = lineaInvestigacionRepository
+                    .findById(proyectoDto.getLineaInvestigacion().getId())
+                    .orElseThrow(() -> new RuntimeException("Línea de investigación no encontrada"));
+        }
+        existente.setLineaInvestigacion(nuevaLinea);
 
         EstadoProyecto estadoActual = existente.getEstadoActual();
         Integer nuevoEstadoCode = proyectoDto.getEstadoActual();

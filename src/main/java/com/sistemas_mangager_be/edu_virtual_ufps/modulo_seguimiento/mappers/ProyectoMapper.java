@@ -23,6 +23,7 @@ public interface ProyectoMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "estadoActual", source = "estadoActual", qualifiedByName = "intToEstadoProyecto")
+    @Mapping(target = "lineaInvestigacion", ignore = true)
     void partialUpdate(ProyectoDto proyectoDto, @MappingTarget Proyecto proyecto);
 
     @Named("estadoProyectoToInt")
