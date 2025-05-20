@@ -385,7 +385,7 @@ public class EstudianteServiceImplementation implements IEstudianteService {
                                                 String.format(IS_NOT_FOUND_F,
                                                                 "EL GRUPO COHORTE CON ID " + grupoCohorteId)
                                                                 .toLowerCase()));
-                                String semestre = calcularSemestre(new Date());
+                                String semestre = grupoCohorte.getSemestre();
                 // 2. Buscar estudiantes con matrícula en curso (estado 2) en ese grupo-cohorte
                 List<Estudiante> estudiantes = matriculaRepository
                                 .findEstudiantesBySemestreAndGrupoCohorteIdAndEstados(grupoCohorte, semestre);

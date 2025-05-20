@@ -45,5 +45,5 @@ public class GrupoCohorte {
 
     private String semestre;
 
-    private boolean semestreTerminado;
+    private boolean semestreTerminado; 
 }

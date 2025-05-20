@@ -1,5 +1,7 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.services.implementations;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.BeanUtils;
@@ -9,10 +11,12 @@ import org.springframework.stereotype.Service;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Programa;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Semestre;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.SemestrePrograma;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.TipoPrograma;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaExistsException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.ProgramaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.SemestreProgramaRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.TipoProgramaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IProgramaService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.ProgramaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
@@ -33,6 +37,8 @@ public class ProgramaServiceImplementation implements IProgramaService {
     private SemestreProgramaRepository semestreProgramaRepository;
     @Autowired
     private ProgramaRepository programaRepository;
+    @Autowired
+    private TipoProgramaRepository tipoProgramaRepository;
 
     @Override
     public ProgramaDTO listarPrograma(Integer id) throws ProgramaNotFoundException {
@@ -48,6 +54,7 @@ public class ProgramaServiceImplementation implements IProgramaService {
                 .codigo(programa.getCodigo())
                 .moodleId(programa.getMoodleId())
                 .esPosgrado(programa.getEsPosgrado())
+                .historicoMoodleId(programa.getHistoricoMoodleId())
                 .build();
     }
 
@@ -61,6 +68,14 @@ public class ProgramaServiceImplementation implements IProgramaService {
 
         Programa programa = new Programa();
         BeanUtils.copyProperties(programaDTO, programa);
+        programa.setSemestreActual(calcularSemestre(new Date()));
+        TipoPrograma tipoPrograma = new TipoPrograma();
+        if(programa.getEsPosgrado() == true){
+                  tipoPrograma = tipoProgramaRepository.findById(2).get();
+        }else{
+                  tipoPrograma = tipoProgramaRepository.findById(1).get();
+        }
+        programa.setTipoPrograma(tipoPrograma);
         programaRepository.save(programa);
 
         ProgramaDTO programaCreado = new ProgramaDTO();
@@ -68,13 +83,14 @@ public class ProgramaServiceImplementation implements IProgramaService {
         return programaCreado;
     }
 
-    
-    public void vincularMoodleId(MoodleRequest moodleRequest) throws ProgramaNotFoundException, ProgramaExistsException {
+    public void vincularMoodleId(MoodleRequest moodleRequest)
+            throws ProgramaNotFoundException, ProgramaExistsException {
         Programa programa = programaRepository.findById(moodleRequest.getBackendId())
                 .orElseThrow(() -> new ProgramaNotFoundException(
-                        String.format(IS_NOT_FOUND, "EL PROGRAMA CON EL ID " + moodleRequest.getBackendId()).toLowerCase()));
-        
-        if(programaRepository.existsByMoodleId(moodleRequest.getMoodleId())) {
+                        String.format(IS_NOT_FOUND, "EL PROGRAMA CON EL ID " + moodleRequest.getBackendId())
+                                .toLowerCase()));
+
+        if (programaRepository.existsByMoodleId(moodleRequest.getMoodleId())) {
             throw new ProgramaExistsException(
                     String.format(IS_ALREADY_USE, "El moodleId de programa " + moodleRequest.getMoodleId()));
         }
@@ -82,20 +98,20 @@ public class ProgramaServiceImplementation implements IProgramaService {
         programaRepository.save(programa);
     }
 
-
-    public void vincularHistoricoMoodleId(MoodleRequest moodleRequest) throws ProgramaNotFoundException, ProgramaExistsException {
+    public void vincularHistoricoMoodleId(MoodleRequest moodleRequest)
+            throws ProgramaNotFoundException, ProgramaExistsException {
         Programa programa = programaRepository.findById(moodleRequest.getBackendId())
                 .orElseThrow(() -> new ProgramaNotFoundException(
-                        String.format(IS_NOT_FOUND, "EL PROGRAMA CON EL ID " + moodleRequest.getBackendId()).toLowerCase()));
-        
-        if(programaRepository.existsByHistoricoMoodleId(moodleRequest.getMoodleId())) {
+                        String.format(IS_NOT_FOUND, "EL PROGRAMA CON EL ID " + moodleRequest.getBackendId())
+                                .toLowerCase()));
+
+        if (programaRepository.existsByHistoricoMoodleId(moodleRequest.getMoodleId())) {
             throw new ProgramaExistsException(
                     String.format(IS_ALREADY_USE, "El moodleId de programa " + moodleRequest.getMoodleId()));
         }
         programa.setHistoricoMoodleId(moodleRequest.getMoodleId());
         programaRepository.save(programa);
     }
-
 
     @Override
     public ProgramaDTO actualizarPrograma(ProgramaDTO programaDTO, Integer id)
@@ -129,41 +145,48 @@ public class ProgramaServiceImplementation implements IProgramaService {
         }).toList();
     }
 
-    public SemestreProgramaResponse listarSemestresPorPrograma(Integer programaId) throws ProgramaNotFoundException{
+    public SemestreProgramaResponse listarSemestresPorPrograma(Integer programaId) throws ProgramaNotFoundException {
         Programa programa = programaRepository.findById(programaId)
                 .orElseThrow(() -> new ProgramaNotFoundException(
                         String.format(IS_NOT_FOUND, "EL PROGRAMA CON EL ID " + programaId).toLowerCase()));
 
-       
         return mapToSemestreProgramaResponse(programa);
     }
 
     private SemestreProgramaResponse mapToSemestreProgramaResponse(Programa programa) {
-    // Obtener todos los semestres asociados al programa
-    List<SemestrePrograma> semestresPrograma = semestreProgramaRepository.findByPrograma(programa);
-    
-    // Mapear cada SemestrePrograma a un SemestreResponse
-    List<SemestreProgramaResponse.SemestreResponse> semestreResponses = semestresPrograma.stream()
-            .map(semestrePrograma -> {
-                return new SemestreProgramaResponse.SemestreResponse().builder()
-                        .id(semestrePrograma.getId())
-                        .nombre(semestrePrograma.getSemestre().getNombre())
-                        .numero(semestrePrograma.getSemestre().getNumero())
-                        .moodleId(semestrePrograma.getMoodleId())
-                        .build();
-            })
-            .toList();
-    
-    
-    // Construir y retornar la respuesta completa
-    return SemestreProgramaResponse.builder()
-            .id(programa.getId())
-            .nombre(programa.getNombre())
-            .codigo(programa.getCodigo())
-            .semestres(semestreResponses)
-            .moodleId(programa.getMoodleId())
-            .esPosgrado(programa.getEsPosgrado())
-            .build();
-}
+        // Obtener todos los semestres asociados al programa
+        List<SemestrePrograma> semestresPrograma = semestreProgramaRepository.findByPrograma(programa);
 
+        // Mapear cada SemestrePrograma a un SemestreResponse
+        List<SemestreProgramaResponse.SemestreResponse> semestreResponses = semestresPrograma.stream()
+                .map(semestrePrograma -> {
+                    return new SemestreProgramaResponse.SemestreResponse().builder()
+                            .id(semestrePrograma.getId())
+                            .nombre(semestrePrograma.getSemestre().getNombre())
+                            .numero(semestrePrograma.getSemestre().getNumero())
+                            .moodleId(semestrePrograma.getMoodleId())
+                            .build();
+                })
+                .toList();
+
+        // Construir y retornar la respuesta completa
+        return SemestreProgramaResponse.builder()
+                .id(programa.getId())
+                .nombre(programa.getNombre())
+                .codigo(programa.getCodigo())
+                .semestres(semestreResponses)
+                .moodleId(programa.getMoodleId())
+                .esPosgrado(programa.getEsPosgrado())
+                .build();
+    }
+
+    private String calcularSemestre(Date fechaMatriculacion) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(fechaMatriculacion);
+
+                int mes = cal.get(Calendar.MONTH) + 1; // Enero = 0
+                int anio = cal.get(Calendar.YEAR);
+
+                return anio + "-" + (mes <= 6 ? "I" : "II");
+        }
 }

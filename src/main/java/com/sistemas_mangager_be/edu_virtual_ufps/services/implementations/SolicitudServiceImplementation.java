@@ -15,6 +15,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.entities.CambioEstadoMatricula;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.EstadoEstudiante;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.EstadoMatricula;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Estudiante;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.GrupoCohorte;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Matricula;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Solicitud;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Soporte;
@@ -31,9 +32,13 @@ import com.sistemas_mangager_be.edu_virtual_ufps.repositories.SolicitudRepositor
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.SoporteRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.TipoSolicitudRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.ISolicitudService;
+import com.sistemas_mangager_be.edu_virtual_ufps.services.moodle.MoodleMatriculaService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.SolicitudDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.SolicitudResponse;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class SolicitudServiceImplementation implements ISolicitudService {
 
@@ -45,6 +50,8 @@ public class SolicitudServiceImplementation implements ISolicitudService {
     public static final String ARE_NOT_EQUALS = "%s no son iguales";
     public static final String IS_NOT_CORRECT = "%s no es correcta";
 
+    @Autowired
+    private MoodleMatriculaService moodleMatriculaService;
     @Autowired
     private CambioEstadoMatriculaRepository cambioEstadoMatriculaRepository;
 
@@ -387,9 +394,21 @@ public class SolicitudServiceImplementation implements ISolicitudService {
         // 3. Cambiar estado de la matrícula a "Cancelada" (ID 3)
         EstadoMatricula estadoCancelada = estadoMatriculaRepository.findById(3)
                 .orElseThrow(() -> new SolicitudException("Estado 'Cancelada' no configurado"));
+        Estudiante estudiante = solicitud.getMatriculaId().getEstudianteId();
+        GrupoCohorte grupoCohorte = solicitud.getMatriculaId().getGrupoCohorteId();
 
+        if (estudiante.getMoodleId() != null && !estudiante.getMoodleId().isEmpty() &&
+                grupoCohorte.getMoodleId() != null && !grupoCohorte.getMoodleId().isEmpty()) {
+            try {
+                moodleMatriculaService.suspenderMatriculaEnMoodle(estudiante, grupoCohorte);
+            } catch (Exception e) {
+                // Log del error pero permitir que la transacción continúe
+                log.error("Error al cancelar la matrícula en Moodle: {}", e.getMessage());
+            }
+        }
         solicitud.getMatriculaId().setEstadoMatriculaId(estadoCancelada);
         crearCambioEstadoMatricula(solicitud.getMatriculaId(), estadoCancelada, usuario);
+
         matriculaRepository.save(solicitud.getMatriculaId());
     }
 
@@ -420,6 +439,18 @@ public class SolicitudServiceImplementation implements ISolicitudService {
             for (Matricula matricula : matriculasEnCurso) {
 
                 matricula.setEstadoMatriculaId(estadoCancelada);
+                Estudiante estudiante = matricula.getEstudianteId();
+                GrupoCohorte grupoCohorte = matricula.getGrupoCohorteId();
+
+                if (estudiante.getMoodleId() != null && !estudiante.getMoodleId().isEmpty() &&
+                        grupoCohorte.getMoodleId() != null && !grupoCohorte.getMoodleId().isEmpty()) {
+                    try {
+                         moodleMatriculaService.suspenderMatriculaEnMoodle(estudiante, grupoCohorte);
+                    } catch (Exception e) {
+                        // Log del error pero permitir que la transacción continúe
+                        log.error("Error al realizar el aplazamiento de semestre en Moodle: {}", e.getMessage());
+                    }
+                }
                 matriculaRepository.save(matricula);
                 crearCambioEstadoMatricula(matricula, estadoCancelada, usuario);
 

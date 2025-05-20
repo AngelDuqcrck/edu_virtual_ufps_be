@@ -213,7 +213,7 @@ public class PdfGeneratorService {
                 + "</span>, apoyó al Programa\n" +
                 "                <span class=\"highlight\">" + certificado.getPrograma() + "</span> realizando\n" +
                 "                <span class=\"highlight\">" + certificado.getActividades()
-                + "</span>,  estas actividades se llevaron \n" +
+                + "</span>.  Estas actividades se llevaron \n" +
                 "                a cabo durante el periodo académico <span class=\"highlight\">"
                 + certificado.getSemestre() + "</span>.\n" +
                 "            </p>\n" +
@@ -226,7 +226,7 @@ public class PdfGeneratorService {
                 +
                 "                    class=\"highlight\">Acuerdo 020 del 25 de junio del 2020</span>, por <span class=\"highlight\">"
                 +
-                "                   " + certificado.getCohorteNombre() + "</span>.\n" +
+                "                   " + certificado.getTipoContraprestacionNombre() + "</span>.\n" +
                 "            </p>\n" +
                 "            \n" +
                 "            <p class=\"parrafo\">\n" +

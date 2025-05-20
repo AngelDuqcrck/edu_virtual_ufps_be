@@ -1,18 +1,18 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.services.implementations;
 
-import com.sistemas_mangager_be.edu_virtual_ufps.entities.*;
-import com.sistemas_mangager_be.edu_virtual_ufps.oracle.entities.EstudianteOracle;
-import com.sistemas_mangager_be.edu_virtual_ufps.oracle.repositories.EstudianteOracleRepository;
-import com.sistemas_mangager_be.edu_virtual_ufps.repositories.*;
-import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.EstudianteMigradoDTO;
+// import com.sistemas_mangager_be.edu_virtual_ufps.entities.*;
+// import com.sistemas_mangager_be.edu_virtual_ufps.oracle.entities.EstudianteOracle;
+// import com.sistemas_mangager_be.edu_virtual_ufps.oracle.repositories.EstudianteOracleRepository;
+// import com.sistemas_mangager_be.edu_virtual_ufps.repositories.*;
+// import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.EstudianteMigradoDTO;
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.beans.BeanUtils;
+// import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+// import java.util.Date;
+// import java.util.List;
+// import java.util.Optional;
 
 @Service
 public class MigracionEstudiantesService {

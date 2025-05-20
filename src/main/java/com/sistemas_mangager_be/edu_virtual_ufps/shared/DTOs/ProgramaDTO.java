@@ -18,4 +18,8 @@ public class ProgramaDTO {
 
     private String moodleId;
 
+    private String historicoMoodleId;
+
+    private String semestreActual;
+
 }

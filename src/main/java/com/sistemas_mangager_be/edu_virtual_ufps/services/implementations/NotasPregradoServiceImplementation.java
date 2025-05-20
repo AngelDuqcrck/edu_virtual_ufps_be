@@ -1,26 +1,26 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.services.implementations;
 
-import com.sistemas_mangager_be.edu_virtual_ufps.entities.NotasPregrado;
-import com.sistemas_mangager_be.edu_virtual_ufps.entities.GrupoCohorte;
-import com.sistemas_mangager_be.edu_virtual_ufps.repositories.NotasPregradoRepository;
-import com.sistemas_mangager_be.edu_virtual_ufps.repositories.GrupoCohorteRepository;
-import com.sistemas_mangager_be.edu_virtual_ufps.oracle.repositories.MateriasMatriculadasOracleRepository;
-import com.sistemas_mangager_be.edu_virtual_ufps.oracle.repositories.EstudianteOracleRepository;
-import com.sistemas_mangager_be.edu_virtual_ufps.oracle.entities.MateriasMatriculadasOracle;
-import com.sistemas_mangager_be.edu_virtual_ufps.oracle.entities.EstudianteOracle;
-import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.NotasPregradoDTO;
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.NotasException;
-import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.GrupoNotFoundException;
+// import com.sistemas_mangager_be.edu_virtual_ufps.entities.NotasPregrado;
+// import com.sistemas_mangager_be.edu_virtual_ufps.entities.GrupoCohorte;
+// import com.sistemas_mangager_be.edu_virtual_ufps.repositories.NotasPregradoRepository;
+// import com.sistemas_mangager_be.edu_virtual_ufps.repositories.GrupoCohorteRepository;
+// import com.sistemas_mangager_be.edu_virtual_ufps.oracle.repositories.MateriasMatriculadasOracleRepository;
+// import com.sistemas_mangager_be.edu_virtual_ufps.oracle.repositories.EstudianteOracleRepository;
+// import com.sistemas_mangager_be.edu_virtual_ufps.oracle.entities.MateriasMatriculadasOracle;
+// import com.sistemas_mangager_be.edu_virtual_ufps.oracle.entities.EstudianteOracle;
+// import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.NotasPregradoDTO;
+// import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.NotasException;
+// import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.GrupoNotFoundException;
 
-import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+// import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.ArrayList;
-import java.util.stream.Collectors;
+// import java.util.Date;
+// import java.util.List;
+// import java.util.Optional;
+// import java.util.ArrayList;
+// import java.util.stream.Collectors;
 
 @Service
 public class NotasPregradoServiceImplementation {
