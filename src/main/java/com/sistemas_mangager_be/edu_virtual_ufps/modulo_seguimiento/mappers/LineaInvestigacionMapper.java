@@ -1,5 +1,6 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.LineaInvestigacionBasicaDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.LineaInvestigacionDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.LineaInvestigacion;
 import org.mapstruct.*;
@@ -12,4 +13,6 @@ public interface LineaInvestigacionMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     LineaInvestigacion partialUpdate(LineaInvestigacionDto lineaInvestigacionDto, @MappingTarget LineaInvestigacion lineaInvestigacion);
+
+    LineaInvestigacionBasicaDto toDtoBasica(LineaInvestigacion lineaInvestigacion);
 }

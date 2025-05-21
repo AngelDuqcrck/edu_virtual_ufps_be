@@ -1,9 +1,6 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.controllers;
 
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.DefinitivaDto;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.LineaInvestigacionDto;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.ProyectoDto;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.UsuarioProyectoDto;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.*;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.services.ProyectoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -66,6 +63,11 @@ public class ProyectoController {
     @GetMapping("/lineas-investigacion")
     public ResponseEntity<List<LineaInvestigacionDto>> obtenerLineasInvestigacion() {
         return ResponseEntity.ok(proyectoService.listarLineasInvestigacion());
+    }
+
+    @GetMapping("/grupos/lineas-investigacion")
+    public ResponseEntity<List<GruposYLineasInvestigacionDto>> obtenerLineasInvestigacionPorGrupo() {
+        return ResponseEntity.ok(proyectoService.listarGruposConLineas());
     }
 }
 

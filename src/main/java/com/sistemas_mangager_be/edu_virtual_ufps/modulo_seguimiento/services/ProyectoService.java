@@ -7,10 +7,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.*;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.enums.EstadoProyecto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.SustentacionEvaluador;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.UsuarioProyecto;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.DefinitivaMapper;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.LineaInvestigacionMapper;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.ObjetivoEspecificoMapper;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.ProyectoMapper;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.*;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.*;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.RolRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.UsuarioRepository;
@@ -30,6 +27,8 @@ public class ProyectoService {
     private final UsuarioProyectoRepository usuarioProyectoRepository;
     private final LineaInvestigacionRepository lineaInvestigacionRepository;
     private final LineaInvestigacionMapper lineaInvestigacionMapper;
+    private final GrupoInvestigacionRepository grupoInvestigacionRepository;
+    private final GrupoInvestigacionMapper grupoInvestigacionMapper;
     private final ObjetivoEspecificoRepository objetivoEspecificoRepository;
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
@@ -44,7 +43,9 @@ public class ProyectoService {
 
     @Autowired
     public ProyectoService(ProyectoRepository proyectoRepository, UsuarioProyectoRepository usuarioProyectoRepository,
-                           LineaInvestigacionRepository lineaInvestigacionRepository, LineaInvestigacionMapper lineaInvestigacionMapper, ObjetivoEspecificoRepository objetivoEspecificoRepository,
+                           LineaInvestigacionRepository lineaInvestigacionRepository, LineaInvestigacionMapper lineaInvestigacionMapper,
+                           GrupoInvestigacionRepository grupoInvestigacionRepository, GrupoInvestigacionMapper grupoInvestigacionMapper,
+                           ObjetivoEspecificoRepository objetivoEspecificoRepository,
                            UsuarioRepository usuarioRepository, RolRepository rolRepository, ProyectoMapper proyectoMapper,
                            ObjetivoEspecificoMapper objetivoEspecificoMapper, DefinitivaMapper definitivaMapper,
                            DefinitivaRepository definitivaRepository,
@@ -54,6 +55,8 @@ public class ProyectoService {
         this.usuarioProyectoRepository = usuarioProyectoRepository;
         this.lineaInvestigacionRepository = lineaInvestigacionRepository;
         this.lineaInvestigacionMapper = lineaInvestigacionMapper;
+        this.grupoInvestigacionRepository = grupoInvestigacionRepository;
+        this.grupoInvestigacionMapper = grupoInvestigacionMapper;
         this.objetivoEspecificoRepository = objetivoEspecificoRepository;
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
@@ -301,5 +304,27 @@ public class ProyectoService {
         return lineaInvestigacionRepository.findAll().stream()
                 .map(lineaInvestigacionMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<GruposYLineasInvestigacionDto> listarGruposConLineas() {
+        List<GrupoInvestigacion> grupos = grupoInvestigacionRepository.findAll();
+
+        return grupos.stream().map(grupo -> {
+            GrupoInvestigacionDto grupoDto = grupoInvestigacionMapper.toDto(grupo);
+
+            List<LineaInvestigacion> lineas = lineaInvestigacionRepository.findByGrupoInvestigacionId(grupo.getId());
+
+            List<LineaInvestigacionBasicaDto> lineasDto = lineas.stream()
+                    .map(lineaInvestigacionMapper::toDtoBasica)
+                    .collect(Collectors.toList());
+
+            return new GruposYLineasInvestigacionDto(
+                    grupoDto.getId(),
+                    grupoDto.getNombre(),
+                    grupoDto.getPrograma(),
+                    lineasDto
+            );
+        }).collect(Collectors.toList());
     }
 }
