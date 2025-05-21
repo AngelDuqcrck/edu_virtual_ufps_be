@@ -24,4 +24,5 @@ public class SustentacionDto implements Serializable {
     String descripcion;
     Integer idProyecto ;
     List<SustentacionEvaluadorDto> evaluadores;
+    List<CriterioEvaluacionDto> criteriosEvaluacion;
 }

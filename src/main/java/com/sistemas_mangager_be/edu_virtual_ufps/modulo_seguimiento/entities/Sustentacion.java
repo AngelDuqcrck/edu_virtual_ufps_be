@@ -35,5 +35,8 @@ public class Sustentacion {
 
     @OneToMany(mappedBy = "sustentacion", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<SustentacionDocumento> documentos;
+
+    @OneToMany(mappedBy = "sustentacion", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<CriterioEvaluacion> criteriosEvaluacion;
 }
 

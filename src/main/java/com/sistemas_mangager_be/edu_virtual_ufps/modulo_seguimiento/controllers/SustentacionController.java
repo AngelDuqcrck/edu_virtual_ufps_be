@@ -1,5 +1,6 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.controllers;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.CriterioEvaluacionDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.services.SustentacionService;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.SustentacionDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.SustentacionEvaluadorDto;
@@ -60,6 +61,24 @@ public class SustentacionController {
     public ResponseEntity<Void> evaluarSustentacion(@RequestBody SustentacionEvaluadorDto dto) {
         sustentacionService.evaluarSustentacion(dto);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/agregar-criterio")
+    public ResponseEntity<Void> agregarCriterio(@RequestBody CriterioEvaluacionDto criterioEvaluacionDto) {
+        sustentacionService.agregarCriterioEvaluacion(criterioEvaluacionDto);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/actualizar-criterio/{idCriterio}")
+    public ResponseEntity<Void> actualizarCriterio(@PathVariable Integer idCriterio, @RequestBody CriterioEvaluacionDto criterioEvaluacionDto) {
+        sustentacionService.actualizarCriterioEvaluacion(idCriterio, criterioEvaluacionDto);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/eliminar-criterio/{idCriterio}")
+    public ResponseEntity<Void> eliminarCriterio(@PathVariable Integer idCriterio) {
+        sustentacionService.eliminarCriterioEvaluacion(idCriterio);
+        return ResponseEntity.noContent().build();
     }
 
 }

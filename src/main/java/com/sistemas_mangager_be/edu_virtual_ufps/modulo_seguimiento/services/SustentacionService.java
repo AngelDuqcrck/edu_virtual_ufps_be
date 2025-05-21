@@ -1,11 +1,15 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.services;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Usuario;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.CriterioEvaluacionDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.SustentacionDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.SustentacionEvaluadorDto;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.CriterioEvaluacion;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.Sustentacion;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.SustentacionEvaluador;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.CriterioEvaluacionMapper;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.SustentacionMapper;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.CriterioEvaluacionRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.ProyectoRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.SustentacionEvaluadorRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.SustentacionRepository;
@@ -26,16 +30,21 @@ public class SustentacionService {
     private final SustentacionEvaluadorRepository sustentacionEvaluadorRepository;
     private final ProyectoRepository proyectoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final CriterioEvaluacionRepository criterioEvaluacionRepository;
+    private final CriterioEvaluacionMapper criterioEvaluacionMapper;
+
 
     @Autowired
     public SustentacionService(SustentacionRepository sustentacionRepository, SustentacionMapper sustentacionMapper,
                                SustentacionEvaluadorRepository sustentacionEvaluadorRepository, ProyectoRepository proyectoRepository,
-                               UsuarioRepository usuarioRepository) {
+                               UsuarioRepository usuarioRepository, CriterioEvaluacionRepository criterioEvaluacionRepository, CriterioEvaluacionMapper criterioEvaluacionMapper) {
         this.sustentacionRepository = sustentacionRepository;
         this.sustentacionMapper = sustentacionMapper;
         this.sustentacionEvaluadorRepository = sustentacionEvaluadorRepository;
         this.proyectoRepository = proyectoRepository;
         this.usuarioRepository = usuarioRepository;
+        this.criterioEvaluacionRepository = criterioEvaluacionRepository;
+        this.criterioEvaluacionMapper = criterioEvaluacionMapper;
     }
 
     @Transactional
@@ -75,7 +84,14 @@ public class SustentacionService {
                 })
                 .collect(Collectors.toList());
 
+        List<CriterioEvaluacion> criterios = criterioEvaluacionRepository.findBySustentacionId(id);
+
+        List<CriterioEvaluacionDto> criteriosDto = criterios.stream()
+                .map(criterio -> criterioEvaluacionMapper.toDto(criterio))
+                .collect(Collectors.toList());
+
         sustentacionDto.setEvaluadores(evaluadoresDto);
+        sustentacionDto.setCriteriosEvaluacion(criteriosDto);
         return sustentacionDto;
     }
 
@@ -181,5 +197,34 @@ public class SustentacionService {
             sustentacionEvaluador.setNota(sustentacionEvaluadorDto.getNota());
         }
         sustentacionEvaluadorRepository.save(sustentacionEvaluador);
+    }
+
+    @Transactional
+    public CriterioEvaluacionDto agregarCriterioEvaluacion(CriterioEvaluacionDto criterioEvaluacionDto) {
+        Sustentacion sustentacion = sustentacionRepository.findById(criterioEvaluacionDto.getIdSustentacion())
+                .orElseThrow(() -> new EntityNotFoundException("Sustentación no encontrada"));
+
+        CriterioEvaluacion criterio = criterioEvaluacionMapper.toEntity(criterioEvaluacionDto);
+        criterio.setSustentacion(sustentacion);
+
+        return criterioEvaluacionMapper.toDto(criterioEvaluacionRepository.save(criterio));
+    }
+
+    @Transactional
+    public CriterioEvaluacionDto actualizarCriterioEvaluacion(Integer id, CriterioEvaluacionDto dto) {
+        CriterioEvaluacion criterio = criterioEvaluacionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Criterio no encontrado"));
+
+        criterioEvaluacionMapper.partialUpdate(dto, criterio);
+
+        return criterioEvaluacionMapper.toDto(criterioEvaluacionRepository.save(criterio));
+    }
+
+    @Transactional
+    public void eliminarCriterioEvaluacion(Integer id) {
+        if (!criterioEvaluacionRepository.existsById(id)) {
+            throw new EntityNotFoundException("Criterio no encontrado");
+        }
+        criterioEvaluacionRepository.deleteById(id);
     }
 }
