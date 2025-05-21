@@ -3,6 +3,7 @@ package com.sistemas_mangager_be.edu_virtual_ufps.controllers;
 import java.util.List;
 import java.util.Map;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.TipoPrograma;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,11 +18,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundException;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.TipoProgramaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IProgramaService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.ProgramaDTO;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.requests.MoodleRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.HttpResponse;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.SemestreProgramaResponse;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/programas")
@@ -29,6 +33,9 @@ public class ProgramaController {
     
     @Autowired
     private IProgramaService programaService;
+
+    @Autowired
+    private TipoProgramaRepository tipoProgramaRepository;
     
     /*
      * Crea un nuevo programa
@@ -109,4 +116,11 @@ public class ProgramaController {
                                                 " Programa actualizado con exito"),
                                 HttpStatus.OK);
     }
+
+    @GetMapping("/tipos-programa")
+    public ResponseEntity<List<TipoPrograma>> listarTiposPrograma(){
+        List<TipoPrograma> tiposPrograma = tipoProgramaRepository.findAll();
+        return new ResponseEntity<>(tiposPrograma, HttpStatus.OK);
+    }
+    
 }
