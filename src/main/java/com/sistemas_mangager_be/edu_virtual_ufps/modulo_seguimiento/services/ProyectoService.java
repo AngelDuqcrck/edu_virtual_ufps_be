@@ -2,15 +2,13 @@ package com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.services;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Rol;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Usuario;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.DefinitivaDto;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.ObjetivoEspecificoDto;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.ProyectoDto;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.UsuarioProyectoDto;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.*;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.*;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.enums.EstadoProyecto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.SustentacionEvaluador;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.UsuarioProyecto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.DefinitivaMapper;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.LineaInvestigacionMapper;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.ObjetivoEspecificoMapper;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.ProyectoMapper;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.*;
@@ -31,6 +29,7 @@ public class ProyectoService {
     private final ProyectoRepository proyectoRepository;
     private final UsuarioProyectoRepository usuarioProyectoRepository;
     private final LineaInvestigacionRepository lineaInvestigacionRepository;
+    private final LineaInvestigacionMapper lineaInvestigacionMapper;
     private final ObjetivoEspecificoRepository objetivoEspecificoRepository;
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
@@ -45,7 +44,7 @@ public class ProyectoService {
 
     @Autowired
     public ProyectoService(ProyectoRepository proyectoRepository, UsuarioProyectoRepository usuarioProyectoRepository,
-                           LineaInvestigacionRepository lineaInvestigacionRepository, ObjetivoEspecificoRepository objetivoEspecificoRepository,
+                           LineaInvestigacionRepository lineaInvestigacionRepository, LineaInvestigacionMapper lineaInvestigacionMapper, ObjetivoEspecificoRepository objetivoEspecificoRepository,
                            UsuarioRepository usuarioRepository, RolRepository rolRepository, ProyectoMapper proyectoMapper,
                            ObjetivoEspecificoMapper objetivoEspecificoMapper, DefinitivaMapper definitivaMapper,
                            DefinitivaRepository definitivaRepository,
@@ -54,6 +53,7 @@ public class ProyectoService {
         this.proyectoRepository = proyectoRepository;
         this.usuarioProyectoRepository = usuarioProyectoRepository;
         this.lineaInvestigacionRepository = lineaInvestigacionRepository;
+        this.lineaInvestigacionMapper = lineaInvestigacionMapper;
         this.objetivoEspecificoRepository = objetivoEspecificoRepository;
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
@@ -294,5 +294,12 @@ public class ProyectoService {
         proyectoRepository.save(proyecto);
 
         return definitivaMapper.toDto(proyecto.getDefinitiva());
+    }
+
+    @Transactional(readOnly = true)
+    public List<LineaInvestigacionDto> listarLineasInvestigacion() {
+        return lineaInvestigacionRepository.findAll().stream()
+                .map(lineaInvestigacionMapper::toDto)
+                .collect(Collectors.toList());
     }
 }

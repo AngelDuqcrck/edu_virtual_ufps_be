@@ -1,6 +1,7 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.controllers;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.DefinitivaDto;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.LineaInvestigacionDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.ProyectoDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.UsuarioProyectoDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.services.ProyectoService;
@@ -60,6 +61,11 @@ public class ProyectoController {
     @GetMapping("/{idProyecto}/definitiva")
     public ResponseEntity<DefinitivaDto> obtenerDefinitiva(@PathVariable Integer idProyecto) {
         return ResponseEntity.ok(proyectoService.calcularYAsignarDefinitiva(idProyecto));
+    }
+
+    @GetMapping("/lineas-investigacion")
+    public ResponseEntity<List<LineaInvestigacionDto>> obtenerLineasInvestigacion() {
+        return ResponseEntity.ok(proyectoService.listarLineasInvestigacion());
     }
 }
 
