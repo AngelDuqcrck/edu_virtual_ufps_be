@@ -1,6 +1,7 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.controllers;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.*;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.enums.TipoSustentacion;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.services.ProyectoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,9 +56,10 @@ public class ProyectoController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{idProyecto}/definitiva")
-    public ResponseEntity<DefinitivaDto> obtenerDefinitiva(@PathVariable Integer idProyecto) {
-        return ResponseEntity.ok(proyectoService.calcularYAsignarDefinitiva(idProyecto));
+    @GetMapping("/definitiva")
+    public ResponseEntity<DefinitivaDto> obtenerDefinitiva(@RequestParam Integer idProyecto,
+                                                           @RequestParam TipoSustentacion tipoSustentacion) {
+        return ResponseEntity.ok(proyectoService.calcularYAsignarDefinitiva(idProyecto, tipoSustentacion));
     }
 
     @GetMapping("/lineas-investigacion")

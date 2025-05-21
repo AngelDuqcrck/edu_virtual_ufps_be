@@ -6,6 +6,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.Sustent
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.SustentacionEvaluadorDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.CriterioEvaluacion;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.Sustentacion;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.enums.TipoSustentacion;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.SustentacionEvaluador;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.CriterioEvaluacionMapper;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.SustentacionMapper;
@@ -61,12 +62,12 @@ public class SustentacionService {
     }
 
     @Transactional(readOnly = true)
-    public SustentacionDto obtenerSustentacion(Integer id) {
-        Sustentacion sustentacion = sustentacionRepository.findById(id)
+    public SustentacionDto obtenerSustentacion(Integer idProyecto, TipoSustentacion tipoSustentacion) {
+        Sustentacion sustentacion = sustentacionRepository.findByProyectoIdAndOptionalTipoSustentacion(idProyecto, tipoSustentacion)
                 .orElseThrow(() -> new EntityNotFoundException("Sustentacion no encontrada"));
 
         SustentacionDto sustentacionDto = sustentacionMapper.toDto(sustentacion);
-        List<SustentacionEvaluador> evaluadores = sustentacionEvaluadorRepository.findByIdSustentacion(id);
+        List<SustentacionEvaluador> evaluadores = sustentacionEvaluadorRepository.findByIdSustentacion(sustentacion.getId());
 
         List<SustentacionEvaluadorDto> evaluadoresDto = evaluadores.stream()
                 .map(evaluador -> {
@@ -84,7 +85,7 @@ public class SustentacionService {
                 })
                 .collect(Collectors.toList());
 
-        List<CriterioEvaluacion> criterios = criterioEvaluacionRepository.findBySustentacionId(id);
+        List<CriterioEvaluacion> criterios = criterioEvaluacionRepository.findBySustentacionId(sustentacion.getId());
 
         List<CriterioEvaluacionDto> criteriosDto = criterios.stream()
                 .map(criterio -> criterioEvaluacionMapper.toDto(criterio))

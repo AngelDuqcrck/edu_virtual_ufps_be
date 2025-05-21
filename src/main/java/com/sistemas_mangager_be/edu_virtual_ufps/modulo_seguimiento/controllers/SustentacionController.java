@@ -1,6 +1,7 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.controllers;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.CriterioEvaluacionDto;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.enums.TipoSustentacion;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.services.SustentacionService;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.SustentacionDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.SustentacionEvaluadorDto;
@@ -24,9 +25,10 @@ public class SustentacionController {
         return ResponseEntity.ok(sustentacionService.crearSustentacion(dto));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<SustentacionDto> obtenerSustentacion(@PathVariable Integer id) {
-        return ResponseEntity.ok(sustentacionService.obtenerSustentacion(id));
+    @GetMapping("/seleccionar")
+    public ResponseEntity<SustentacionDto> obtenerSustentacion(@RequestParam Integer idProyecto,
+                                                               @RequestParam TipoSustentacion tipoSustentacion) {
+        return ResponseEntity.ok(sustentacionService.obtenerSustentacion(idProyecto, tipoSustentacion));
     }
 
     @GetMapping

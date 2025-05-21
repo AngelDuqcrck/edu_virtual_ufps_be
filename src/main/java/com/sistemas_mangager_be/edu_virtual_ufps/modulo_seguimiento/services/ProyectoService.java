@@ -5,6 +5,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.entities.Usuario;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.*;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.*;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.enums.EstadoProyecto;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.enums.TipoSustentacion;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.SustentacionEvaluador;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.UsuarioProyecto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.*;
@@ -260,7 +261,7 @@ public class ProyectoService {
     }
 
     @Transactional
-    public DefinitivaDto calcularYAsignarDefinitiva(Integer idProyecto) {
+    public DefinitivaDto calcularYAsignarDefinitiva(Integer idProyecto, TipoSustentacion tipoSustentacion) {
         Proyecto proyecto = proyectoRepository.findById(idProyecto)
                 .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
 
@@ -268,7 +269,7 @@ public class ProyectoService {
             throw new RuntimeException("Solo se puede asignar la calificación en la fase de " + EstadoProyecto.FASE_9.getDescripcion() + " ("+ EstadoProyecto.FASE_9.name() + ")");
         }
 
-        Sustentacion sustentacion = sustentacionRepository.findByProyectoId(idProyecto)
+        Sustentacion sustentacion = sustentacionRepository.findByProyectoIdAndOptionalTipoSustentacion(idProyecto, tipoSustentacion)
                 .orElseThrow(() -> new RuntimeException("Sustentación no encontrada para el proyecto"));
 
         List<SustentacionEvaluador> evaluadores = sustentacionEvaluadorRepository.findByIdSustentacion(sustentacion.getId());

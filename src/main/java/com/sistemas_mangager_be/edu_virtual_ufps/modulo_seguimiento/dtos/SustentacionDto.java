@@ -18,10 +18,13 @@ import java.util.List;
 @NoArgsConstructor
 public class SustentacionDto implements Serializable {
     Integer id;
+    String tipoSustentacion;
     LocalDate fecha;
     LocalTime hora;
+    LocalTime horaFin;
     String lugar;
     String descripcion;
+    Boolean asistenciaConfirmada;
     Integer idProyecto ;
     List<SustentacionEvaluadorDto> evaluadores;
     List<CriterioEvaluacionDto> criteriosEvaluacion;

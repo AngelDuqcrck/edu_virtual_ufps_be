@@ -1,5 +1,6 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.enums.TipoSustentacion;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.SustentacionDocumento;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.SustentacionEvaluador;
 import jakarta.persistence.*;
@@ -21,10 +22,15 @@ public class Sustentacion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Enumerated(EnumType.STRING)
+    private TipoSustentacion tipoSustentacion;
+
     private LocalDate fecha;
     private LocalTime hora;
+    private LocalTime horaFin;
     private String lugar;
     private String descripcion;
+    private Boolean asistenciaConfirmada;
 
     @ManyToOne
     @JoinColumn(name = "id_proyecto")

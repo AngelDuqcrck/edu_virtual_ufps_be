@@ -11,5 +11,7 @@ public class ActividadDto {
     private String descripcion;
     private LocalDate fecha;
     private LocalTime hora;
+    private LocalTime horaFin;
     private String lugar;
+    private Boolean asistenciaConfirmada;
 }

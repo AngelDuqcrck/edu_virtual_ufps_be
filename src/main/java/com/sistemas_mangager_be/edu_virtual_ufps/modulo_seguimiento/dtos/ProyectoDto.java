@@ -28,4 +28,5 @@ public class ProyectoDto implements Serializable {
     List<UsuarioProyectoDto> usuariosAsignados;
     LocalDate createdAt;
     LocalDate updatedAt;
+    DefinitivaDto definitiva;
 }

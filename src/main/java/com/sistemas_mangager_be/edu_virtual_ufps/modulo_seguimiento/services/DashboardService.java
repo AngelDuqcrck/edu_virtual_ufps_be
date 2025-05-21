@@ -106,13 +106,14 @@ public class DashboardService {
         );
     }
 
-    private List<ActividadDto> mapSustentaciones(Optional<Sustentacion> lista) {
+    private List<ActividadDto> mapSustentaciones(List<Sustentacion> lista) {
         return lista.stream().map(s -> {
             ActividadDto dto = new ActividadDto();
-            dto.setTipo("Sustentación");
+            dto.setTipo(s.getTipoSustentacion().toString());
             dto.setDescripcion(s.getDescripcion());
             dto.setFecha(s.getFecha());
             dto.setHora(s.getHora());
+            dto.setHoraFin(s.getHoraFin());
             dto.setLugar(s.getLugar());
             return dto;
         }).collect(Collectors.toList());
