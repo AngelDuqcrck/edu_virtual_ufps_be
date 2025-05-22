@@ -12,6 +12,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.*;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.*;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.RolRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.UsuarioRepository;
+import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -170,10 +171,23 @@ public class ProyectoService {
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('ROLE_DOCENTE') or hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
-    public List<ProyectoDto> listarProyectos() {
-        List<Proyecto> proyectos = proyectoRepository.findAll();
+    public List<ProyectoDto> listarProyectos(@Nullable Integer lineaId,
+                                             @Nullable Integer grupoId,
+                                             @Nullable Integer programaId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Usuario activo = usuarioRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        String rol = activo.getRolId().getNombre();
 
-        List<ProyectoDto> proyectosDto = proyectos.stream()
+        List<Proyecto> proyectos = null;
+
+        if (rol.equalsIgnoreCase("ROLE_SUPERADMIN") || rol.equalsIgnoreCase("ROLE_ADMIN")) {
+            proyectos = proyectoRepository.findAllByFiltros(lineaId, grupoId, programaId);
+        } else if (rol.equalsIgnoreCase("Docente")) {
+            proyectos = usuarioProyectoRepository.findProyectosByDocenteDirectorId(activo.getId(), lineaId, grupoId, programaId);
+        }
+
+        return proyectos.stream()
                 .map(proyecto -> {
                     ProyectoDto proyectoDto = proyectoMapper.toDto(proyecto);
 
@@ -195,12 +209,9 @@ public class ProyectoService {
                             .collect(Collectors.toList());
 
                     proyectoDto.setUsuariosAsignados(usuarios);
-
                     return proyectoDto;
                 })
                 .collect(Collectors.toList());
-
-        return proyectosDto;
     }
 
     @Transactional

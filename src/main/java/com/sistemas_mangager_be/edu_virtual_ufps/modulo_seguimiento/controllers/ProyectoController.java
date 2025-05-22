@@ -34,8 +34,10 @@ public class ProyectoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProyectoDto>> listarProyectos() {
-        return ResponseEntity.ok(proyectoService.listarProyectos());
+    public ResponseEntity<List<ProyectoDto>> listarProyectos(@RequestParam(required = false) Integer lineaId,
+                                                             @RequestParam(required = false) Integer grupoId,
+                                                             @RequestParam(required = false) Integer programaId) {
+        return ResponseEntity.ok(proyectoService.listarProyectos(lineaId, grupoId, programaId));
     }
 
     @PutMapping("/{id}")

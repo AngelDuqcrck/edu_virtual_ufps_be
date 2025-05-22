@@ -28,4 +28,22 @@ public interface UsuarioProyectoRepository extends JpaRepository<UsuarioProyecto
     WHERE up.usuario.id = :idUsuario AND LOWER(r.nombre) = 'estudiante'
     """)
     Optional<Proyecto> findProyectoByEstudianteId(@Param("idUsuario") Integer idUsuario);
+
+    @Query("""
+    SELECT up.proyecto FROM UsuarioProyecto up
+    JOIN up.rol r
+    JOIN up.proyecto p
+    JOIN p.lineaInvestigacion li
+    JOIN li.grupoInvestigacion gi
+    JOIN gi.programa pr
+    WHERE up.usuario.id = :idUsuario
+      AND LOWER(r.nombre) = 'director'
+      AND (:lineaId IS NULL OR li.id = :lineaId)
+      AND (:grupoId IS NULL OR gi.id = :grupoId)
+      AND (:programaId IS NULL OR pr.id = :programaId)
+""")
+    List<Proyecto> findProyectosByDocenteDirectorId(@Param("idUsuario") Integer idUsuario,
+                                                    @Param("lineaId") Integer lineaId,
+                                                    @Param("grupoId") Integer grupoId,
+                                                    @Param("programaId") Integer programaId);
 }
