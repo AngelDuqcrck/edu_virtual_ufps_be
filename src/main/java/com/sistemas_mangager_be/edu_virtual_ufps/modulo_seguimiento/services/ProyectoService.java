@@ -174,16 +174,19 @@ public class ProyectoService {
     public List<ProyectoDto> listarProyectos(@Nullable Integer lineaId,
                                              @Nullable Integer grupoId,
                                              @Nullable Integer programaId) {
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Usuario activo = usuarioRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        String rol = activo.getRolId().getNombre();
+
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_SUPERADMIN"));
 
         List<Proyecto> proyectos = null;
 
-        if (rol.equalsIgnoreCase("ROLE_SUPERADMIN") || rol.equalsIgnoreCase("ROLE_ADMIN")) {
+        if (isAdmin) {
             proyectos = proyectoRepository.findAllByFiltros(lineaId, grupoId, programaId);
-        } else if (rol.equalsIgnoreCase("Docente")) {
+        } else {
+            Usuario activo = usuarioRepository.findByEmail(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
             proyectos = usuarioProyectoRepository.findProyectosByDocenteDirectorId(activo.getId(), lineaId, grupoId, programaId);
         }
 
@@ -218,9 +221,18 @@ public class ProyectoService {
     @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE') or hasAuthority('ROLE_DOCENTE') or hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
     public ProyectoDto actualizarProyecto(Integer id, ProyectoDto proyectoDto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Usuario activo = usuarioRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        String rol = activo.getRolId().getNombre();
+
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_SUPERADMIN"));
+
+        Usuario activo = null;
+        String rol = null;
+
+        if (!isAdmin) {
+            activo = usuarioRepository.findByEmail(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            rol = activo.getRolId().getNombre();
+        }
 
         Proyecto existente = proyectoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
@@ -228,7 +240,7 @@ public class ProyectoService {
         existente.setUpdatedAt(LocalDate.now());
 
         //solo actualiza el estado si el rol es docente, admin o superadmin
-        if(rol.equals("Docente") || rol.equals("ROLE_SUPERADMIN") || rol.equals("ROLE_ADMIN")){
+        if("Docente".equalsIgnoreCase(rol) || isAdmin){
             EstadoProyecto estadoActual = existente.getEstadoActual();
             Integer nuevoEstadoCode = proyectoDto.getEstadoActual();
 
@@ -272,7 +284,7 @@ public class ProyectoService {
         //datos basicos
 
         //actualizar objetivos
-        if (objetivosDto != null && rol.equals("Estudiante")) {
+        if (objetivosDto != null && "Estudiante".equalsIgnoreCase(rol)) {
             List<Integer> idsObjetivosEnviado = objetivosDto.stream()
                     .filter(o -> o.getId() != null)
                     .map(ObjetivoEspecificoDto::getId)
@@ -301,7 +313,7 @@ public class ProyectoService {
                     existente.getObjetivosEspecificos().add(nuevoObjetivo);
                 }
             }
-        } else if (objetivosDto != null && (rol.equals("Docente") || rol.equals("ROLE_SUPERADMIN") || rol.equals("ROLE_ADMIN"))) {
+        } else if (objetivosDto != null && ("Docente".equalsIgnoreCase(rol) || isAdmin)) {
             List<Integer> idsObjetivosEnviado = objetivosDto.stream()
                     .filter(o -> o.getId() != null)
                     .map(ObjetivoEspecificoDto::getId)
@@ -339,22 +351,28 @@ public class ProyectoService {
     @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE') or hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
     public void eliminarProyecto(Integer id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Usuario activo = usuarioRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        if (activo.getRolId().getNombre().equals("Estudiante")) {
-            Proyecto proyecto = usuarioProyectoRepository.findProyectoByEstudianteId(activo.getId())
-                    .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_SUPERADMIN"));
 
-            if (!proyecto.getId().equals(id)) {
-                throw new RuntimeException("No tienes permiso para eliminar este proyecto.");
-            }
-            proyectoRepository.deleteById(proyecto.getId());
-        } else {
+        if (isAdmin) {
             if (!proyectoRepository.existsById(id)) {
                 throw new RuntimeException("Proyecto no encontrado");
             }
             proyectoRepository.deleteById(id);
+        } else {
+            Usuario activo = usuarioRepository.findByEmail(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            if (activo.getRolId().getNombre().equals("Estudiante")) {
+                Proyecto proyecto = usuarioProyectoRepository.findProyectoByEstudianteId(activo.getId())
+                        .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
+
+                if (!proyecto.getId().equals(id)) {
+                    throw new RuntimeException("No tienes permiso para eliminar este proyecto.");
+                }
+                proyectoRepository.deleteById(proyecto.getId());
+            }
         }
     }
 

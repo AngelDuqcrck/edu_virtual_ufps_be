@@ -37,4 +37,6 @@ public interface SustentacionRepository extends JpaRepository<Sustentacion, Inte
             @Param("idProyecto") Integer idProyecto,
             @Param("tipoSustentacion") TipoSustentacion tipoSustentacion
     );
+
+    boolean existsByProyectoIdAndTipoSustentacion(Integer idProyecto, TipoSustentacion tipoSustentacion);
 }

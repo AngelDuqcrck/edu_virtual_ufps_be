@@ -32,8 +32,8 @@ public class SustentacionController {
     }
 
     @GetMapping
-    public ResponseEntity<List<SustentacionDto>> listarSustentaciones() {
-        return ResponseEntity.ok(sustentacionService.listarSustentaciones());
+    public ResponseEntity<List<SustentacionDto>> listarSustentaciones(@RequestParam(required = false) Integer idProyecto) {
+        return ResponseEntity.ok(sustentacionService.listarSustentaciones(idProyecto));
     }
 
     @PutMapping("/{id}")
