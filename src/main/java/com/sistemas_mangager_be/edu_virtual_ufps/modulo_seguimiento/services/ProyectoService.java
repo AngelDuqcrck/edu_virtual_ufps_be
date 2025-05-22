@@ -13,6 +13,9 @@ import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.RolRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,7 +73,17 @@ public class ProyectoService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE')")
     public ProyectoDto crearProyecto(ProyectoDto proyectoDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Usuario activo = usuarioRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        boolean yaTieneProyecto = usuarioProyectoRepository.existsByUsuarioIdAndRolNombre(activo.getId(), "Estudiante");
+        if (yaTieneProyecto) {
+            throw new RuntimeException("El estudiante ya tiene un proyecto asignado");
+        }
+
         LineaInvestigacion lineaInvestigacion = null;
         if (proyectoDto.getLineaInvestigacion() != null && proyectoDto.getLineaInvestigacion().getId() != null) {
             lineaInvestigacion = lineaInvestigacionRepository
@@ -83,10 +96,52 @@ public class ProyectoService {
         proyecto.setCreatedAt(LocalDate.now());
         proyecto.setUpdatedAt(LocalDate.now());
         Proyecto guardado = proyectoRepository.save(proyecto);
+
+        UsuarioProyecto usuarioProyecto = new UsuarioProyecto();
+        usuarioProyecto.setIdUsuario(activo.getId());
+        usuarioProyecto.setIdProyecto(guardado.getId());
+        usuarioProyecto.setUsuario(activo);
+        usuarioProyecto.setProyecto(guardado);
+        usuarioProyecto.setRol(activo.getRolId());
+        usuarioProyectoRepository.save(usuarioProyecto);
+
         return proyectoMapper.toDto(guardado);
     }
 
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE')")
+    public ProyectoDto obtenerProyectoEstudiante() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Usuario activo = usuarioRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Proyecto proyecto = usuarioProyectoRepository.findProyectoByEstudianteId(activo.getId())
+                .orElseThrow(() -> new RuntimeException("El estudiante no tiene un proyecto asignado"));
+
+        ProyectoDto proyectoDto = proyectoMapper.toDto(proyecto);
+        List<UsuarioProyecto> asignaciones = usuarioProyectoRepository.findByIdProyecto(proyecto.getId());
+
+        List<UsuarioProyectoDto> usuarios = asignaciones.stream()
+                .map(asignacion -> {
+                    Usuario usuario = asignacion.getUsuario();
+                    return new UsuarioProyectoDto(
+                            asignacion.getIdUsuario(),
+                            asignacion.getIdProyecto(),
+                            asignacion.getRol(),
+                            usuario.getNombreCompleto(),
+                            usuario.getFotoUrl(),
+                            usuario.getEmail(),
+                            usuario.getTelefono()
+                    );
+                })
+                .collect(Collectors.toList());
+
+        proyectoDto.setUsuariosAsignados(usuarios);
+        return proyectoDto;
+    }
+
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('ROLE_DOCENTE') or hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
     public ProyectoDto obtenerProyecto(Integer id) {
         Proyecto proyecto = proyectoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
@@ -114,6 +169,7 @@ public class ProyectoService {
     }
 
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('ROLE_DOCENTE') or hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
     public List<ProyectoDto> listarProyectos() {
         List<Proyecto> proyectos = proyectoRepository.findAll();
 
@@ -148,13 +204,52 @@ public class ProyectoService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE') or hasAuthority('ROLE_DOCENTE') or hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
     public ProyectoDto actualizarProyecto(Integer id, ProyectoDto proyectoDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Usuario activo = usuarioRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        String rol = activo.getRolId().getNombre();
+
         Proyecto existente = proyectoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
 
         existente.setUpdatedAt(LocalDate.now());
 
-        LineaInvestigacion nuevaLinea = null;
+        //solo actualiza el estado si el rol es docente, admin o superadmin
+        if(rol.equals("Docente") || rol.equals("ROLE_SUPERADMIN") || rol.equals("ROLE_ADMIN")){
+            EstadoProyecto estadoActual = existente.getEstadoActual();
+            Integer nuevoEstadoCode = proyectoDto.getEstadoActual();
+
+            if (nuevoEstadoCode != null) {
+                EstadoProyecto nuevoEstado = EstadoProyecto.values()[nuevoEstadoCode];
+
+                if (nuevoEstado.ordinal() > estadoActual.ordinal() + 1) {
+                    throw new RuntimeException("No se puede saltar fases. Debe avanzar una fase a la vez.");
+                }
+
+                if (nuevoEstado == EstadoProyecto.FASE_7) {
+                    boolean todosEvaluados = existente.getObjetivosEspecificos().stream()
+                            .allMatch(obj -> obj.getEvaluacion() != null && obj.getEvaluacion());
+
+                    if (!todosEvaluados) {
+                        throw new RuntimeException("No se puede pasar a la FASE_7. Todos los objetivos deben estar evaluados.");
+                    }
+                }
+            }
+        }
+        else if(rol.equals("Estudiante")){
+            proyectoDto.setEstadoActual(null);
+        }
+        //solo actualiza el estado si el rol es docente, admin o superadmin
+
+        //quitar objetivos para manejarlos por separado
+        List<ObjetivoEspecificoDto> objetivosDto = proyectoDto.getObjetivosEspecificos();
+        proyectoDto.setObjetivosEspecificos(null);
+        //quitar objetivos para manejarlos por separado
+
+        //datos basicos
+        LineaInvestigacion nuevaLinea = existente.getLineaInvestigacion();
         if (proyectoDto.getLineaInvestigacion() != null && proyectoDto.getLineaInvestigacion().getId() != null) {
             nuevaLinea = lineaInvestigacionRepository
                     .findById(proyectoDto.getLineaInvestigacion().getId())
@@ -162,32 +257,40 @@ public class ProyectoService {
         }
         existente.setLineaInvestigacion(nuevaLinea);
 
-        EstadoProyecto estadoActual = existente.getEstadoActual();
-        Integer nuevoEstadoCode = proyectoDto.getEstadoActual();
+        proyectoMapper.partialUpdate(proyectoDto, existente);
+        //datos basicos
 
-        if (nuevoEstadoCode != null) {
-            EstadoProyecto nuevoEstado = EstadoProyecto.values()[nuevoEstadoCode];
+        //actualizar objetivos
+        if (objetivosDto != null && rol.equals("Estudiante")) {
+            List<Integer> idsObjetivosEnviado = objetivosDto.stream()
+                    .filter(o -> o.getId() != null)
+                    .map(ObjetivoEspecificoDto::getId)
+                    .collect(Collectors.toList());
 
-            if (nuevoEstado.ordinal() > estadoActual.ordinal() + 1) {
-                throw new RuntimeException("No se puede saltar fases. Debe avanzar una fase a la vez.");
-            }
+            existente.getObjetivosEspecificos().removeIf(obj ->
+                    !idsObjetivosEnviado.contains(obj.getId())
+            );
 
-            if (nuevoEstado == EstadoProyecto.FASE_7) {
-                boolean todosEvaluados = existente.getObjetivosEspecificos().stream()
-                        .allMatch(obj -> obj.getEvaluacion() != null && obj.getEvaluacion());
+            for (ObjetivoEspecificoDto objetivoDto : objetivosDto) {
+                if (objetivoDto.getId() != null) {
+                    ObjetivoEspecifico objetivoExistente = objetivoEspecificoRepository.findById(objetivoDto.getId())
+                            .orElseThrow(() -> new RuntimeException("Objetivo con id " + objetivoDto.getId() + " no encontrado"));
 
-                if (!todosEvaluados) {
-                    throw new RuntimeException("No se puede pasar a la FASE_7. Todos los objetivos deben estar evaluados.");
+                    objetivoDto.setAvanceReal(null);
+                    objetivoDto.setEvaluacion(null);
+                    objetivoEspecificoMapper.partialUpdate(objetivoDto, objetivoExistente);
+                    objetivoEspecificoRepository.save(objetivoExistente);
+                } else {
+                    ObjetivoEspecifico nuevoObjetivo = new ObjetivoEspecifico();
+                    nuevoObjetivo.setProyecto(existente);
+                    nuevoObjetivo.setNumeroOrden(objetivoDto.getNumeroOrden());
+                    nuevoObjetivo.setDescripcion(objetivoDto.getDescripcion());
+
+                    objetivoEspecificoRepository.save(nuevoObjetivo);
+                    existente.getObjetivosEspecificos().add(nuevoObjetivo);
                 }
             }
-        }
-
-        List<ObjetivoEspecificoDto> objetivosDto = proyectoDto.getObjetivosEspecificos();
-        proyectoDto.setObjetivosEspecificos(null);
-
-        proyectoMapper.partialUpdate(proyectoDto, existente);
-
-        if (objetivosDto != null) {
+        } else if (objetivosDto != null && (rol.equals("Docente") || rol.equals("ROLE_SUPERADMIN") || rol.equals("ROLE_ADMIN"))) {
             List<Integer> idsObjetivosEnviado = objetivosDto.stream()
                     .filter(o -> o.getId() != null)
                     .map(ObjetivoEspecificoDto::getId)
@@ -215,20 +318,37 @@ public class ProyectoService {
                 }
             }
         }
+        //actualizar objetivos
 
         Proyecto actualizado = proyectoRepository.save(existente);
         return proyectoMapper.toDto(actualizado);
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE') or hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
     public void eliminarProyecto(Integer id) {
-        if (!proyectoRepository.existsById(id)) {
-            throw new RuntimeException("Proyecto no encontrado");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Usuario activo = usuarioRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (activo.getRolId().getNombre().equals("Estudiante")) {
+            Proyecto proyecto = usuarioProyectoRepository.findProyectoByEstudianteId(activo.getId())
+                    .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
+
+            if (!proyecto.getId().equals(id)) {
+                throw new RuntimeException("No tienes permiso para eliminar este proyecto.");
+            }
+            proyectoRepository.deleteById(proyecto.getId());
+        } else {
+            if (!proyectoRepository.existsById(id)) {
+                throw new RuntimeException("Proyecto no encontrado");
+            }
+            proyectoRepository.deleteById(id);
         }
-        proyectoRepository.deleteById(id);
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
     public void asignarUsuarioAProyecto(UsuarioProyectoDto dto) {
         Proyecto proyecto = proyectoRepository.findById(dto.getIdProyecto())
                 .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
@@ -250,6 +370,7 @@ public class ProyectoService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
     public void desasignarUsuarioDeProyecto(Integer idUsuario, Integer idProyecto) {
         boolean existe = usuarioProyectoRepository.existsByIdUsuarioAndIdProyecto(idUsuario, idProyecto);
 
@@ -261,6 +382,7 @@ public class ProyectoService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('ROLE_DOCENTE') or hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
     public DefinitivaDto calcularYAsignarDefinitiva(Integer idProyecto, TipoSustentacion tipoSustentacion) {
         Proyecto proyecto = proyectoRepository.findById(idProyecto)
                 .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
@@ -301,6 +423,7 @@ public class ProyectoService {
     }
 
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE') or hasAuthority('ROLE_DOCENTE') or hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
     public List<LineaInvestigacionDto> listarLineasInvestigacion() {
         return lineaInvestigacionRepository.findAll().stream()
                 .map(lineaInvestigacionMapper::toDto)
@@ -308,6 +431,7 @@ public class ProyectoService {
     }
 
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE') or hasAuthority('ROLE_DOCENTE') or hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
     public List<GruposYLineasInvestigacionDto> listarGruposConLineas() {
         List<GrupoInvestigacion> grupos = grupoInvestigacionRepository.findAll();
 

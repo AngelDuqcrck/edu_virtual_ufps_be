@@ -23,6 +23,11 @@ public class ProyectoController {
         return ResponseEntity.ok(proyectoService.crearProyecto(dto));
     }
 
+    @GetMapping("/proyecto-estudiante")
+    public ResponseEntity<ProyectoDto> obtenerProyectoEstudiante() {
+        return ResponseEntity.ok(proyectoService.obtenerProyectoEstudiante());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ProyectoDto> obtenerProyecto(@PathVariable Integer id) {
         return ResponseEntity.ok(proyectoService.obtenerProyecto(id));
