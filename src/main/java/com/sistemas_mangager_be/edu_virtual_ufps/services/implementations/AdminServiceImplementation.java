@@ -8,9 +8,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Admin;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Usuario;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ChangeNotAllowedException;
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.EmailNotFoundException;
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.PasswordNotEqualsException;
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.TokenNotValidException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.AdminRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.security.JwtTokenGenerator;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.interfaces.IAdminService;
 import com.sistemas_mangager_be.edu_virtual_ufps.shared.DTOs.AdminDTO;
 
@@ -33,6 +38,12 @@ public class AdminServiceImplementation implements IAdminService {
 
     @Autowired
     private AdminRepository adminRepository;
+
+    @Autowired
+    private JwtTokenGenerator jwtTokenGenerator;
+
+    @Autowired
+    private EmailService emailService; 
 
     @Override
     public AdminDTO registrarAdmin(AdminDTO adminDTO) {
@@ -110,7 +121,39 @@ public class AdminServiceImplementation implements IAdminService {
         }).toList();
     }
 
-    public void terminarSemestre(Integer programaId, String semestre){
+    public void enviarTokenRecuperacion(String email) throws UserNotFoundException{
+        Admin admin = adminRepository.findByEmail(email).orElse(null);
+        if(admin == null){
+            throw new UserNotFoundException(String.format(IS_NOT_FOUND, "El administrador"));
+        }
 
+        String tokenRecuperacion = jwtTokenGenerator.generarTokenRecuperacion(email);
+
+        String urlRecuperacion = "http://localhost:5173/cambiar-contrasena?token=" + tokenRecuperacion;
+
+        emailService.sendEmailPassword(email, "Solicitud de Cambio de Contraseña",
+                "Para cambiar la contraseña y completar la solicitud, por favor presione el siguiente boton:",
+                urlRecuperacion);
+    }
+
+    public void restablecerpassword(String token, String nuevaPassword, String nuevaPassword2)
+            throws TokenNotValidException, EmailNotFoundException, PasswordNotEqualsException {
+        String email = jwtTokenGenerator.obtenerCorreoDeJWT(token);
+
+        if (email == null) {
+            throw new TokenNotValidException(String.format(IS_NOT_VALID, "EL TOKEN").toUpperCase());
+        }
+
+        Admin usuario = adminRepository.findByEmail(email).orElse(null);
+        if (usuario == null) {
+            throw new EmailNotFoundException(String.format(IS_NOT_FOUND, "EL CORREO").toUpperCase());
+        }
+
+        if (!nuevaPassword.equals(nuevaPassword2)) {
+            throw new PasswordNotEqualsException(String.format(ARE_NOT_EQUALS, "LAS NUEVAS CONTRASEÑAS").toUpperCase());
+        }
+
+        usuario.setPassword(passwordEncoder.encode(nuevaPassword));
+        adminRepository.save(usuario);
     }
 }

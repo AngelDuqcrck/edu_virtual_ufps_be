@@ -124,6 +124,14 @@ public class ExceptionHandling {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
+    @ExceptionHandler(TokenNotValidException.class)
+    public ResponseEntity<HttpResponse> tokenNotValid(TokenNotValidException exception) {
+        return createHttpResponse(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+    @ExceptionHandler(PasswordNotEqualsException.class)
+    public ResponseEntity<HttpResponse> passwordNotEqualsException(PasswordNotEqualsException exception) {
+        return createHttpResponse(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
     @ExceptionHandler(SemestreException.class)
     public ResponseEntity<HttpResponse> semestreException(SemestreException exception) {
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());

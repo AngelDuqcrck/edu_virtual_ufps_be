@@ -49,4 +49,8 @@ public interface IGrupoService {
       public List<GrupoCohorteResponse> listarGruposPorCohorteGrupo (Integer cohorteGrupoId) throws CohorteNotFoundException;
 
       public EstudianteGrupoResponse listarEstudiantesPorGrupoCohorte(Long grupoCohorteId);
+
+      public List<GrupoCohorteDocenteResponse> listarGruposPorPrograma (Integer programaId) throws ProgramaNotFoundException;
+
+      public List<GrupoCohorteDocenteResponse> listarGruposCohortePorMateria(Integer materiaId) throws MateriaNotFoundException;
 }

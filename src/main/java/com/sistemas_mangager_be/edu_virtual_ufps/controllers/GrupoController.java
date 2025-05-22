@@ -20,6 +20,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.CohorteNotFoundExcep
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.GrupoExistException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.GrupoNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.MateriaNotFoundException;
+import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.ProgramaNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.RoleNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.UserNotFoundException;
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.VinculacionNotFoundException;
@@ -72,9 +73,9 @@ public class GrupoController {
     }
 
     @GetMapping("/materia/{materiaId}")
-    public ResponseEntity<List<GrupoResponse>> listarGruposPorMateria(@PathVariable Integer materiaId)
+    public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGruposPorMateria(@PathVariable Integer materiaId)
             throws MateriaNotFoundException {
-        List<GrupoResponse> grupoResponse = iGrupoService.listarGruposPorMateria(materiaId);
+        List<GrupoCohorteDocenteResponse> grupoResponse = iGrupoService.listarGruposCohortePorMateria(materiaId);
         return new ResponseEntity<>(grupoResponse, HttpStatus.OK);
     }
 
@@ -144,6 +145,13 @@ public class GrupoController {
         return new ResponseEntity<>(grupoCohorteDocenteResponse, HttpStatus.OK);
     }
 
+    @GetMapping("/programa/{programaId}")
+    public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGruposPorPrograma(@PathVariable Integer programaId)
+            throws ProgramaNotFoundException {
+        List<GrupoCohorteDocenteResponse> grupoCohorteDocenteResponse = iGrupoService.listarGruposPorPrograma(programaId);
+        return new ResponseEntity<>(grupoCohorteDocenteResponse, HttpStatus.OK);
+    }
+    
     @GetMapping("/grupo/{grupoId}")
     public ResponseEntity<List<GrupoCohorteDocenteResponse>> listarGruposPorGrupo(@PathVariable Integer grupoId)
             throws GrupoNotFoundException {
