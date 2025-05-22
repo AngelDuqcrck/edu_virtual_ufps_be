@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -39,6 +40,9 @@ public class SecurityConfig {
 
         @Autowired
         private CustomOAuth2FailureHandler customOAuth2FailureHandler;
+
+        @Value("${app.frontend.success-url}")
+        private String frontUrl;
 
         // Este bean va a encargarse de verificar la información de los usuarios que se
         // logearan en el sistema
@@ -90,10 +94,7 @@ public class SecurityConfig {
                                                 )
                                                 .successHandler((request, response, authentication) -> {
                                                         String token = jwtTokenGenerator().generarTokenGlobal(authentication);
-
-                                                        response.setContentType("application/json");
-                                                        response.setCharacterEncoding("UTF-8");
-                                                        response.getWriter().write("{\"token\": \"" + token + "\"}");
+                                                        response.sendRedirect(frontUrl + "?token=" + token);
                                                 })
                                                 .failureHandler(customOAuth2FailureHandler)
                                 )
