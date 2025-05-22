@@ -32,7 +32,7 @@ public class ColoquioController {
     }
 
     @GetMapping("/usuario/{usuarioId}")
-    public List<ColoquioDto> obtenerColoquiosPorUsuarioId(@PathVariable Long usuarioId) {
+    public List<ColoquioDto> obtenerColoquiosPorUsuarioId(@PathVariable Integer usuarioId) {
         return coloquioService.obtenerColoquiosPorUsuarioId(usuarioId);
     }
 

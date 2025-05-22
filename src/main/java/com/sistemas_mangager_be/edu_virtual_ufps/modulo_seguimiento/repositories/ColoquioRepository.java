@@ -19,7 +19,7 @@ public interface ColoquioRepository extends JpaRepository<Coloquio, Integer> {
     JOIN Estudiante e ON e.cohorteId = cg
     WHERE e.usuarioId.id = :usuarioId
     """)
-    List<Coloquio> findColoquiosByUsuarioId(Long usuarioId);
+    List<Coloquio> findColoquiosByUsuarioId(Integer usuarioId);
 
     List<Coloquio> findByFecha(LocalDate fecha);
 

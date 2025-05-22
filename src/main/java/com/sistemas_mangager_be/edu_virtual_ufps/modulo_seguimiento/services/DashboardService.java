@@ -1,5 +1,6 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.services;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Usuario;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.ActividadDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.DashboardDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.FaseDto;
@@ -10,6 +11,10 @@ import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.enu
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.ColoquioRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.ProyectoRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.SustentacionRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.UsuarioRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,16 +27,23 @@ public class DashboardService {
     private final ProyectoRepository proyectoRepository;
     private final SustentacionRepository sustentacionRepository;
     private final ColoquioRepository coloquioRepository;
+    private final UsuarioRepository usuarioRepository;
 
     public DashboardService(ProyectoRepository proyectoRepository,
                             SustentacionRepository sustentacionRepository,
-                            ColoquioRepository coloquioRepository) {
+                            ColoquioRepository coloquioRepository, UsuarioRepository usuarioRepository) {
         this.proyectoRepository = proyectoRepository;
         this.sustentacionRepository = sustentacionRepository;
         this.coloquioRepository = coloquioRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
-    public DashboardDto obtenerDashboard(Integer proyectoId, Long usuarioId) {
+    @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE')")
+    public DashboardDto obtenerDashboard(Integer proyectoId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Usuario activo = usuarioRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
         DashboardDto dto = new DashboardDto();
 
         Proyecto proyecto = proyectoRepository.findById(proyectoId).orElseThrow();
@@ -39,7 +51,7 @@ public class DashboardService {
 
         List<ActividadDto> actividades = new ArrayList<>();
         actividades.addAll(mapSustentaciones(sustentacionRepository.findByProyectoId(proyectoId)));
-        actividades.addAll(mapColoquios(coloquioRepository.findColoquiosByUsuarioId(usuarioId)));
+        actividades.addAll(mapColoquios(coloquioRepository.findColoquiosByUsuarioId(activo.getId())));
 
         LocalDateTime ahora = LocalDateTime.now();
         Optional<LocalDateTime> fechaMinimaOpt = actividades.stream()

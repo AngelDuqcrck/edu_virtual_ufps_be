@@ -55,7 +55,7 @@ public class ColoquioService {
     }
 
     @Transactional(readOnly = true)
-    public List<ColoquioDto> obtenerColoquiosPorUsuarioId(Long usuarioId) {
+    public List<ColoquioDto> obtenerColoquiosPorUsuarioId(Integer usuarioId) {
         return coloquioRepository.findColoquiosByUsuarioId(usuarioId)
                 .stream()
                 .map(coloquioMapper::toDto)

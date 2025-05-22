@@ -18,8 +18,8 @@ public class DashboardController {
         this.dashboardService = dashboardService;
     }
 
-    @GetMapping("/{idProyecto}/{idUsuario}")
-    public ResponseEntity<DashboardDto> getDashboard(@PathVariable Integer idProyecto, @PathVariable Long idUsuario) {
-        return ResponseEntity.ok(dashboardService.obtenerDashboard(idProyecto, idUsuario));
+    @GetMapping("/{idProyecto}")
+    public ResponseEntity<DashboardDto> getDashboard(@PathVariable Integer idProyecto) {
+        return ResponseEntity.ok(dashboardService.obtenerDashboard(idProyecto));
     }
 }
