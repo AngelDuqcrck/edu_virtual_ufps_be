@@ -37,6 +37,9 @@ public class SecurityConfig {
         @Autowired
         private CustomOAuth2UserService customOAuth2UserService;
 
+        @Autowired
+        private CustomOAuth2FailureHandler customOAuth2FailureHandler;
+
         // Este bean va a encargarse de verificar la información de los usuarios que se
         // logearan en el sistema
         @Bean
@@ -86,9 +89,14 @@ public class SecurityConfig {
                                                                                                       // de OAuth2
                                                 )
                                                 .successHandler((request, response, authentication) -> {
-                                                        // Lógica después de un inicio de sesión exitoso con Google
-                                                        response.sendRedirect("/home");
-                                                }))
+                                                        String token = jwtTokenGenerator().generarTokenGlobal(authentication);
+
+                                                        response.setContentType("application/json");
+                                                        response.setCharacterEncoding("UTF-8");
+                                                        response.getWriter().write("{\"token\": \"" + token + "\"}");
+                                                })
+                                                .failureHandler(customOAuth2FailureHandler)
+                                )
                                 .httpBasic(Customizer.withDefaults());
 
                 http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
