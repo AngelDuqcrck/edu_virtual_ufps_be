@@ -29,4 +29,6 @@ public class ProyectoDto implements Serializable {
     LocalDate createdAt;
     LocalDate updatedAt;
     DefinitivaDto definitiva;
+
+    String recomendacionDirectores;
 }

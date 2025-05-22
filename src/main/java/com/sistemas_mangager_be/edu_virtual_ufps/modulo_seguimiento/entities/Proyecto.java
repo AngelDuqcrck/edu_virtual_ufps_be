@@ -49,4 +49,6 @@ public class Proyecto {
 
     @OneToMany(mappedBy = "proyecto", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Sustentacion> sustentaciones;
+
+    private String recomendacionDirectores;
 }
