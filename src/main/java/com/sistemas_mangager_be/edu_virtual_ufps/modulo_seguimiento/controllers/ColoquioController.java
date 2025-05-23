@@ -31,9 +31,9 @@ public class ColoquioController {
         return coloquioService.obtenerColoquiosPorGrupoCohorteId(grupoCohorteId);
     }
 
-    @GetMapping("/usuario/{usuarioId}")
-    public List<ColoquioDto> obtenerColoquiosPorUsuarioId(@PathVariable Integer usuarioId) {
-        return coloquioService.obtenerColoquiosPorUsuarioId(usuarioId);
+    @GetMapping("/estudiante")
+    public List<ColoquioDto> obtenerColoquiosPorUsuarioId() {
+        return coloquioService.obtenerColoquiosPorUsuarioId();
     }
 
     @PutMapping("/{id}")
