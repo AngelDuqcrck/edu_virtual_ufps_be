@@ -62,7 +62,7 @@ public class DocumentoController {
     }
 
     @GetMapping("/coloquio/{idColoquio}")
-    public ResponseEntity<List<DocumentoDto>> listarDocumentosColoquio(@PathVariable Integer idColoquio) {
-        return ResponseEntity.ok(documentoService.listarDocumentosPorColoquio(idColoquio));
+    public ResponseEntity<List<DocumentoDto>> listarDocumentosColoquioEstudiante(@PathVariable Integer idColoquio, @RequestParam(required = false) Integer idEstudiante) {
+        return ResponseEntity.ok(documentoService.listarDocumentosPorColoquioEstudiante(idColoquio, idEstudiante));
     }
 }

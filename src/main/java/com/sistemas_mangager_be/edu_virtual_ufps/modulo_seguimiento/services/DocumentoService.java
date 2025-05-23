@@ -186,8 +186,23 @@ public class DocumentoService {
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE') or hasAuthority('ROLE_DOCENTE') or hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
-    public List<DocumentoDto> listarDocumentosPorColoquio(Integer idColoquio) {
-        List<ColoquioEstudiante> relaciones = coloquioEstudianteRepository.findByIdColoquio(idColoquio);
+    public List<DocumentoDto> listarDocumentosPorColoquioEstudiante(Integer idColoquio, @Nullable Integer idEstudiante) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        boolean isEstudiante = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ESTUDIANTE"));
+
+        if (isEstudiante){
+            Usuario activo = usuarioRepository.findByEmail(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            idEstudiante = activo.getId();
+        } else {
+            if (idEstudiante == null) {
+                throw new RuntimeException("El id del estudiante es requerido");
+            }
+        }
+
+        List<ColoquioEstudiante> relaciones = coloquioEstudianteRepository.findByIdColoquioAndIdEstudiante(idColoquio, idEstudiante);
 
         List<Integer> idsDocumento = relaciones.stream()
                 .map(ColoquioEstudiante::getIdDocumento)
