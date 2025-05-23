@@ -1,5 +1,6 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.EvaluacionObjetivo;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,7 +30,8 @@ public class ObjetivoEspecifico {
 
     private Integer avanceReal;
 
-    private Boolean evaluacion;
+    @Embedded
+    private EvaluacionObjetivo evaluacion;
 
     private LocalDate fecha_inicio;
 

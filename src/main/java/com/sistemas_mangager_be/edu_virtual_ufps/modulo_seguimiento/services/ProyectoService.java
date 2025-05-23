@@ -253,7 +253,10 @@ public class ProyectoService {
 
                 if (nuevoEstado == EstadoProyecto.FASE_7) {
                     boolean todosEvaluados = existente.getObjetivosEspecificos().stream()
-                            .allMatch(obj -> obj.getEvaluacion() != null && obj.getEvaluacion());
+                            .allMatch(obj -> {
+                                EvaluacionObjetivo eval = obj.getEvaluacion();
+                                return eval != null && eval.isDirector() && eval.isCodirector();
+                            });
 
                     if (!todosEvaluados) {
                         throw new RuntimeException("No se puede pasar a la FASE_7. Todos los objetivos deben estar evaluados.");

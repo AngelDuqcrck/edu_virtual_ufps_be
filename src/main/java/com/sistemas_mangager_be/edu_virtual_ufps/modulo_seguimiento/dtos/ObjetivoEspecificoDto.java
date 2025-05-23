@@ -20,7 +20,7 @@ public class ObjetivoEspecificoDto implements Serializable {
     String descripcion;
     Integer avanceReportado;
     Integer avanceReal;
-    Boolean evaluacion;
+    EvaluacionObjetivo evaluacion;
     LocalDate fecha_inicio;
     LocalDate fecha_fin;
 }
