@@ -8,6 +8,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.Colo
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.ColoquioRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.GrupoCohorteRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.UsuarioRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.shared.responses.GrupoCohorteDocenteResponse;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,12 +40,12 @@ public class ColoquioService {
 
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_DOCENTE') or hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
-    public void crearColoquio(ColoquioDto coloquioDto) {
+    public ColoquioDto crearColoquio(ColoquioDto coloquioDto) {
         GrupoCohorte grupoCohorte = grupoCohorteRepository.findById(coloquioDto.getGrupoCohorteId())
                 .orElseThrow(() -> new EntityNotFoundException("GrupoCohorte no encontrado"));
         Coloquio coloquio = coloquioMapper.toEntity(coloquioDto);
         coloquio.setGrupoCohorte(grupoCohorte);
-        coloquioRepository.save(coloquio);
+        return coloquioMapper.toDto(coloquioRepository.save(coloquio));
     }
 
     @Transactional(readOnly = true)
@@ -86,5 +87,40 @@ public class ColoquioService {
         Coloquio coloquio = coloquioMapper.partialUpdate(coloquioDto, existingColoquio);
         return coloquioMapper.toDto(coloquioRepository.save(coloquio));
     }
+
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('ROLE_DOCENTE')")
+    public List<GrupoCohorteDocenteResponse> listarGruposPorDocente() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Usuario activo = usuarioRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        List<GrupoCohorte> grupoCohorteDocentes = grupoCohorteRepository.findByDocenteId(activo);
+        return grupoCohorteDocentes.stream().map(grupoCohorteDocente -> {
+            GrupoCohorteDocenteResponse grupoCohorteDocenteResponse = new GrupoCohorteDocenteResponse().builder()
+                    .id(grupoCohorteDocente.getId())
+                    .grupoCohorteId(grupoCohorteDocente.getId())
+                    .grupoId(grupoCohorteDocente.getGrupoId().getId())
+                    .cohorteGrupoId(grupoCohorteDocente.getCohorteGrupoId().getId())
+                    .docenteId(grupoCohorteDocente.getDocenteId().getId())
+                    .docenteNombre(grupoCohorteDocente.getDocenteId().getNombreCompleto())
+                    .cohorteGrupoNombre(grupoCohorteDocente.getCohorteGrupoId().getNombre())
+                    .cohorteId(grupoCohorteDocente.getCohorteId().getId())
+                    .cohorteNombre(grupoCohorteDocente.getCohorteId().getNombre())
+                    .fechaCreacion(grupoCohorteDocente.getFechaCreacion().toString())
+                    .grupoNombre(grupoCohorteDocente.getGrupoId().getNombre())
+                    .codigoGrupo(grupoCohorteDocente.getGrupoId().getCodigo())
+                    .materia(grupoCohorteDocente.getGrupoId().getMateriaId().getNombre())
+                    .codigoMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getCodigo())
+                    .semestreMateria(grupoCohorteDocente.getGrupoId().getMateriaId().getSemestre())
+                    .moodleId(grupoCohorteDocente.getMoodleId())
+                    .materiaId(grupoCohorteDocente.getGrupoId().getMateriaId().getId())
+                    .programaId(grupoCohorteDocente.getGrupoId().getMateriaId().getPensumId().getProgramaId().getId())
+                    .build();
+            return grupoCohorteDocenteResponse;
+        }).toList();
+
+    }
+
 
 }
