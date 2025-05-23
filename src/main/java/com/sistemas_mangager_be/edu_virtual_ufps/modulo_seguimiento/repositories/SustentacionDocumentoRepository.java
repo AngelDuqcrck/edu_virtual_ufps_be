@@ -3,8 +3,11 @@ package com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositorie
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.id_compuesto.SustentacionDocumentoId;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.SustentacionDocumento;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SustentacionDocumentoRepository extends JpaRepository<SustentacionDocumento, SustentacionDocumentoId> {
 
@@ -16,4 +19,6 @@ public interface SustentacionDocumentoRepository extends JpaRepository<Sustentac
 
     void deleteByIdSustentacion(Integer idSustentacion);
 
+    @Query("SELECT s.proyecto.id FROM Sustentacion s WHERE s.id = :idSustentacion")
+    Optional<Integer> findProyectoIdBySustentacionId(@Param("idSustentacion") Integer idSustentacion);
 }

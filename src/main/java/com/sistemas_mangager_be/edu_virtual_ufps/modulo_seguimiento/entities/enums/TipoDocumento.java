@@ -4,6 +4,7 @@ public enum TipoDocumento {
     ANTEPROYECTO,
     ARTICULO,
     COLOQUIO,
-    SUSTENTACION,
-    EVALUACION
+    TESIS,
+    EVALUACION,
+    REQUISITOS
 }
