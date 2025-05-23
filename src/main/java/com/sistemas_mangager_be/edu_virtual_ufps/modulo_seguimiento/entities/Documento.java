@@ -1,6 +1,7 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.enums.TipoDocumento;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.ColoquioEstudiante;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.SustentacionDocumento;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -33,5 +34,8 @@ public class Documento {
 
     @OneToMany(mappedBy = "documento", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SustentacionDocumento> sustentacionDocumento;
+
+    @OneToOne(mappedBy = "documento", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ColoquioEstudiante coloquioEstudiante;
 }
 

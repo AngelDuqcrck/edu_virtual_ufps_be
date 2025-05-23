@@ -236,6 +236,7 @@ public class SustentacionService {
         Usuario activo = usuarioRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
+        sustentacionEvaluadorDto.setIdUsuario(activo.getId());
         boolean existe = sustentacionEvaluadorRepository.existsByIdUsuarioAndIdSustentacion(
                 sustentacionEvaluadorDto.getIdUsuario(),
                 sustentacionEvaluadorDto.getIdSustentacion());

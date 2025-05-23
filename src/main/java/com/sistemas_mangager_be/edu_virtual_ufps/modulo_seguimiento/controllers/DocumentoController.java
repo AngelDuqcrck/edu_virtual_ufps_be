@@ -52,4 +52,17 @@ public class DocumentoController {
     public ResponseEntity<List<DocumentoDto>> listarDocumentosSustentacion(@PathVariable Integer idSustentacion) {
         return ResponseEntity.ok(documentoService.listarDocumentosPorSustentacion(idSustentacion));
     }
+
+    @PostMapping("/coloquio")
+    public ResponseEntity<DocumentoDto> agregarDocumentoColoquio(
+            @RequestParam("archivo") MultipartFile archivo,
+            @RequestParam TipoDocumento tipoDocumento,
+            @RequestParam Integer idColoquio) {
+        return ResponseEntity.ok(documentoService.agregarDocumentoaColoquio(archivo, tipoDocumento, idColoquio));
+    }
+
+    @GetMapping("/coloquio/{idColoquio}")
+    public ResponseEntity<List<DocumentoDto>> listarDocumentosColoquio(@PathVariable Integer idColoquio) {
+        return ResponseEntity.ok(documentoService.listarDocumentosPorColoquio(idColoquio));
+    }
 }

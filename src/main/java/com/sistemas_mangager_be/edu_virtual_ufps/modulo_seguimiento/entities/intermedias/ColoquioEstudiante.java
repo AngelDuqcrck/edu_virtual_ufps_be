@@ -5,9 +5,15 @@ import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.Col
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.Documento;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.id_compuesto.ColoquioEstudianteId;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "coloquio_estudiante")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @IdClass(ColoquioEstudianteId.class)
 public class ColoquioEstudiante {
 

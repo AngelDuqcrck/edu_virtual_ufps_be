@@ -4,17 +4,22 @@ import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Usuario;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.DocumentoDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.Documento;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.Proyecto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.enums.TipoDocumento;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.ColoquioEstudiante;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.SustentacionDocumento;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.DocumentoMapper;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.*;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.UsuarioRepository;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,7 +38,9 @@ public class DocumentoService {
     private final DocumentoMapper documentoMapper;
     private final ProyectoRepository proyectoRepository;
     private final SustentacionDocumentoRepository sustentacionDocumentoRepository;
-
+    private final ColoquioEstudianteRepository coloquioEstudianteRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final UsuarioProyectoRepository usuarioProyectoRepository;
     private final AmazonS3 amazonS3Client;
 
     @Value("${cloud.aws.s3.bucket}")
@@ -42,11 +49,15 @@ public class DocumentoService {
     @Autowired
     public DocumentoService(DocumentoRepository documentoRepository, DocumentoMapper documentoMapper,
                             ProyectoRepository proyectoRepository, SustentacionDocumentoRepository sustentacionDocumentoRepository,
-                            AmazonS3 amazonS3Client) {
+                            ColoquioEstudianteRepository coloquioEstudianteRepository,
+                            UsuarioRepository usuarioRepository, UsuarioProyectoRepository usuarioProyectoRepository, AmazonS3 amazonS3Client) {
         this.documentoRepository = documentoRepository;
         this.documentoMapper = documentoMapper;
         this.proyectoRepository = proyectoRepository;
         this.sustentacionDocumentoRepository = sustentacionDocumentoRepository;
+        this.coloquioEstudianteRepository = coloquioEstudianteRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.usuarioProyectoRepository = usuarioProyectoRepository;
         this.amazonS3Client = amazonS3Client;
     }
 
@@ -139,6 +150,47 @@ public class DocumentoService {
 
         List<Integer> idsDocumento = relaciones.stream()
                 .map(SustentacionDocumento::getIdDocumento)
+                .collect(Collectors.toList());
+
+        List<Documento> documentos = documentoRepository.findAllById(idsDocumento);
+
+        return documentos.stream()
+                .map(documento -> {
+                    DocumentoDto dto = documentoMapper.toDto(documento);
+                    dto.setUrl(generarPresignedUrl(documento.getPath(), 60));
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE')")
+    public DocumentoDto agregarDocumentoaColoquio(MultipartFile archivo, TipoDocumento tipoDocumento, Integer idColoquio) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Usuario activo = usuarioRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Proyecto proyecto = usuarioProyectoRepository.findProyectoByEstudianteId(activo.getId())
+                .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
+
+        DocumentoDto documentoDto = guardarDocumento(proyecto.getId(), archivo, tipoDocumento);
+
+        ColoquioEstudiante coloquioEstudiante = new ColoquioEstudiante();
+        coloquioEstudiante.setIdColoquio(idColoquio);
+        coloquioEstudiante.setIdEstudiante(activo.getId());
+        coloquioEstudiante.setIdDocumento(documentoDto.getId());
+        coloquioEstudianteRepository.save(coloquioEstudiante);
+
+        return documentoDto;
+    }
+
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE') or hasAuthority('ROLE_DOCENTE') or hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
+    public List<DocumentoDto> listarDocumentosPorColoquio(Integer idColoquio) {
+        List<ColoquioEstudiante> relaciones = coloquioEstudianteRepository.findByIdColoquio(idColoquio);
+
+        List<Integer> idsDocumento = relaciones.stream()
+                .map(ColoquioEstudiante::getIdDocumento)
                 .collect(Collectors.toList());
 
         List<Documento> documentos = documentoRepository.findAllById(idsDocumento);
