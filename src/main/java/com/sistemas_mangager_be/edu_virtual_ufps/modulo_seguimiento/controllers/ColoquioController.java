@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/coloquios")
@@ -41,6 +42,11 @@ public class ColoquioController {
     @PutMapping("/{id}")
     public ResponseEntity<ColoquioDto> actualizarColoquio(@PathVariable Integer id, @RequestBody ColoquioDto coloquioDto) {
         return ResponseEntity.ok(coloquioService.actualizarColoquio(id, coloquioDto));
+    }
+
+    @GetMapping("/entregas/{idColoquio}")
+    public ResponseEntity<List<Map<String, Object>>> obtenerColoquiosConEntregasPorUsuarioId(@PathVariable Integer idColoquio) {
+        return ResponseEntity.ok(coloquioService.estudiantesConEntregasPorColoquioId(idColoquio));
     }
 
     @GetMapping("/docente")

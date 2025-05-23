@@ -5,6 +5,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.entities.Usuario;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.ColoquioDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.Coloquio;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.ColoquioMapper;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.ColoquioEstudianteRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.ColoquioRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.GrupoCohorteRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.UsuarioRepository;
@@ -17,7 +18,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,15 +31,18 @@ public class ColoquioService {
     private final UsuarioRepository usuarioRepository;
     private final ColoquioRepository coloquioRepository;
     private final ColoquioMapper coloquioMapper;
+    private final ColoquioEstudianteRepository coloquioEstudianteRepository;
 
 
     @Autowired
     public ColoquioService(GrupoCohorteRepository grupoCohorteRepository, UsuarioRepository usuarioRepository,
-                           ColoquioRepository coloquioRepository, ColoquioMapper coloquioMapper) {
+                           ColoquioRepository coloquioRepository, ColoquioMapper coloquioMapper,
+                           ColoquioEstudianteRepository coloquioEstudianteRepository) {
         this.grupoCohorteRepository = grupoCohorteRepository;
         this.usuarioRepository = usuarioRepository;
         this.coloquioRepository = coloquioRepository;
         this.coloquioMapper = coloquioMapper;
+        this.coloquioEstudianteRepository = coloquioEstudianteRepository;
     }
 
     @Transactional
@@ -86,6 +93,26 @@ public class ColoquioService {
 
         Coloquio coloquio = coloquioMapper.partialUpdate(coloquioDto, existingColoquio);
         return coloquioMapper.toDto(coloquioRepository.save(coloquio));
+    }
+
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE') or hasAuthority('ROLE_DOCENTE') or hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
+    public List<Map<String, Object>> estudiantesConEntregasPorColoquioId(Integer idColoquio) {
+        List<Integer> idsEstudiantes = coloquioEstudianteRepository.findIdEstudiantesConDocumentoEntregado(idColoquio);
+        if(idsEstudiantes == null || idsEstudiantes.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Usuario> usuarios = usuarioRepository.findAllById(idsEstudiantes);
+
+        return usuarios.stream()
+                .map(u -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", u.getId());
+                    map.put("nombreCompleto", u.getNombreCompleto());
+                    map.put("foto", u.getFotoUrl());
+                    return map;
+                })
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
