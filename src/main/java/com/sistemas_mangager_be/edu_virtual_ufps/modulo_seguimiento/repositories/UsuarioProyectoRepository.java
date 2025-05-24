@@ -37,11 +37,11 @@ public interface UsuarioProyectoRepository extends JpaRepository<UsuarioProyecto
     JOIN li.grupoInvestigacion gi
     JOIN gi.programa pr
     WHERE up.usuario.id = :idUsuario
-      AND LOWER(r.nombre) = 'director'
+      AND LOWER(r.nombre) IN ('director', 'codirector')
       AND (:lineaId IS NULL OR li.id = :lineaId)
       AND (:grupoId IS NULL OR gi.id = :grupoId)
       AND (:programaId IS NULL OR pr.id = :programaId)
-""")
+    """)
     List<Proyecto> findProyectosByDocenteDirectorId(@Param("idUsuario") Integer idUsuario,
                                                     @Param("lineaId") Integer lineaId,
                                                     @Param("grupoId") Integer grupoId,
