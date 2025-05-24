@@ -58,18 +58,41 @@ public class ColoquioService {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE') or hasAuthority('ROLE_DOCENTE') or hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
     public ColoquioDto obtenerColoquioPorId(Integer id) {
-        return coloquioRepository.findById(id)
+        ColoquioDto coloquioDto = coloquioRepository.findById(id)
                 .map(coloquioMapper::toDto)
                 .orElseThrow(() -> new EntityNotFoundException("Coloquio no encontrado"));
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isEstudiante = authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ESTUDIANTE"));
+
+        if(isEstudiante) {
+            Usuario activo = usuarioRepository.findByEmail(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            boolean tieneEntregas = coloquioEstudianteRepository.existsByColoquioIdAndIdEstudiante(coloquioDto.getId(), activo.getId());
+            coloquioDto.setTieneEntregas(tieneEntregas);
+        } else {
+            List<Integer> estudiantesConEntregas = coloquioEstudianteRepository.findIdEstudiantesConDocumentoEntregado(coloquioDto.getId());
+            boolean tieneEntregas = estudiantesConEntregas != null && !estudiantesConEntregas.isEmpty();
+            coloquioDto.setTieneEntregas(tieneEntregas);
+        }
+        return coloquioDto;
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE') or hasAuthority('ROLE_DOCENTE') or hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
     public List<ColoquioDto> obtenerColoquiosPorGrupoCohorteId(Long grupoCohorteId) {
-        return coloquioRepository.findByGrupoCohorteId(grupoCohorteId)
+        List<ColoquioDto> coloquios = coloquioRepository.findByGrupoCohorteId(grupoCohorteId)
                 .stream()
                 .map(coloquioMapper::toDto)
                 .collect(Collectors.toList());
+
+        coloquios.forEach(coloquioDto -> {
+            List<Integer> estudiantesConEntregas = coloquioEstudianteRepository.findIdEstudiantesConDocumentoEntregado(coloquioDto.getId());
+            boolean tieneEntregas = estudiantesConEntregas != null && !estudiantesConEntregas.isEmpty();
+            coloquioDto.setTieneEntregas(tieneEntregas);
+        });
+        return coloquios;
     }
 
     @Transactional(readOnly = true)
@@ -79,10 +102,16 @@ public class ColoquioService {
         Usuario activo = usuarioRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        return coloquioRepository.findColoquiosByUsuarioId(activo.getId())
+        List<ColoquioDto> coloquios = coloquioRepository.findColoquiosByUsuarioId(activo.getId())
                 .stream()
                 .map(coloquioMapper::toDto)
                 .collect(Collectors.toList());
+
+        coloquios.forEach(coloquioDto -> {
+            boolean tieneEntregas = coloquioEstudianteRepository.existsByColoquioIdAndIdEstudiante(coloquioDto.getId(), activo.getId());
+            coloquioDto.setTieneEntregas(tieneEntregas);
+        });
+        return coloquios;
     }
 
     @Transactional

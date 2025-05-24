@@ -1,5 +1,6 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos;
 
+import lombok.Data;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -9,7 +10,7 @@ import java.time.LocalTime;
 /**
  * DTO for {@link com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.Coloquio}
  */
-@Value
+@Data
 public class ColoquioDto implements Serializable {
     Integer id;
     LocalDate fecha;
@@ -20,4 +21,6 @@ public class ColoquioDto implements Serializable {
     Long grupoCohorteId;
     String grupo;
     String materia;
+
+    boolean tieneEntregas;
 }

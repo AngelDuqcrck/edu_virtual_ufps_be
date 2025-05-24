@@ -13,4 +13,6 @@ public interface ColoquioEstudianteRepository extends JpaRepository<ColoquioEstu
 
     @Query("SELECT DISTINCT ce.idEstudiante FROM ColoquioEstudiante ce WHERE ce.idColoquio = :idColoquio")
     List<Integer> findIdEstudiantesConDocumentoEntregado(@Param("idColoquio") Integer idColoquio);
+
+    boolean existsByColoquioIdAndIdEstudiante(Integer coloquioId, Integer usuarioId);
 }
