@@ -18,6 +18,7 @@ public class SustentacionEvaluadorDto implements Serializable {
     private Integer idUsuario;
     private String observaciones;
     private Double nota;
+    boolean juradoExterno;
 
     private String nombreUsuario;
     private String fotoUsuario;

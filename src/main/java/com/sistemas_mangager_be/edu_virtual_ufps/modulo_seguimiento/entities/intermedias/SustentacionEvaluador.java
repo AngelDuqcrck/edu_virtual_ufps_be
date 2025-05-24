@@ -23,6 +23,7 @@ public class SustentacionEvaluador {
 
     private String observaciones;
     private Double nota;
+    boolean juradoExterno;
 
     @ManyToOne
     @JoinColumn(name = "idSustentacion", insertable = false, updatable = false)

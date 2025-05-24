@@ -97,6 +97,7 @@ public class SustentacionService {
                             evaluador.getIdUsuario(),
                             evaluador.getObservaciones(),
                             evaluador.getNota(),
+                            evaluador.isJuradoExterno(),
                             usuario.getNombreCompleto(),
                             usuario.getFotoUrl(),
                             usuario.getEmail(),
@@ -161,6 +162,7 @@ public class SustentacionService {
                                 evaluador.getIdUsuario(),
                                 evaluador.getObservaciones(),
                                 evaluador.getNota(),
+                                evaluador.isJuradoExterno(),
                                 usuario.getNombreCompleto(),
                                 usuario.getFotoUrl(),
                                 usuario.getEmail(),
@@ -211,6 +213,7 @@ public class SustentacionService {
         SustentacionEvaluador sustentacionEvaluador = new SustentacionEvaluador();
         sustentacionEvaluador.setIdSustentacion(sustentacion.getId());
         sustentacionEvaluador.setIdUsuario(usuario.getId());
+        sustentacionEvaluador.setJuradoExterno(sustentacionEvaluadorDto.isJuradoExterno());
         sustentacionEvaluador.setSustentacion(sustentacion);
         sustentacionEvaluador.setUsuario(usuario);
 
