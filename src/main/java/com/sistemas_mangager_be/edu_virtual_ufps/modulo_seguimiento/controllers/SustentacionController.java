@@ -83,4 +83,10 @@ public class SustentacionController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/realizada/{idSustentacion}")
+    public ResponseEntity<Void> marcarSustentacionComoRealizada(@PathVariable Integer idSustentacion) {
+        sustentacionService.marcarSustentacionRealizada(idSustentacion);
+        return ResponseEntity.ok().build();
+    }
+
 }

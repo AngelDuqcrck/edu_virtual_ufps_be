@@ -293,4 +293,14 @@ public class SustentacionService {
         }
         criterioEvaluacionRepository.deleteById(id);
     }
+
+    @Transactional
+    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
+    public void marcarSustentacionRealizada(Integer idSustentacion) {
+        Sustentacion sustentacion = sustentacionRepository.findById(idSustentacion)
+                .orElseThrow(() -> new EntityNotFoundException("Sustentación no encontrada"));
+
+        sustentacion.setSustentacionRealizada(true);
+        sustentacionRepository.save(sustentacion);
+    }
 }

@@ -25,6 +25,8 @@ public class SustentacionDto implements Serializable {
     String lugar;
     String descripcion;
     Boolean asistenciaConfirmada;
+    Boolean sustentacionExterna;
+    Boolean sustentacionRealizada;
     Integer idProyecto ;
     List<SustentacionEvaluadorDto> evaluadores;
     List<CriterioEvaluacionDto> criteriosEvaluacion;

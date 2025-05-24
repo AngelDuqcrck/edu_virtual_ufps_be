@@ -31,6 +31,8 @@ public class Sustentacion {
     private String lugar;
     private String descripcion;
     private Boolean asistenciaConfirmada;
+    private Boolean sustentacionExterna;
+    private Boolean sustentacionRealizada;
 
     @ManyToOne
     @JoinColumn(name = "id_proyecto")
