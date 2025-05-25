@@ -8,9 +8,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.Col
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.Proyecto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.Sustentacion;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.enums.EstadoProyecto;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.ColoquioRepository;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.ProyectoRepository;
-import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.SustentacionRepository;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.*;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.UsuarioRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -24,33 +22,38 @@ import java.util.stream.Collectors;
 @Service
 public class DashboardService {
 
-    private final ProyectoRepository proyectoRepository;
     private final SustentacionRepository sustentacionRepository;
     private final ColoquioRepository coloquioRepository;
     private final UsuarioRepository usuarioRepository;
+    private final ColoquioEstudianteRepository coloquioEstudianteRepository;
+    private final UsuarioProyectoRepository usuarioProyectoRepository;
 
-    public DashboardService(ProyectoRepository proyectoRepository,
-                            SustentacionRepository sustentacionRepository,
-                            ColoquioRepository coloquioRepository, UsuarioRepository usuarioRepository) {
-        this.proyectoRepository = proyectoRepository;
+    public DashboardService(SustentacionRepository sustentacionRepository,
+                            ColoquioRepository coloquioRepository, UsuarioRepository usuarioRepository,
+                            ColoquioEstudianteRepository coloquioEstudianteRepository,
+                            UsuarioProyectoRepository usuarioProyectoRepository) {
         this.sustentacionRepository = sustentacionRepository;
         this.coloquioRepository = coloquioRepository;
         this.usuarioRepository = usuarioRepository;
+        this.coloquioEstudianteRepository = coloquioEstudianteRepository;
+        this.usuarioProyectoRepository = usuarioProyectoRepository;
     }
 
     @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE')")
-    public DashboardDto obtenerDashboard(Integer proyectoId) {
+    public DashboardDto obtenerDashboard() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Usuario activo = usuarioRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
+        Proyecto proyecto = usuarioProyectoRepository.findProyectoByEstudianteId(activo.getId())
+                .orElseThrow(() -> new RuntimeException("Proyecto no encontrado para el usuario"));
+
         DashboardDto dto = new DashboardDto();
 
-        Proyecto proyecto = proyectoRepository.findById(proyectoId).orElseThrow();
         dto.setFaseActual(mapFase(proyecto));
 
         List<ActividadDto> actividades = new ArrayList<>();
-        actividades.addAll(mapSustentaciones(sustentacionRepository.findByProyectoId(proyectoId)));
+        actividades.addAll(mapSustentaciones(sustentacionRepository.findByProyectoId(proyecto.getId())));
         actividades.addAll(mapColoquios(coloquioRepository.findColoquiosByUsuarioId(activo.getId())));
 
         LocalDateTime ahora = LocalDateTime.now();
@@ -70,7 +73,18 @@ public class DashboardService {
 
         List<ActividadDto> atrasadas = actividades.stream()
                 .filter(a -> LocalDateTime.of(a.getFecha(), a.getHora()).isBefore(ahora))
+                .filter(a -> {
+                    if ("Coloquio".equalsIgnoreCase(a.getTipo()) && a.getIdColoquio() != null) {
+                        return !coloquioEstudianteRepository.existsByColoquioIdAndIdEstudiante(
+                                a.getIdColoquio(), activo.getId());
+                    } else {
+                        Optional<Sustentacion> sustentacionOpt = sustentacionRepository.findById(a.getIdSustentacion());
+                        return sustentacionOpt.map(s -> s.getSustentacionRealizada() == null || !s.getSustentacionRealizada())
+                                .orElse(false);
+                    }
+                })
                 .collect(Collectors.toList());
+
         dto.setTareasAtrasadas(atrasadas);
 
         return dto;
@@ -121,6 +135,7 @@ public class DashboardService {
     private List<ActividadDto> mapSustentaciones(List<Sustentacion> lista) {
         return lista.stream().map(s -> {
             ActividadDto dto = new ActividadDto();
+            dto.setIdSustentacion(s.getId());
             dto.setTipo(s.getTipoSustentacion().toString());
             dto.setDescripcion(s.getDescripcion());
             dto.setFecha(s.getFecha());
@@ -134,6 +149,7 @@ public class DashboardService {
     private List<ActividadDto> mapColoquios(List<Coloquio> lista) {
         return lista.stream().map(c -> {
             ActividadDto dto = new ActividadDto();
+            dto.setIdColoquio(c.getId());
             dto.setTipo("Coloquio");
             dto.setDescripcion(c.getDescripcion());
             dto.setFecha(c.getFecha());

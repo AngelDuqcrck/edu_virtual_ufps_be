@@ -7,6 +7,8 @@ import java.time.LocalTime;
 
 @Data
 public class ActividadDto {
+    private Integer idColoquio;
+    private Integer idSustentacion;
     private String tipo;
     private String descripcion;
     private LocalDate fecha;
