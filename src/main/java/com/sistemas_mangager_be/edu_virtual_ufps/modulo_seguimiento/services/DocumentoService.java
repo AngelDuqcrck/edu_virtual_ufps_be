@@ -83,7 +83,7 @@ public class DocumentoService {
 
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE')")
-    public DocumentoDto guardarDocumento(Integer idProyecto, MultipartFile archivo, TipoDocumento tipoDocumento) {
+    public DocumentoDto guardarDocumento(Integer idProyecto, MultipartFile archivo, TipoDocumento tipoDocumento, String tag) {
         Proyecto proyecto = proyectoRepository.findById(idProyecto)
                 .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
 
@@ -99,6 +99,7 @@ public class DocumentoService {
             documento.setPeso(archivo.getSize() / 1024 + " KB");
             documento.setTipoDocumento(tipoDocumento);
             documento.setProyecto(proyecto);
+            documento.setTag(tag);
 
             documentoRepository.save(documento);
 
@@ -141,11 +142,11 @@ public class DocumentoService {
 
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE')")
-    public DocumentoDto agregarDocumentoaSustentacion(MultipartFile archivo, TipoDocumento tipoDocumento, Integer idSustentacion) {
+    public DocumentoDto agregarDocumentoaSustentacion(MultipartFile archivo, TipoDocumento tipoDocumento, Integer idSustentacion, String tag) {
         Integer idProyecto = sustentacionDocumentoRepository.findProyectoIdBySustentacionId(idSustentacion)
                 .orElseThrow(() -> new RuntimeException("Sustentacion no encontrada"));
 
-        DocumentoDto documentoDto = guardarDocumento(idProyecto, archivo, tipoDocumento);
+        DocumentoDto documentoDto = guardarDocumento(idProyecto, archivo, tipoDocumento, tag);
 
         SustentacionDocumento sustentacionDocumento = new SustentacionDocumento();
         sustentacionDocumento.setIdSustentacion(idSustentacion);
@@ -177,7 +178,7 @@ public class DocumentoService {
 
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_ESTUDIANTE')")
-    public DocumentoDto agregarDocumentoaColoquio(MultipartFile archivo, TipoDocumento tipoDocumento, Integer idColoquio) {
+    public DocumentoDto agregarDocumentoaColoquio(MultipartFile archivo, TipoDocumento tipoDocumento, Integer idColoquio, String tag) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Usuario activo = usuarioRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -185,7 +186,7 @@ public class DocumentoService {
         Proyecto proyecto = usuarioProyectoRepository.findProyectoByEstudianteId(activo.getId())
                 .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
 
-        DocumentoDto documentoDto = guardarDocumento(proyecto.getId(), archivo, tipoDocumento);
+        DocumentoDto documentoDto = guardarDocumento(proyecto.getId(), archivo, tipoDocumento, tag);
 
         ColoquioEstudiante coloquioEstudiante = new ColoquioEstudiante();
         coloquioEstudiante.setIdColoquio(idColoquio);

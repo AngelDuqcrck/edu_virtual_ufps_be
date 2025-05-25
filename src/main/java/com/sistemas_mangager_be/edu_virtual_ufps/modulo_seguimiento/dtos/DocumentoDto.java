@@ -16,6 +16,7 @@ import java.util.List;
 public class DocumentoDto implements Serializable {
     Integer id;
     String tipoArchivo;
+    String tag;
     String nombre;
     String path;
     String peso;

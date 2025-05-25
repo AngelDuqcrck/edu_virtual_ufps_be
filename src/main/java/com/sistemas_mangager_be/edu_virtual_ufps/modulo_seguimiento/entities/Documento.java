@@ -21,6 +21,7 @@ public class Documento {
     private Integer id;
 
     private String tipoArchivo;
+    private String tag;
     private String nombre;
     private String path;
     private String peso;

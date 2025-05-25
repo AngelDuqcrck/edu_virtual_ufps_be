@@ -24,9 +24,10 @@ public class DocumentoController {
     public ResponseEntity<DocumentoDto> subirDocumento(
             @PathVariable Integer idProyecto,
             @RequestParam("archivo") MultipartFile archivo,
-            @RequestParam("tipoDocumento") TipoDocumento tipoDocumento
+            @RequestParam("tipoDocumento") TipoDocumento tipoDocumento,
+            @RequestParam("tag") String tag
     ) {
-        return ResponseEntity.ok(documentoService.guardarDocumento(idProyecto, archivo, tipoDocumento));
+        return ResponseEntity.ok(documentoService.guardarDocumento(idProyecto, archivo, tipoDocumento, tag));
     }
 
     @GetMapping("/proyecto/{idProyecto}")
@@ -45,8 +46,9 @@ public class DocumentoController {
     public ResponseEntity<DocumentoDto> agregarDocumentoSustentacion(
             @RequestParam("archivo") MultipartFile archivo,
             @RequestParam TipoDocumento tipoDocumento,
-            @RequestParam Integer idSustentacion) {
-        return ResponseEntity.ok(documentoService.agregarDocumentoaSustentacion(archivo, tipoDocumento, idSustentacion));
+            @RequestParam Integer idSustentacion,
+            @RequestParam("tag") String tag) {
+        return ResponseEntity.ok(documentoService.agregarDocumentoaSustentacion(archivo, tipoDocumento, idSustentacion, tag));
     }
 
     @GetMapping("/sustentacion/{idSustentacion}")
@@ -58,8 +60,9 @@ public class DocumentoController {
     public ResponseEntity<DocumentoDto> agregarDocumentoColoquio(
             @RequestParam("archivo") MultipartFile archivo,
             @RequestParam TipoDocumento tipoDocumento,
-            @RequestParam Integer idColoquio) {
-        return ResponseEntity.ok(documentoService.agregarDocumentoaColoquio(archivo, tipoDocumento, idColoquio));
+            @RequestParam Integer idColoquio,
+            @RequestParam("tag") String tag) {
+        return ResponseEntity.ok(documentoService.agregarDocumentoaColoquio(archivo, tipoDocumento, idColoquio, tag));
     }
 
     @GetMapping("/coloquio/{idColoquio}")
