@@ -6,12 +6,15 @@ import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Usuario;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.DocumentoDto;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.RetroalimentacionDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.Documento;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.Proyecto;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.Retroalimentacion;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.enums.TipoDocumento;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.ColoquioEstudiante;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.intermedias.SustentacionDocumento;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.DocumentoMapper;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.mappers.RetroalimentacionMapper;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories.*;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.UsuarioRepository;
 import jakarta.annotation.Nullable;
@@ -42,6 +45,8 @@ public class DocumentoService {
     private final UsuarioRepository usuarioRepository;
     private final UsuarioProyectoRepository usuarioProyectoRepository;
     private final AmazonS3 amazonS3Client;
+    private final RetroalimentacionRepository retroalimentacionRepository;
+    private final RetroalimentacionMapper retroalimentacionMapper;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
@@ -50,7 +55,8 @@ public class DocumentoService {
     public DocumentoService(DocumentoRepository documentoRepository, DocumentoMapper documentoMapper,
                             ProyectoRepository proyectoRepository, SustentacionDocumentoRepository sustentacionDocumentoRepository,
                             ColoquioEstudianteRepository coloquioEstudianteRepository,
-                            UsuarioRepository usuarioRepository, UsuarioProyectoRepository usuarioProyectoRepository, AmazonS3 amazonS3Client) {
+                            UsuarioRepository usuarioRepository, UsuarioProyectoRepository usuarioProyectoRepository, AmazonS3 amazonS3Client,
+                            RetroalimentacionRepository retroalimentacionRepository, RetroalimentacionMapper retroalimentacionMapper) {
         this.documentoRepository = documentoRepository;
         this.documentoMapper = documentoMapper;
         this.proyectoRepository = proyectoRepository;
@@ -59,6 +65,8 @@ public class DocumentoService {
         this.usuarioRepository = usuarioRepository;
         this.usuarioProyectoRepository = usuarioProyectoRepository;
         this.amazonS3Client = amazonS3Client;
+        this.retroalimentacionRepository = retroalimentacionRepository;
+        this.retroalimentacionMapper = retroalimentacionMapper;
     }
 
     private String generarPresignedUrl(String fileName, int minutosValidez) {
@@ -122,6 +130,10 @@ public class DocumentoService {
                 .map(documento -> {
                     DocumentoDto dto = documentoMapper.toDto(documento);
                     dto.setUrl(generarPresignedUrl(documento.getPath(), 60));
+                    dto.setRetroalimentacion(documento.getRetroalimentacion()
+                            .stream()
+                            .map(retro -> retroalimentacionMapper.toDto(retro))
+                            .collect(Collectors.toList()));
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -217,5 +229,43 @@ public class DocumentoService {
                     return dto;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    @PreAuthorize("hasAuthority('ROLE_DOCENTE')")
+    public RetroalimentacionDto agregarRetroalimentacionADocumentos(RetroalimentacionDto retroalimentacionDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Usuario activo = usuarioRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Documento documento = documentoRepository.findById(retroalimentacionDto.getDocumentoId())
+                .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
+
+        Retroalimentacion retroalimentacion = retroalimentacionMapper.toEntity(retroalimentacionDto);
+        retroalimentacion.setUsuario(activo);
+        retroalimentacionRepository.save(retroalimentacion);
+
+        return retroalimentacionMapper.toDto(retroalimentacion);
+    }
+
+    @Transactional
+    @PreAuthorize("hasAuthority('ROLE_DOCENTE')")
+    public RetroalimentacionDto editarRetroalimentacion(RetroalimentacionDto retroalimentacionDto) {
+        Retroalimentacion retroalimentacion = retroalimentacionRepository.findById(retroalimentacionDto.getId())
+                .orElseThrow(() -> new RuntimeException("Retroalimentacion no encontrada"));
+
+        retroalimentacionMapper.partialUpdate(retroalimentacionDto, retroalimentacion);
+        retroalimentacionRepository.save(retroalimentacion);
+
+        return retroalimentacionMapper.toDto(retroalimentacion);
+    }
+
+    @Transactional
+    @PreAuthorize("hasAuthority('ROLE_DOCENTE')")
+    public void eliminarRetroalimentacion(Integer id) {
+        Retroalimentacion retroalimentacion = retroalimentacionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Retroalimentacion no encontrada"));
+
+        retroalimentacionRepository.delete(retroalimentacion);
     }
 }

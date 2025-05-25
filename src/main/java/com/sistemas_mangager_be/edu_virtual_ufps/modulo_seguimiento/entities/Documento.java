@@ -37,5 +37,8 @@ public class Documento {
 
     @OneToOne(mappedBy = "documento", cascade = CascadeType.ALL, orphanRemoval = true)
     private ColoquioEstudiante coloquioEstudiante;
+
+    @OneToMany(mappedBy = "documento", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Retroalimentacion> retroalimentacion;
 }
 

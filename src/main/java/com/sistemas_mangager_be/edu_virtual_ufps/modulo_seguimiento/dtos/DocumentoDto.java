@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Value;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * DTO for {@link com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.Documento}
@@ -21,4 +22,5 @@ public class DocumentoDto implements Serializable {
     TipoDocumento tipoDocumento;
     Integer idProyecto;
     String url;
+    List<RetroalimentacionDto> retroalimentacion;
 }

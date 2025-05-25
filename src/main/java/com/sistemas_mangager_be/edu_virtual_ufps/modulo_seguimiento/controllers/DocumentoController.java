@@ -1,6 +1,7 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.controllers;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.DocumentoDto;
+import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.RetroalimentacionDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.enums.TipoDocumento;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.services.DocumentoService;
 import org.springframework.http.ResponseEntity;
@@ -64,5 +65,21 @@ public class DocumentoController {
     @GetMapping("/coloquio/{idColoquio}")
     public ResponseEntity<List<DocumentoDto>> listarDocumentosColoquioEstudiante(@PathVariable Integer idColoquio, @RequestParam(required = false) Integer idEstudiante) {
         return ResponseEntity.ok(documentoService.listarDocumentosPorColoquioEstudiante(idColoquio, idEstudiante));
+    }
+
+    @PostMapping("/retroalimentacion")
+    public ResponseEntity<RetroalimentacionDto> agregarRetroalimentacionADocumentos(@RequestBody RetroalimentacionDto retroalimentacionDto) {
+        return ResponseEntity.ok(documentoService.agregarRetroalimentacionADocumentos(retroalimentacionDto));
+    }
+
+    @PutMapping("/retroalimentacion")
+    public ResponseEntity<RetroalimentacionDto> editarRetroalimentacion(@RequestBody RetroalimentacionDto retroalimentacionDto) {
+        return ResponseEntity.ok(documentoService.editarRetroalimentacion(retroalimentacionDto));
+    }
+
+    @DeleteMapping("/retroalimentacion/{id}")
+    public ResponseEntity<Void> eliminarRetroalimentacion(@PathVariable Integer id) {
+        documentoService.eliminarRetroalimentacion(id);
+        return ResponseEntity.noContent().build();
     }
 }
