@@ -256,10 +256,9 @@ public class MoodleApiClient {
         params.add("categoryid", categoriaDestinoId);
         params.add("visible", "1"); // El curso duplicado debe estar visible
 
-        // Configuración para NO incluir usuarios pero SÍ asignaciones de roles
-        // Esto hace que solo se copien los docentes y no los estudiantes
+        
         params.add("options[0][name]", "users");
-        params.add("options[0][value]", "0"); // No incluir usuarios
+        params.add("options[0][value]", "1"); // incluir usuarios
         params.add("options[1][name]", "role_assignments");
         params.add("options[1][value]", "1"); // Mantener asignaciones de roles
         params.add("options[2][name]", "activities");
@@ -401,15 +400,15 @@ public class MoodleApiClient {
             String semestreRomano = nombre.replace("Semestre ", "");
             if (codigoPrograma != null && periodoAcademico != null) {
                 // Primera letra en mayúscula, resto en minúscula
-                String semestreFormateado = "Semestre" + semestreRomano;
+                String semestreFormateado = "Semestre-" + semestreRomano;
                 idNumber = codigoPrograma + "-" + semestreFormateado + "-" + periodoAcademico;
             } else if (periodoAcademico != null) {
                 // Si no hay código de programa pero sí periodo
-                String semestreFormateado = "Semestre" + semestreRomano;
+                String semestreFormateado = "Semestre-" + semestreRomano;
                 idNumber = semestreFormateado + "-" + periodoAcademico;
             } else {
                 // Si no hay periodo ni código
-                idNumber = "Semestre" + semestreRomano;
+                idNumber = "Semestre-" + semestreRomano;
             }
         } else if (nombre.matches("\\d{4}-[I|II]")) {
             // Para categorías de período académico (2025-I), añadir código programa

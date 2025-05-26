@@ -14,10 +14,12 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Estudiante;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.GrupoCohorte;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.HistoricoGrupo;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.HistoricoSemestre;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Materia;
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Matricula;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Programa;
 
 import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.GrupoNotFoundException;
@@ -26,7 +28,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.exceptions.SemestreException;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.GrupoCohorteRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.HistoricoGrupoRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.HistoricoSemestreRepository;
-
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.MatriculaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.repositories.ProgramaRepository;
 import com.sistemas_mangager_be.edu_virtual_ufps.services.implementations.NotasServiceImplementation;
 
@@ -43,6 +45,9 @@ public class MoodleService {
     private final HistoricoGrupoRepository historicoGrupoRepository;
     private final GrupoCohorteRepository grupoCohorteRepository;
     private final ProgramaRepository programaRepository;
+
+    @Autowired
+    private MatriculaRepository matriculaRepository;
 
     @Autowired
     private NotasServiceImplementation notasServiceImplementation;
@@ -164,7 +169,7 @@ public class MoodleService {
                 semestre, programa.getNombre());
 
         // 2. Validar fecha de cierre del semestre
-        // validarFechaCierreSemestre(semestre);
+        validarFechaCierreSemestre(semestre);
 
         // 3. Verificar si ya existe un histórico para este semestre (para evitar
         // duplicados)
@@ -316,12 +321,10 @@ public class MoodleService {
             this.programaActualEnContexto = programa;
             this.materiaActualEnContexto = grupo.getGrupoId().getMateriaId();
 
-            // 1. Determinar el semestre del grupo en números romanos (I, II, III, etc.)
+            // 1-6. Los pasos iniciales permanecen iguales...
             String semestreRomano = determinarSemestreRomanoDelGrupo(grupo);
             log.info("Procesando grupo {} para histórico. Semestre romano: {}", grupo.getId(), semestreRomano);
 
-            // 2. Crear categoría del semestre romano bajo la categoría del semestre
-            // histórico
             String categoriaSemestreRomanoId = crearCategoriaSemestreRomano(
                     historicoSemestre.getMoodleCategoriaId(),
                     semestreRomano,
@@ -329,32 +332,24 @@ public class MoodleService {
 
             log.info("Categoría para semestre romano creada: {}", categoriaSemestreRomanoId);
 
-            // 3. Crear la categoría de la materia en el histórico con el FORMATO
-            // ESPECIFICADO
-            // Nombre: Nombre Materia - Periodo, idNumber: Código Materia - Periodo
             String nombreMateria = grupo.getGrupoId().getMateriaId().getNombre();
             String codigoMateria = grupo.getGrupoId().getMateriaId().getCodigo();
 
-            // Usar el nuevo método específico para categorías de materia en histórico
             String categoriaMateriaHistoricaId = moodleApiClient.crearCategoriaMateriaHistorico(
-                    nombreMateria, // Nombre de la materia
-                    codigoMateria, // Código de la materia
-                    semestreCerrado, // Periodo académico
-                    categoriaSemestreRomanoId // Categoría padre (semestre romano)
-            );
+                    nombreMateria,
+                    codigoMateria,
+                    semestreCerrado,
+                    categoriaSemestreRomanoId);
 
             log.info("Categoría histórica para materia creada: {}", categoriaMateriaHistoricaId);
 
-            // 4. Generar nombres para el curso histórico según el formato
             String nombreCursoHistorico = construirNombreCursoHistorico(grupo, semestreCerrado);
             String shortNameCursoHistorico = construirShortNameCursoHistorico(grupo, semestreCerrado);
 
             log.info("Curso histórico: nombre={}, shortname={}", nombreCursoHistorico, shortNameCursoHistorico);
 
-            // 5. Obtener la categoría de la materia actual donde se encuentra el curso
             String categoriaCursoActualId = obtenerCategoriaCursoActual(grupo.getMoodleId());
             if (categoriaCursoActualId == null) {
-                // Si no se puede obtener, intentar obtener la categoría del semestre al menos
                 categoriaCursoActualId = obtenerCategoriaProgramaParaSemestre(programa, semestreRomano);
                 log.warn("No se pudo obtener la categoría actual del curso, usando la del semestre: {}",
                         categoriaCursoActualId);
@@ -362,28 +357,30 @@ public class MoodleService {
                 log.info("Categoría actual del curso obtenida: {}", categoriaCursoActualId);
             }
 
-            // 6. Configuración para el nuevo curso activo
             String nombreCursoNuevo = construirNombreCursoActivo(grupo, siguienteSemestre);
             String shortNameCursoNuevo = construirShortNameCursoActivo(grupo, siguienteSemestre);
 
             log.info("Curso nuevo: nombre={}, shortname={}", nombreCursoNuevo, shortNameCursoNuevo);
 
-            // 7. Crear curso duplicado SIN ESTUDIANTES en la MISMA categoría donde está el
+            // 7. Crear curso duplicado SIN ESTUDIANTES en la misma categoría donde está el
             // curso actual
             String cursoDuplicadoId = moodleApiClient.copiarCursoSinEstudiantes(
                     grupo.getMoodleId(),
-                    categoriaCursoActualId, // Usar la misma categoría del curso actual
+                    categoriaCursoActualId,
                     nombreCursoNuevo,
                     shortNameCursoNuevo);
 
             log.info("Curso duplicado exitosamente con ID: {}", cursoDuplicadoId);
+
+            // NUEVO PASO: Eliminar estudiantes del curso duplicado usando la base de datos
+            eliminarEstudiantesDelCursoDuplicado(grupo, cursoDuplicadoId, semestreCerrado);
 
             // 8. Mover el curso original a la categoría histórica de la materia
             moodleApiClient.actualizarCurso(
                     grupo.getMoodleId(),
                     nombreCursoHistorico,
                     shortNameCursoHistorico,
-                    categoriaMateriaHistoricaId, // Usar la categoría de la materia histórica
+                    categoriaMateriaHistoricaId,
                     "0", // Oculto
                     shortNameCursoHistorico); // idnumber igual al shortname
 
@@ -393,15 +390,15 @@ public class MoodleService {
             HistoricoGrupo historicoGrupo = HistoricoGrupo.builder()
                     .grupoCohorte(grupo)
                     .historicoSemestre(historicoSemestre)
-                    .moodleCursoOriginalId(grupo.getMoodleId())
-                    .moodleCursoHistoricoId(grupo.getMoodleId()) // El curso histórico es el original
+                    .moodleCursoOriginalId(cursoDuplicadoId) // EL curso original ahora es el duplicado que quedara para
+                                                             // el proximo semestre
+                    .moodleCursoHistoricoId(grupo.getMoodleId())
                     .fechaCreacion(new Date())
                     .build();
 
             historicoGrupoRepository.save(historicoGrupo);
             log.info("Registro histórico creado para el grupo {}", grupo.getId());
 
-            // 10. Actualizar el grupo cohorte con el nuevo ID de Moodle y semestre
             grupo.setMoodleId(cursoDuplicadoId);
             grupo.setSemestre(siguienteSemestre);
             grupo.setSemestreTerminado(true);
@@ -421,6 +418,61 @@ public class MoodleService {
 
             log.error("Error al procesar grupo {}: {}", grupo.getId(), e.getMessage(), e);
             throw new RuntimeException("Error al procesar grupo " + grupo.getId() + ": " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Elimina estudiantes del curso duplicado mediante consulta a la base de datos
+     * 
+     * @param grupo            El grupo cohorte original
+     * @param cursoDuplicadoId ID del curso duplicado en Moodle
+     * @param semestreActual   Semestre actual
+     */
+
+    private void eliminarEstudiantesDelCursoDuplicado(GrupoCohorte grupo, String cursoDuplicadoId,
+            String semestreActual) {
+        log.info("Eliminando estudiantes del curso duplicado {} usando datos de la base de datos", cursoDuplicadoId);
+
+        try {
+            // Obtener todas las matrículas del semestre para este grupo
+            List<Matricula> matriculas = matriculaRepository.findBySemestreAndGrupoCohorteIdAndEstados(
+                    semestreActual, grupo);
+
+            log.info("Se encontraron {} estudiantes matriculados en el grupo {} para el semestre {}",
+                    matriculas.size(), grupo.getId(), semestreActual);
+
+            int estudiantesDesmatriculados = 0;
+
+            for (Matricula matricula : matriculas) {
+                Estudiante estudiante = matricula.getEstudianteId();
+
+                if (estudiante != null && estudiante.getMoodleId() != null && !estudiante.getMoodleId().isEmpty()) {
+                    try {
+                        // Desmatricular al estudiante del curso duplicado
+                        moodleApiClient.desmatricularEstudiante(
+                                estudiante.getMoodleId(),
+                                cursoDuplicadoId);
+                        estudiantesDesmatriculados++;
+                        log.debug("Estudiante {} desmatriculado del curso duplicado {}",
+                                estudiante.getId(), cursoDuplicadoId);
+                    } catch (Exception e) {
+                        log.warn("Error al desmatricular estudiante {} del curso duplicado {}: {}",
+                                estudiante.getId(), cursoDuplicadoId, e.getMessage());
+                        // Continuamos con el siguiente estudiante
+                    }
+                } else {
+                    log.debug("Estudiante {} sin ID de Moodle configurado, omitiendo",
+                            estudiante != null ? estudiante.getId() : "null");
+                }
+            }
+
+            log.info(
+                    "Proceso de eliminación de estudiantes completado. Se desmatricularon {} estudiantes del curso duplicado {}",
+                    estudiantesDesmatriculados, cursoDuplicadoId);
+
+        } catch (Exception e) {
+            log.error("Error al intentar eliminar estudiantes del curso duplicado: {}", e.getMessage(), e);
+            // No lanzamos la excepción para no interrumpir el flujo principal
         }
     }
 
