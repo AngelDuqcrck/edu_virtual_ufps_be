@@ -33,9 +33,9 @@ public interface UsuarioProyectoRepository extends JpaRepository<UsuarioProyecto
     SELECT up.proyecto FROM UsuarioProyecto up
     JOIN up.rol r
     JOIN up.proyecto p
-    JOIN p.lineaInvestigacion li
-    JOIN li.grupoInvestigacion gi
-    JOIN gi.programa pr
+    LEFT JOIN p.lineaInvestigacion li
+    LEFT JOIN li.grupoInvestigacion gi
+    LEFT JOIN gi.programa pr
     WHERE up.usuario.id = :idUsuario
       AND LOWER(r.nombre) IN ('director', 'codirector')
       AND (:lineaId IS NULL OR li.id = :lineaId)

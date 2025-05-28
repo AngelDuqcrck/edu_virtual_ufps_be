@@ -12,9 +12,12 @@ import java.util.List;
 public interface ProyectoRepository extends JpaRepository<Proyecto, Integer> {
     @Query("""
     SELECT p FROM Proyecto p
-    WHERE (:lineaId IS NULL OR p.lineaInvestigacion.id = :lineaId)
-    AND (:grupoId IS NULL OR p.lineaInvestigacion.grupoInvestigacion.id = :grupoId)
-    AND (:programaId IS NULL OR p.lineaInvestigacion.grupoInvestigacion.programa.id = :programaId)
+    LEFT JOIN p.lineaInvestigacion li
+    LEFT JOIN li.grupoInvestigacion gi
+    LEFT JOIN gi.programa pr
+    WHERE (:lineaId IS NULL OR li.id = :lineaId)
+      AND (:grupoId IS NULL OR gi.id = :grupoId)
+      AND (:programaId IS NULL OR pr.id = :programaId)
     """)
     List<Proyecto> findAllByFiltros(
             @Param("lineaId") Integer lineaId,
