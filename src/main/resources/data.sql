@@ -39,23 +39,12 @@ INSERT IGNORE INTO admins (
     activo
 ) VALUES (
     1,
-    'Angel', 
-    'Yesid', 
-    'Duque', 
-    'Cruz', 
-    'angelyesidducr@ufps.edu.co', 
+    'Unidad', 
+    ' ', 
+    'Virtual', 
+    'UFPS', 
+    'uvirtual@ufps.edu.co', 
     '$2a$10$ddkeQ8RKhqKAT6XTQe2iTuW5vBjWbOUAM0l4EUKVjK.rsJCnHHqZu',  -- Contraseña: 123456789 encriptada
-    true,
-    true
-), 
-(
-    2,
-    'Kevin', 
-    'A', 
-    'Tarazona', 
-    'Botello', 
-    'admin@gmail.com', 
-    '$2a$10$u1L5aDVRx0tQtfTyqylYVu3mXH6TXvzxX0vEj/yuNwTHK.aj6R3oG',  -- Contraseña: 123456 encriptada
     true,
     true
 );
