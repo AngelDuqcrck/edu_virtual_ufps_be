@@ -15,8 +15,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-@EntityScan(basePackages = "com.sistemas_mangager_be.edu_virtual_ufps.entities")
-@EnableJpaRepositories(basePackages = "com.sistemas_mangager_be.edu_virtual_ufps.repositories", entityManagerFactoryRef = "mysqlEntityManagerFactory", transactionManagerRef = "mysqlTransactionManager")
+@EntityScan(basePackages = {
+        "com.sistemas_mangager_be.edu_virtual_ufps.entities",
+        "com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities"
+})
+@EnableJpaRepositories(
+        basePackages = {
+                "com.sistemas_mangager_be.edu_virtual_ufps.repositories",
+                "com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.repositories"
+        },
+        entityManagerFactoryRef = "mysqlEntityManagerFactory",
+        transactionManagerRef = "mysqlTransactionManager"
+)
 public class MySQLDataSourceConfig {
 
     @Autowired
@@ -40,7 +50,10 @@ public class MySQLDataSourceConfig {
 
         return entityManagerFactoryBuilder
                 .dataSource(dataSource)
-                .packages("com.sistemas_mangager_be.edu_virtual_ufps.entities")
+                .packages(
+                        "com.sistemas_mangager_be.edu_virtual_ufps.entities",
+                        "com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities"
+                )
                 .persistenceUnit("mysqlPU")
                 .properties(properties)
                 .build();

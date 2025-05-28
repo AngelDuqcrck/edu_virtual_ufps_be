@@ -1,5 +1,7 @@
 package com.sistemas_mangager_be.edu_virtual_ufps.security;
 
+import com.sistemas_mangager_be.edu_virtual_ufps.entities.Usuario;
+import com.sistemas_mangager_be.edu_virtual_ufps.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
@@ -9,6 +11,7 @@ import com.sistemas_mangager_be.edu_virtual_ufps.security.CustomUserDetailsServi
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.*;
 
@@ -16,6 +19,9 @@ public class JwtTokenGenerator {
 
     @Autowired
     private SessionManager sessionManager;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     // Metodo para generar el token por medio de la autenticación
     public String generarToken(Authentication authentication) {
@@ -38,6 +44,59 @@ public class JwtTokenGenerator {
 
         // Registrar sesión activa
         sessionManager.registerUserSession(correo, token);
+
+        return token;
+    }
+
+    public String generarTokenGlobal(Authentication authentication) {
+        Date fechaActual = new Date();
+        Date expiracionToken = new Date(fechaActual.getTime() + SecurityConstants.JWT_EXPIRATION_TIME_TOKEN);
+
+        String email;
+        String nombre = "";
+        String apellido = "";
+        String rol = "";
+
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof CustomUserDetailsService.CustomUserDetails customUser) {
+            email = customUser.getUsername();
+            nombre = customUser.getPrimerNombre();
+            apellido = customUser.getPrimerApellido();
+            rol = authentication.getAuthorities().stream().findFirst().get().getAuthority();
+        } else if (principal instanceof OAuth2User oauthUser) {
+            email = oauthUser.getAttribute("email");
+            nombre = oauthUser.getAttribute("given_name");
+            apellido = oauthUser.getAttribute("family_name");
+
+            Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+            if (usuarioOpt.isPresent()) {
+                rol = usuarioOpt.get().getRolId().getNombre();
+            } else {
+                rol = "";
+            }
+        } else {
+            throw new RuntimeException("Tipo de usuario no soportado: " + principal.getClass().getName());
+        }
+
+        Map<String, Object> claims = new HashMap<>();
+        //claims.put("email", email);
+        claims.put("nombre", nombre);
+        claims.put("apellido", apellido);
+        claims.put("rol", rol);
+
+        String token = Jwts.builder()
+                .setSubject(email)
+                .claim("role", rol)
+                .claim("nombre", nombre)
+                .claim("apellido", apellido)
+                .setIssuedAt(new Date())
+                .setExpiration(expiracionToken)
+                .signWith(SignatureAlgorithm.HS512, SecurityConstants.JWT_FIRMA)
+                .compact();
+
+        // Registrar sesión activa
+        sessionManager.registerUserSession(email, token);
 
         return token;
     }
