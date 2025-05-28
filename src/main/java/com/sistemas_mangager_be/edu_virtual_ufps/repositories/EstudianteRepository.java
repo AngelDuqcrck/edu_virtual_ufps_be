@@ -34,6 +34,6 @@ public interface EstudianteRepository extends JpaRepository <Estudiante, Integer
 
     boolean existsByMoodleId(String moodleId);
 
-
+   boolean existsByCedula(String cedula);
 
 }

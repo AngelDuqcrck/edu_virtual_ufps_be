@@ -97,6 +97,12 @@ public class EstudianteServiceImplementation implements IEstudianteService {
                                                         "El correo electrónico " + estudianteDTO.getEmail()));
                 }
 
+                if (estudianteRepository.existsByCedula(estudianteDTO.getCedula())) {
+                        throw new UserExistException(
+                                        String.format(IS_ALREADY_USE,
+                                                        "El numero de documento " + estudianteDTO.getCedula()));
+                }
+
                 if (estudianteDTO.getMoodleId() != null && !estudianteDTO.getMoodleId().isEmpty() &&
                                 estudianteRepository.existsByMoodleId(estudianteDTO.getMoodleId())) {
                         throw new UserExistException(

@@ -76,7 +76,6 @@ public class EmailService {
     }
 
     private String correoContrasena(String mensaje, String mensaje2) {
-        String logoBase64 = "";
 
         String html = "<!DOCTYPE html>\n" +
                 "<html lang=\"es\">\n" +
@@ -89,8 +88,8 @@ public class EmailService {
                 "        .container { padding: 20px; background-color: #ffffff; }\n" +
                 "        .imagen { text-align: center; margin-bottom: 7px; }\n" +
                 "        .header img {\n" +
-                "            width: 400px; /* Corregí el valor faltante (px) */\n" +
-                "            margin-bottom: -40px;\n" +
+                "            width: 400px;\n" +
+                "            margin-bottom: -70px;\n" +
                 "        }\n" +
                 "        .titulo { text-align: center; margin-bottom: 15px; color: #000000; }\n" +
                 "        .header { border-bottom: 2px solid #BC0017; color: #000000; padding: 10px 0; text-align: center; padding-bottom: 20px; }\n"
@@ -108,24 +107,14 @@ public class EmailService {
                 "        @media (max-width: 480px) {\n" +
                 "            button { font-size: 1.15em; padding: 6px 16px; }\n" +
                 "        }\n" +
-                "        .logo-container {\n" +
-                "            display: flex;\n" +
-                "            justify-content: flex-start;\n" +
-                "            align-items: center;\n" +
-                "            margin-bottom: -15px;\n" +
-                "        }\n" +
                 "    </style>\n" +
                 "</head>\n" +
                 "<body>\n" +
                 "    <div class=\"container\">\n" +
                 "        <div class=\"header\">\n" +
-                "            <div class=\"logo-container\">\n" +
-                "                <img src=\"data:image/png;base64," + logoBase64
-                + "\" width=\"500\" alt=\"Logo-UFPS\" />\n" +
-                "        </div>\n" +
-                "            <h2>Sistema de Información Académica Virtual</h2>\n" +
-                "            <h2 style=\"font-weight: lighter;\">Maestría en Tecnologías de Información y Comunicación (TIC) Aplicadas a la Educación</h2>\n"
+                "            <img src=\"https://virtual.ufps.edu.co/pluginfile.php/1/core_admin/logo/0x200/1741736581/MAESTR%C3%8DA--TIC-APLICADAS-EN-LA-EDUCACI%C3%93N.png\" alt=\"Logo de la Empresa\">\n"
                 +
+                "            <h2>Sistema de Información Académica Virtual</h2>\n" +
                 "        </div>\n" +
                 "        <div class=\"content\">\n" +
                 "            <div class=\"titulo\">\n" +
