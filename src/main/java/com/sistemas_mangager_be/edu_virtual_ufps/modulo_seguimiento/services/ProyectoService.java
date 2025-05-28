@@ -45,6 +45,8 @@ public class ProyectoService {
     private final SustentacionRepository sustentacionRepository;
     private final SustentacionEvaluadorRepository sustentacionEvaluadorRepository;
 
+    private final GenerarDocumentosService generarDocumentosService;
+
 
     @Autowired
     public ProyectoService(ProyectoRepository proyectoRepository, UsuarioProyectoRepository usuarioProyectoRepository,
@@ -55,7 +57,7 @@ public class ProyectoService {
                            ObjetivoEspecificoMapper objetivoEspecificoMapper, DefinitivaMapper definitivaMapper,
                            DefinitivaRepository definitivaRepository,
                            SustentacionRepository sustentacionRepository,
-                           SustentacionEvaluadorRepository sustentacionEvaluadorRepository) {
+                           SustentacionEvaluadorRepository sustentacionEvaluadorRepository, GenerarDocumentosService generarDocumentosService) {
         this.proyectoRepository = proyectoRepository;
         this.usuarioProyectoRepository = usuarioProyectoRepository;
         this.lineaInvestigacionRepository = lineaInvestigacionRepository;
@@ -71,6 +73,7 @@ public class ProyectoService {
         this.definitivaRepository = definitivaRepository;
         this.sustentacionRepository = sustentacionRepository;
         this.sustentacionEvaluadorRepository = sustentacionEvaluadorRepository;
+        this.generarDocumentosService = generarDocumentosService;
     }
 
     @Transactional
@@ -347,6 +350,13 @@ public class ProyectoService {
         //actualizar objetivos
 
         Proyecto actualizado = proyectoRepository.save(existente);
+
+        if (actualizado.getEstadoActual() == EstadoProyecto.FASE_2 || actualizado.getEstadoActual() == EstadoProyecto.FASE_3 ||
+                actualizado.getEstadoActual() == EstadoProyecto.FASE_7 || actualizado.getEstadoActual() == EstadoProyecto.FASE_8 ||
+                actualizado.getEstadoActual() == EstadoProyecto.FASE_9){
+            generarDocumentosService.generarDocumentosSegunEstado(actualizado);
+        }
+
         return proyectoMapper.toDto(actualizado);
     }
 

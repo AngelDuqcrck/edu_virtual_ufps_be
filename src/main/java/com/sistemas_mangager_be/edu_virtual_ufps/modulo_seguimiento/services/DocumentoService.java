@@ -4,6 +4,7 @@ import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.sistemas_mangager_be.edu_virtual_ufps.entities.Usuario;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.DocumentoDto;
 import com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.dtos.RetroalimentacionDto;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
@@ -268,5 +270,35 @@ public class DocumentoService {
                 .orElseThrow(() -> new RuntimeException("Retroalimentacion no encontrada"));
 
         retroalimentacionRepository.delete(retroalimentacion);
+    }
+
+    @Transactional
+    public DocumentoDto guardarDocumentoGenerado(Integer idProyecto, String fileName, String contentType, byte[] contenido, TipoDocumento tipoDocumento, String tag) {
+        Proyecto proyecto = proyectoRepository.findById(idProyecto)
+                .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
+
+        String s3FileName = UUID.randomUUID() + "_" + fileName;
+
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType(contentType);
+        metadata.setContentLength(contenido.length);
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(contenido);
+        amazonS3Client.putObject(bucketName, s3FileName, inputStream, metadata);
+
+        Documento documento = new Documento();
+        documento.setNombre(fileName);
+        documento.setPath(s3FileName);
+        documento.setTipoArchivo(contentType);
+        documento.setPeso((contenido.length / 1024) + " KB");
+        documento.setTipoDocumento(tipoDocumento);
+        documento.setProyecto(proyecto);
+        documento.setTag(tag);
+
+        documentoRepository.save(documento);
+
+        DocumentoDto documentoDto = documentoMapper.toDto(documento);
+        documentoDto.setUrl(generarPresignedUrl(documentoDto.getPath(), 60));
+        return documentoDto;
     }
 }

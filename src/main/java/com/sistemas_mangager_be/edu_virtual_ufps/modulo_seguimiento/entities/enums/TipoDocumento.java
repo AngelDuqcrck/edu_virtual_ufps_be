@@ -6,5 +6,10 @@ public enum TipoDocumento {
     COLOQUIO,
     TESIS,
     EVALUACION,
-    REQUISITOS
+    REQUISITOS,
+    ACTASOLICITUD,
+    ACTAAPROBACION,
+    ACTAVB,
+    ACTABORRADOR,
+    ACTAORIGINAL,
 }

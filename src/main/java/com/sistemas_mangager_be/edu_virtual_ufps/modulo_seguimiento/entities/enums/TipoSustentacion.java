@@ -2,5 +2,6 @@ package com.sistemas_mangager_be.edu_virtual_ufps.modulo_seguimiento.entities.en
 
 public enum TipoSustentacion {
     ANTEPROYECTO,
-    TESIS
+    TESIS,
+    IDEA
 }
