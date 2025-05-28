@@ -103,7 +103,7 @@ public class GrupoServiceImplementation implements IGrupoService {
 
         // 4. Crear el nombre y código del grupo
         String nombreGrupo = materia.getNombre() + " - Grupo " + letraGrupo;
-        String codigoGrupo = materia.getCodigo() + "-" + letraGrupo;
+        String codigoGrupo = materia.getCodigo() + letraGrupo;
 
         // 5. Crear y guardar el grupo
         Grupo grupo = Grupo.builder()
@@ -144,7 +144,7 @@ public class GrupoServiceImplementation implements IGrupoService {
             char letraGrupo = (char) ('A' + cantidadGrupos);
 
             grupo.setNombre(nuevaMateria.getNombre() + " - Grupo " + letraGrupo);
-            grupo.setCodigo(nuevaMateria.getCodigo() + "-" + letraGrupo);
+            grupo.setCodigo(nuevaMateria.getCodigo() + letraGrupo);
             grupo.setMateriaId(nuevaMateria);
         }
 
