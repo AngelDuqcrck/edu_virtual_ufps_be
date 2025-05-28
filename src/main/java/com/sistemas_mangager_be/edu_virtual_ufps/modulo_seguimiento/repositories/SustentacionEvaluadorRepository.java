@@ -17,4 +17,6 @@ public interface SustentacionEvaluadorRepository extends JpaRepository<Sustentac
     SustentacionEvaluador findByIdUsuarioAndIdSustentacion(Integer idUsuario, Integer idSustentacion);
 
     void deleteByIdSustentacion(Integer idSustentacion);
+
+    List<SustentacionEvaluador> findByIdUsuario(Integer idUsuario);
 }

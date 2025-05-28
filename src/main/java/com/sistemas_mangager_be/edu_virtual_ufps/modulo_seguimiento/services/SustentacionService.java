@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,12 +37,13 @@ public class SustentacionService {
     private final UsuarioRepository usuarioRepository;
     private final CriterioEvaluacionRepository criterioEvaluacionRepository;
     private final CriterioEvaluacionMapper criterioEvaluacionMapper;
+    private final EmailServiceSeguimiento emailServiceSeguimiento;
 
 
     @Autowired
     public SustentacionService(SustentacionRepository sustentacionRepository, SustentacionMapper sustentacionMapper,
                                SustentacionEvaluadorRepository sustentacionEvaluadorRepository, ProyectoRepository proyectoRepository,
-                               UsuarioProyectoRepository usuarioProyectoRepository, UsuarioRepository usuarioRepository, CriterioEvaluacionRepository criterioEvaluacionRepository, CriterioEvaluacionMapper criterioEvaluacionMapper) {
+                               UsuarioProyectoRepository usuarioProyectoRepository, UsuarioRepository usuarioRepository, CriterioEvaluacionRepository criterioEvaluacionRepository, CriterioEvaluacionMapper criterioEvaluacionMapper, EmailServiceSeguimiento emailServiceSeguimiento) {
         this.sustentacionRepository = sustentacionRepository;
         this.sustentacionMapper = sustentacionMapper;
         this.sustentacionEvaluadorRepository = sustentacionEvaluadorRepository;
@@ -50,6 +52,7 @@ public class SustentacionService {
         this.usuarioRepository = usuarioRepository;
         this.criterioEvaluacionRepository = criterioEvaluacionRepository;
         this.criterioEvaluacionMapper = criterioEvaluacionMapper;
+        this.emailServiceSeguimiento = emailServiceSeguimiento;
     }
 
     @Transactional
@@ -76,6 +79,10 @@ public class SustentacionService {
         Sustentacion sustentacion = sustentacionMapper.toEntity(sustentacionDto);
 
         Sustentacion savedSustentacion = sustentacionRepository.save(sustentacion);
+
+        if (savedSustentacion.getTipoSustentacion().equals(TipoSustentacion.TESIS)){
+            emailServiceSeguimiento.enviarCorreoProgramacionSustentacion(savedSustentacion);
+        }
 
         return sustentacionMapper.toDto(savedSustentacion);
     }
@@ -142,10 +149,11 @@ public class SustentacionService {
                         .orElseThrow(() -> new EntityNotFoundException("Proyecto no encontrado"));
                 sustentaciones = sustentacionRepository.findByProyectoId(proyecto.getId());
             } else {
-                if (idProyecto == null) {
-                    throw new IllegalArgumentException("Debe proporcionar un ID de proyecto");
-                }
-                sustentaciones = sustentacionRepository.findByProyectoId(idProyecto);
+                List<SustentacionEvaluador> evaluaciones = sustentacionEvaluadorRepository.findByIdUsuario(activo.getId());
+                sustentaciones = evaluaciones.stream()
+                        .map(SustentacionEvaluador::getSustentacion)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
             }
         }
 
@@ -233,28 +241,49 @@ public class SustentacionService {
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority('ROLE_DOCENTE')")
+    @PreAuthorize("hasAuthority('ROLE_DOCENTE') or hasAuthority('ROLE_SUPERADMIN') or hasAuthority('ROLE_ADMIN')")
     public void evaluarSustentacion(SustentacionEvaluadorDto sustentacionEvaluadorDto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Usuario activo = usuarioRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        sustentacionEvaluadorDto.setIdUsuario(activo.getId());
-        boolean existe = sustentacionEvaluadorRepository.existsByIdUsuarioAndIdSustentacion(
-                sustentacionEvaluadorDto.getIdUsuario(),
-                sustentacionEvaluadorDto.getIdSustentacion());
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_SUPERADMIN"));
 
-        if (!activo.getId().equals(sustentacionEvaluadorDto.getIdUsuario())) {
-            throw new RuntimeException("No tienes permiso para evaluar esta sustentación");
+        SustentacionEvaluador sustentacionEvaluador = new SustentacionEvaluador();
+
+        if (isAdmin){
+            boolean existe = sustentacionEvaluadorRepository.existsByIdUsuarioAndIdSustentacion(
+                    sustentacionEvaluadorDto.getIdUsuario(),
+                    sustentacionEvaluadorDto.getIdSustentacion());
+
+            if (!existe) {
+                throw new RuntimeException("La asignación no existe");
+            }
+
+            sustentacionEvaluador = sustentacionEvaluadorRepository.findByIdUsuarioAndIdSustentacion(
+                    sustentacionEvaluadorDto.getIdUsuario(),
+                    sustentacionEvaluadorDto.getIdSustentacion());
+
+        } else {
+            Usuario activo = usuarioRepository.findByEmail(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            sustentacionEvaluadorDto.setIdUsuario(activo.getId());
+            boolean existe = sustentacionEvaluadorRepository.existsByIdUsuarioAndIdSustentacion(
+                    activo.getId(),
+                    sustentacionEvaluadorDto.getIdSustentacion());
+
+            if (!activo.getId().equals(sustentacionEvaluadorDto.getIdUsuario())) {
+                throw new RuntimeException("No tienes permiso para evaluar esta sustentación");
+            }
+
+            if (!existe) {
+                throw new RuntimeException("La asignación no existe");
+            }
+
+            sustentacionEvaluador = sustentacionEvaluadorRepository.findByIdUsuarioAndIdSustentacion(
+                    activo.getId(),
+                    sustentacionEvaluadorDto.getIdSustentacion());
         }
-
-        if (!existe) {
-            throw new RuntimeException("La asignación no existe");
-        }
-
-        SustentacionEvaluador sustentacionEvaluador = sustentacionEvaluadorRepository.findByIdUsuarioAndIdSustentacion(
-                sustentacionEvaluadorDto.getIdUsuario(),
-                sustentacionEvaluadorDto.getIdSustentacion());
 
         if (sustentacionEvaluadorDto.getObservaciones() != null && !sustentacionEvaluadorDto.getObservaciones().isBlank()) {
             sustentacionEvaluador.setObservaciones(sustentacionEvaluadorDto.getObservaciones());
