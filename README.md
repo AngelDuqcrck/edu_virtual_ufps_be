@@ -1,10 +1,10 @@
-# 🎓 EDU Virtual UFPS - Backend
+# 🎓 SIAV - Backend
 
-Sistema de gestión educativa virtual para la Universidad Francisco de Paula Santander, desarrollado con Spring Boot para la administración integral de estudiantes, matrículas, notas y contenidos académicos.
+Sistema de Informacion Academico Virtual para la Universidad Francisco de Paula Santander, desarrollado con Spring Boot para la administración integral de estudiantes, matrículas, notas y contenidos académicos.
 
 ## 📋 Descripción del Proyecto
 
-EDU Virtual UFPS es una plataforma backend robusta que facilita la gestión académica universitaria, integrando múltiples sistemas como Moodle, bases de datos Oracle y MySQL, y servicios de almacenamiento en la nube. El sistema permite gestionar estudiantes, docentes, matrículas, programas académicos, y la sincronización de datos con sistemas legados.
+SSIAV UFPS es una plataforma backend robusta que facilita la gestión académica universitaria de la Maestria en TIC aplicadas a la educación, integrando múltiples sistemas como Moodle, bases de datos Oracle y MySQL, y servicios de almacenamiento en la nube. El sistema permite gestionar estudiantes, docentes, matrículas, programas académicos, y la sincronización de datos con sistemas legados.
 
 ## 🚀 Características Principales
 
@@ -96,14 +96,10 @@ EDU Virtual UFPS es una plataforma backend robusta que facilita la gestión acad
       ┌───────────────┼───────────────┐
       │               │               │
 ┌─────▼─────┐ ┌──────▼──────┐ ┌──────▼──────┐
-│   MySQL   │ │   Oracle    │ │  AWS S3     │
-│(Principal)│ │  (Legado)   │ │ (Archivos)  │
+│   MySQL   │ │   Moodle    │ │  AWS S3     │
+│(Principal)│ │ Integration | │  (Archivos) │
 └───────────┘ └─────────────┘ └─────────────┘
-                      │
-               ┌──────▼──────┐
-               │   Moodle    │
-               │ Integration │
-               └─────────────┘
+                  
 ```
 
 ## 📦 Instalación y Configuración
@@ -410,10 +406,10 @@ ENTRYPOINT ["java", "-jar", "/app.jar"]
 
 ```bash
 # Construir imagen
-docker build -t edu-virtual-ufps .
+docker build -t siav .
 
 # Ejecutar contenedor
-docker run -p 8080:8080 edu-virtual-ufps
+docker run -p 8080:8080 siav
 ```
 
 ## 🤝 Contribución
@@ -443,37 +439,13 @@ docs: actualizar documentación de API
 test: agregar tests para servicio de matrículas
 ```
 
-## 📞 Soporte y Contacto
 
-### Equipo de Desarrollo
 
-- **Desarrollador Principal**: [Tu Nombre]
-- **Email**: contacto@ufps.edu.co
-- **Universidad**: Francisco de Paula Santander
 
-### Reportar Issues
-
-1. Verificar que el issue no exista
-2. Usar template de issue apropiado
-3. Incluir detalles de reproducción
-4. Agregar logs relevantes
-
-### Enlaces Útiles
-
-- 📖 [Documentación Completa](docs/)
-- 🐛 [Reportar Bug](issues/new?template=bug_report.md)
-- 💡 [Solicitar Feature](issues/new?template=feature_request.md)
-- 📧 [Contacto Directo](mailto:soporte@ufps.edu.co)
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
-
----
 
 <div align="center">
 
-**EDU Virtual UFPS** - Sistema de Gestión Educativa  
+**SIAV** - Sistema de Informacion Academica Virtual 
 Universidad Francisco de Paula Santander
 
 [![Spring Boot](https://img.shields.io/badge/Powered%20by-Spring%20Boot-6DB33F?style=flat-square&logo=spring-boot)](https://spring.io/projects/spring-boot)
