@@ -1,0 +1,39 @@
+services:
+  mysql-db:
+    image: mysql:8.0.33  # o la versión que prefieras
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: siav_ufps
+      MYSQL_USER: user
+      MYSQL_PASSWORD: 1234
+    ports: 
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 3
+    restart: always
+    volumes:
+        - mysql-data:/var/lib/mysql  # persistencia de datos
+        - ./src/main/resources/data.sql:/docker-entrypoint-initdb.d/data.sql  # carga de datos,
+
+  siav-ufps:
+    image: siav-ufps
+    build:
+      context: .  # asume que tienes un Dockerfile en la raíz
+    container_name: siav-ufps-container
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/siav_ufps?allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: 1234
+      SERVER_PORT: 8080
+    restart: always
+    ports: 
+      - "8080:8080"
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+
+volumes:
+  mysql-data:
