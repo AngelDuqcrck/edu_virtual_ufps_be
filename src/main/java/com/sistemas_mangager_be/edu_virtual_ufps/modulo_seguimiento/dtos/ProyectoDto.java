@@ -31,4 +31,5 @@ public class ProyectoDto implements Serializable {
     DefinitivaDto definitiva;
 
     String recomendacionDirectores;
+    List<MetaODSDto> metaODS;
 }

@@ -51,4 +51,12 @@ public class Proyecto {
     private List<Sustentacion> sustentaciones;
 
     private String recomendacionDirectores;
+
+    @ManyToMany()
+    @JoinTable(
+            name = "proyecto_meta_ods",
+            joinColumns = @JoinColumn(name = "proyecto_id"),
+            inverseJoinColumns = @JoinColumn(name = "meta_ods_id")
+    )
+    private List<MetaODS> metaODS;
 }

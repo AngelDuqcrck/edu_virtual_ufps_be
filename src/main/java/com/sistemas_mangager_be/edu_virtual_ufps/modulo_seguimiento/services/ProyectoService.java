@@ -46,6 +46,7 @@ public class ProyectoService {
     private final SustentacionEvaluadorRepository sustentacionEvaluadorRepository;
 
     private final GenerarDocumentosService generarDocumentosService;
+    private final MetaODSRepository metaODSRepository;
 
 
     @Autowired
@@ -57,7 +58,8 @@ public class ProyectoService {
                            ObjetivoEspecificoMapper objetivoEspecificoMapper, DefinitivaMapper definitivaMapper,
                            DefinitivaRepository definitivaRepository,
                            SustentacionRepository sustentacionRepository,
-                           SustentacionEvaluadorRepository sustentacionEvaluadorRepository, GenerarDocumentosService generarDocumentosService) {
+                           SustentacionEvaluadorRepository sustentacionEvaluadorRepository, GenerarDocumentosService generarDocumentosService,
+                           MetaODSRepository metaODSRepository) {
         this.proyectoRepository = proyectoRepository;
         this.usuarioProyectoRepository = usuarioProyectoRepository;
         this.lineaInvestigacionRepository = lineaInvestigacionRepository;
@@ -74,6 +76,7 @@ public class ProyectoService {
         this.sustentacionRepository = sustentacionRepository;
         this.sustentacionEvaluadorRepository = sustentacionEvaluadorRepository;
         this.generarDocumentosService = generarDocumentosService;
+        this.metaODSRepository = metaODSRepository;
     }
 
     @Transactional
@@ -95,8 +98,14 @@ public class ProyectoService {
                     .orElseThrow(() -> new RuntimeException("Línea de investigación no encontrada"));
         }
 
+        List<MetaODS> metaODSList = proyectoDto.getMetaODS().stream()
+                .map(dto -> metaODSRepository.findById(dto.getId())
+                        .orElseThrow(() -> new RuntimeException("MetaODS no encontrada con ID: " + dto.getId())))
+                .toList();
+
         Proyecto proyecto = proyectoMapper.toEntity(proyectoDto);
         proyecto.setLineaInvestigacion(lineaInvestigacion);
+        proyecto.setMetaODS(metaODSList);
         proyecto.setCreatedAt(LocalDate.now());
         proyecto.setUpdatedAt(LocalDate.now());
         Proyecto guardado = proyectoRepository.save(proyecto);
